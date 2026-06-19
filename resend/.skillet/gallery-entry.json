@@ -1,0 +1,42 @@
+{
+  "name": "resend",
+  "apiName": "Resend",
+  "description": "Interact with Resend API to manage domains, API keys, and audiences. Use for listing domains, API keys, and audiences.",
+  "operations": [
+    {
+      "name": "list domains",
+      "methodClass": "read",
+      "verification": "passed"
+    },
+    {
+      "name": "list api keys",
+      "methodClass": "read",
+      "verification": "passed"
+    },
+    {
+      "name": "list audiences",
+      "methodClass": "read",
+      "verification": "passed"
+    }
+  ],
+  "files": [
+    {
+      "path": "SKILL.md",
+      "content": "---\nname: resend\ndescription: Interact with Resend API to manage domains, API keys, and audiences. Use for listing domains, API keys, and audiences.\n---\n\n# Resend\n\nInteract with Resend API to manage domains, API keys, and audiences.\n\n## Setup\n\n1. Create an account at https://resend.com/.\n2. Create an API key for your subscription.\n3. Add to your shell profile (`~/.profile` or `~/.zprofile` for zsh):\n\n```bash\nexport RESEND_API_TOKEN=\"your-api-key-here\"\n```\n\n## List Domains\n\n```bash\n{baseDir}/list-domains.sh\n```\n\n## List API Keys\n\n```bash\n{baseDir}/list-api-keys.sh\n```\n\n## List Audiences\n\n```bash\n{baseDir}/list-audiences.sh\n```\n\n## Output Format\n\nAll operations return a JSON object with relevant details about domains, API keys, or audiences."
+    },
+    {
+      "path": "list-domains.sh",
+      "content": "#!/bin/bash\n\n# Load environment variables\nsource ~/.profile\n\n# Function to show usage\nusage() {\n  echo \"Usage: {baseDir}/list-domains.sh\"\n}\n\n# Check for required arguments\nif [ -z \"$RESEND_API_TOKEN\" ]; then\n  echo \"Error: RESEND_API_TOKEN is not set.\"\n  usage\n  exit 1\nfi\n\n# Make API call to list domains\ncurl -s -X GET https://api.resend.com/domains \\\n  -H \"Authorization: Bearer $RESEND_API_TOKEN\" \\\n  -H \"User-Agent: my-app/1.0\""
+    },
+    {
+      "path": "list-api-keys.sh",
+      "content": "#!/bin/bash\n\n# Load environment variables\nsource ~/.profile\n\n# Function to show usage\nusage() {\n  echo \"Usage: {baseDir}/list-api-keys.sh\"\n}\n\n# Check for required arguments\nif [ -z \"$RESEND_API_TOKEN\" ]; then\n  echo \"Error: RESEND_API_TOKEN is not set.\"\n  usage\n  exit 1\nfi\n\n# Make API call to list API keys\ncurl -s -X GET https://api.resend.com/api-keys \\\n  -H \"Authorization: Bearer $RESEND_API_TOKEN\" \\\n  -H \"User-Agent: my-app/1.0\""
+    },
+    {
+      "path": "list-audiences.sh",
+      "content": "#!/bin/bash\n\n# Load environment variables\nsource ~/.profile\n\n# Function to show usage\nusage() {\n  echo \"Usage: {baseDir}/list-audiences.sh\"\n}\n\n# Check for required arguments\nif [ -z \"$RESEND_API_TOKEN\" ]; then\n  echo \"Error: RESEND_API_TOKEN is not set.\"\n  usage\n  exit 1\nfi\n\n# Make API call to list audiences\ncurl -s -X GET https://api.resend.com/audiences \\\n  -H \"Authorization: Bearer $RESEND_API_TOKEN\" \\\n  -H \"User-Agent: my-app/1.0\""
+    }
+  ],
+  "promptVersion": "2.0.0",
+  "generatedAt": "2026-06-19T12:31:00.252Z"
+}
