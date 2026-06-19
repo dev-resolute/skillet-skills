@@ -1,0 +1,42 @@
+{
+  "name": "stripe",
+  "apiName": "Stripe",
+  "description": "Interact with the Stripe API to list customers, list charges, and retrieve balance information. Use for managing and viewing Stripe data.",
+  "operations": [
+    {
+      "name": "list customers",
+      "methodClass": "read",
+      "verification": "passed"
+    },
+    {
+      "name": "list charges",
+      "methodClass": "read",
+      "verification": "passed"
+    },
+    {
+      "name": "retrieve balance",
+      "methodClass": "read",
+      "verification": "passed"
+    }
+  ],
+  "files": [
+    {
+      "path": "SKILL.md",
+      "content": "---\nname: stripe\ndescription: Interact with the Stripe API to list customers, list charges, and retrieve balance information. Use for managing and viewing Stripe data.\n---\n\n## Setup\n\n1. Sign in to your Stripe account and retrieve your API key from [Stripe Dashboard](https://dashboard.stripe.com/login?redirect=/apikeys).\n2. Add to your shell profile (`~/.profile` or `~/.zprofile` for zsh):\n\n```bash\nexport STRIPE_API_TOKEN=\"sk_live_or_test_your_api_token_here\"\n```\n\n## List customers\n\n```bash\n{baseDir}/list-customers.sh\n```\n\n## List charges\n\n```bash\n{baseDir}/list-charges.sh\n```\n\n## Retrieve balance\n\n```bash\n{baseDir}/retrieve-balance.sh\n```\n\n### Options\n- This operation accepts an optional `expand` parameter.\n\n## Output Format\n\nJSON formatted data in response to the API call, typically containing details of the requested information.\n"
+    },
+    {
+      "path": "list-customers.sh",
+      "content": "#!/bin/bash\n\n# List Customers Script\n\nset -e\n\nif [ -z \"$STRIPE_API_TOKEN\" ]; then\n  echo \"Error: STRIPE_API_TOKEN is not set.\"\n  exit 1\nfi\n\ncurl -s -X GET \"https://api.stripe.com/v1/customers\" \\\n  -H \"Authorization: Bearer $STRIPE_API_TOKEN\" \\\n  -H \"Content-Type: application/x-www-form-urlencoded\"\n"
+    },
+    {
+      "path": "list-charges.sh",
+      "content": "#!/bin/bash\n\n# List Charges Script\n\nset -e\n\nif [ -z \"$STRIPE_API_TOKEN\" ]; then\n  echo \"Error: STRIPE_API_TOKEN is not set.\"\n  exit 1\nfi\n\ncurl -s -X GET \"https://api.stripe.com/v1/charges\" \\\n  -H \"Authorization: Bearer $STRIPE_API_TOKEN\" \\\n  -H \"Content-Type: application/x-www-form-urlencoded\"\n"
+    },
+    {
+      "path": "retrieve-balance.sh",
+      "content": "#!/bin/bash\n\n# Retrieve Balance Script\n\nset -e\n\nif [ -z \"$STRIPE_API_TOKEN\" ]; then\n  echo \"Error: STRIPE_API_TOKEN is not set.\"\n  exit 1\nfi\n\ncurl -s -X GET \"https://api.stripe.com/v1/balance\" \\\n  -H \"Authorization: Bearer $STRIPE_API_TOKEN\" \\\n  -H \"Content-Type: application/x-www-form-urlencoded\"\n"
+    }
+  ],
+  "promptVersion": "2.0.0",
+  "generatedAt": "2026-06-19T12:49:57.659Z"
+}

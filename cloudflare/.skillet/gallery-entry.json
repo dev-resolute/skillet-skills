@@ -1,0 +1,33 @@
+{
+  "name": "cloudflare",
+  "apiName": "Cloudflare",
+  "description": "Cloudflare API integration for zone and account management. Use for retrieving information about zones and accounts.",
+  "operations": [
+    {
+      "name": "list zones",
+      "methodClass": "read",
+      "verification": "passed"
+    },
+    {
+      "name": "list accounts",
+      "methodClass": "read",
+      "verification": "passed"
+    }
+  ],
+  "files": [
+    {
+      "path": "SKILL.md",
+      "content": "---\nname: cloudflare\ndescription: Cloudflare API integration for zone and account management. Use for retrieving information about zones and accounts.\n---\n\n# Cloudflare\n\nCloudflare API integration for managing and retrieving zones and account information.\n\n## Setup\n\n1. Create an account or log in to [Cloudflare](https://dash.cloudflare.com/sign-up)\n2. Obtain an API Token from your account's API Tokens section\n3. Add to your shell profile (`~/.profile` or `~/.zprofile` for zsh):\n\n```bash\nexport CLOUDFLARE_API_TOKEN=\"your-api-token-here\"\n```\n\n## List Zones\n\n```bash\n{baseDir}/list-zones.sh [options]\n```\n\n### Options\n- `name`: Filter by domain name\n- `status`: Filter by zone status\n- `type`: Filter by zone type (e.g., full, partial)\n- `account.id`: Filter by account ID\n- `account.name`: Filter by account name\n- `page`: Page number for paginated results (default: 1)\n- `per_page`: Results per page (default: 20, max: 50)\n\n## List Accounts\n\n```bash\n{baseDir}/list-accounts.sh [options]\n```\n\n### Options\n- `name`: Filter by account name\n- `page`: Page number for paginated results (default: 1)\n- `per_page`: Results per page (default: 20, max: 50)\n- `direction`: Order direction (asc or desc)\n\n## Output Format\n\nJSON response containing relevant data depending on the operation, along with pagination info and query details."
+    },
+    {
+      "path": "list-zones.sh",
+      "content": "#!/bin/bash\n\n# List Zones\nauth_header=\"Authorization: Bearer ${CLOUDFLARE_API_TOKEN}\"\n\ncurl -s -G \\\n  --url \"https://api.cloudflare.com/client/v4/zones\" \\\n  -H \"$auth_header\" \\\n  --data-urlencode \"name=${1}\" \\\n  --data-urlencode \"status=${2}\" \\\n  --data-urlencode \"type=${3}\" \\\n  --data-urlencode \"account.id=${4}\" \\\n  --data-urlencode \"account.name=${5}\" \\\n  --data-urlencode \"page=${6:-1}\" \\\n  --data-urlencode \"per_page=${7:-20}\"\n"
+    },
+    {
+      "path": "list-accounts.sh",
+      "content": "#!/bin/bash\n\n# List Accounts\nauth_header=\"Authorization: Bearer ${CLOUDFLARE_API_TOKEN}\"\n\ncurl -s -G \\\n  --url \"https://api.cloudflare.com/client/v4/accounts\" \\\n  -H \"$auth_header\" \\\n  --data-urlencode \"name=${1}\" \\\n  --data-urlencode \"page=${2:-1}\" \\\n  --data-urlencode \"per_page=${3:-20}\" \\\n  --data-urlencode \"direction=${4}\"\n"
+    }
+  ],
+  "promptVersion": "2.0.0",
+  "generatedAt": "2026-06-19T12:49:58.401Z"
+}
