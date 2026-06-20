@@ -1,0 +1,51 @@
+{
+  "name": "jira",
+  "apiName": "Jira",
+  "description": "Provides access to Jira user details, fields, recent projects, and issue types. Use for managing and querying Jira project data.",
+  "operations": [
+    {
+      "name": "get current user",
+      "methodClass": "read",
+      "verification": "passed"
+    },
+    {
+      "name": "get fields",
+      "methodClass": "read",
+      "verification": "passed"
+    },
+    {
+      "name": "get recent projects",
+      "methodClass": "read",
+      "verification": "passed"
+    },
+    {
+      "name": "get all issue types",
+      "methodClass": "read",
+      "verification": "passed"
+    }
+  ],
+  "files": [
+    {
+      "path": "SKILL.md",
+      "content": "---\nname: jira\ndescription: Provides access to Jira user details, fields, recent projects, and issue types. Use for managing and querying Jira project data.\n---\n\n# Jira\n\nAccess Jira resources including user details, fields, recent projects, and issue types.\n\n## Setup\n\n1. Create an account and generate an API token at [Atlassian](https://id.atlassian.com/manage/api-tokens)  \n2. Add to your shell profile (`~/.profile` or `~/.zprofile` for zsh):\n\n```bash\nexport JIRA_BASE_URL=\"https://your-site.atlassian.net\"\nexport JIRA_EMAIL=\"your-email@example.com\"\nexport JIRA_API_TOKEN=\"your-api-token-here\"\n```\n\n## Get current user\n\n```bash\n{baseDir}/get-current-user.sh [expand]    # Optional expand information\n```\n\n## Get fields\n\n```bash\n{baseDir}/get-fields.sh\n```\n\n## Get recent projects\n\n```bash\n{baseDir}/get-recent-projects.sh [expand] [properties]  # Optional expansion and properties\n```\n\n## Get all issue types for user\n\n```bash\n{baseDir}/get-all-issue-types.sh\n```\n\n## Output Format\n\nJSON responses with relevant Jira information according to the endpoint, such as user details, field metadata, recent project details, or issue type data.\n"
+    },
+    {
+      "path": "get-current-user.sh",
+      "content": "#!/bin/bash\n\n# Fetch the current user details from Jira\n\nset -e\n\nEXPAND=\"$1\"\n\nif [ -z \"$JIRA_BASE_URL\" ] || [ -z \"$JIRA_EMAIL\" ] || [ -z \"$JIRA_API_TOKEN\" ]; then\n  echo \"JIRA_BASE_URL, JIRA_EMAIL and JIRA_API_TOKEN must be set\"\n  exit 1\nfi\n\nURL=\"${JIRA_BASE_URL}/rest/api/3/myself\"\n\nif [ -n \"$EXPAND\" ]; then\n  URL=\"${URL}?expand=${EXPAND}\"\nfi\n\ncurl -s -u \"$JIRA_EMAIL:$JIRA_API_TOKEN\" \"$URL\"\n"
+    },
+    {
+      "path": "get-fields.sh",
+      "content": "#!/bin/bash\n\n# Fetch available fields from Jira\n\nset -e\n\nif [ -z \"$JIRA_BASE_URL\" ] || [ -z \"$JIRA_EMAIL\" ] || [ -z \"$JIRA_API_TOKEN\" ]; then\n  echo \"JIRA_BASE_URL, JIRA_EMAIL and JIRA_API_TOKEN must be set\"\n  exit 1\nfi\n\ncurl -s -u \"$JIRA_EMAIL:$JIRA_API_TOKEN\" \"${JIRA_BASE_URL}/rest/api/3/field\"\n"
+    },
+    {
+      "path": "get-recent-projects.sh",
+      "content": "#!/bin/bash\n\n# Fetch recent projects from Jira\n\nset -e\n\nEXPAND=\"$1\"\nPROPERTIES=\"$2\"\n\nif [ -z \"$JIRA_BASE_URL\" ] || [ -z \"$JIRA_EMAIL\" ] || [ -z \"$JIRA_API_TOKEN\" ]; then\n  echo \"JIRA_BASE_URL, JIRA_EMAIL and JIRA_API_TOKEN must be set\"\n  exit 1\nfi\n\nURL=\"${JIRA_BASE_URL}/rest/api/3/project/recent\"\n\nif [ -n \"$EXPAND\" ]; then\n  URL=\"${URL}?expand=${EXPAND}\"\nfi\n\nif [ -n \"$PROPERTIES\" ]; then\n  URL=\"${URL}&properties=${PROPERTIES}\"\nfi\n\ncurl -s -u \"$JIRA_EMAIL:$JIRA_API_TOKEN\" \"$URL\"\n"
+    },
+    {
+      "path": "get-all-issue-types.sh",
+      "content": "#!/bin/bash\n\n# Fetch all issue types from Jira\n\nset -e\n\nif [ -z \"$JIRA_BASE_URL\" ] || [ -z \"$JIRA_EMAIL\" ] || [ -z \"$JIRA_API_TOKEN\" ]; then\n  echo \"JIRA_BASE_URL, JIRA_EMAIL and JIRA_API_TOKEN must be set\"\n  exit 1\nfi\n\ncurl -s -u \"$JIRA_EMAIL:$JIRA_API_TOKEN\" \"${JIRA_BASE_URL}/rest/api/3/issuetype\"\n"
+    }
+  ],
+  "promptVersion": "2.0.0",
+  "generatedAt": "2026-06-20T19:30:00.408Z"
+}
