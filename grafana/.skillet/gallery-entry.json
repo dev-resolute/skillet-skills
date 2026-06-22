@@ -1,0 +1,52 @@
+{
+  "name": "grafana",
+  "apiName": "Grafana",
+  "description": "Interact with Grafana's API to manage organizational data and configuration. Use for accessing organization details, data sources, folders, and users.",
+  "operations": [
+    {
+      "name": "get current organization",
+      "methodClass": "read",
+      "verification": "passed"
+    },
+    {
+      "name": "get all data sources",
+      "methodClass": "read",
+      "verification": "passed"
+    },
+    {
+      "name": "get all folders",
+      "methodClass": "read",
+      "verification": "passed"
+    },
+    {
+      "name": "get all users within the current organization",
+      "methodClass": "read",
+      "verification": "passed"
+    }
+  ],
+  "files": [
+    {
+      "path": "SKILL.md",
+      "content": "---\nname: grafana\ndescription: Interact with Grafana's API to manage organizational data and configuration. Use for accessing organization details, data sources, folders, and users.\n---\n\n# Grafana\n\nInteract with Grafana's API to manage organizational data and configuration.\n\n## Setup\n\n1. In Grafana, create a service account and token (Administration → Service accounts).\n2. Add to your shell profile (`~/.profile` or `~/.zprofile` for zsh):\n\n```bash\nexport GRAFANA_URL=\"https://your-grafana-instance.example.com\"\nexport GRAFANA_SERVICE_ACCOUNT_TOKEN=\"your-service-account-token-here\"\n```\n\n## Get current organization\n\n```bash\n{baseDir}/get-current-organization.sh\n```\n\n## Get all data sources\n\n```bash\n{baseDir}/get-all-data-sources.sh\n```\n\n## Get all folders\n\n```bash\n{baseDir}/get-all-folders.sh [limit] [page] [parentUid] [permission]\n```\n\n- `limit`: Maximum number of folders to return (default 1000)\n- `page`: Page index to start fetching folders (default 1)\n- `parentUid`: UID of the parent folder (optional)\n- `permission`: Type of folders to return (Edit/View; default View)\n\n## Get all users within the current organization\n\n```bash\n{baseDir}/get-all-users-within-current-organization.sh [query] [limit]\n```\n\n- `query`: Filter users by search query (optional)\n- `limit`: Limit the maximum number of users returned (optional)\n\n## Output Format\n\nJSON responses corresponding to each endpoint's standard output."
+    },
+    {
+      "path": "get-current-organization.sh",
+      "content": "#!/bin/bash\n\n# Get the current organization from Grafana\n\nset -e\n\nif [ -z \"$GRAFANA_URL\" ] || [ -z \"$GRAFANA_SERVICE_ACCOUNT_TOKEN\" ]; then\n  echo \"GRAFANA_URL and GRAFANA_SERVICE_ACCOUNT_TOKEN must be set\"\n  exit 1\nfi\n\ncurl -s -H \"Authorization: Bearer ${GRAFANA_SERVICE_ACCOUNT_TOKEN}\" \\\n  \"${GRAFANA_URL}/api/org\"\n"
+    },
+    {
+      "path": "get-all-data-sources.sh",
+      "content": "#!/bin/bash\n\n# Get all data sources from Grafana\n\nset -e\n\nif [ -z \"$GRAFANA_URL\" ] || [ -z \"$GRAFANA_SERVICE_ACCOUNT_TOKEN\" ]; then\n  echo \"GRAFANA_URL and GRAFANA_SERVICE_ACCOUNT_TOKEN must be set\"\n  exit 1\nfi\n\ncurl -s -H \"Authorization: Bearer ${GRAFANA_SERVICE_ACCOUNT_TOKEN}\" \\\n  \"${GRAFANA_URL}/api/datasources\"\n"
+    },
+    {
+      "path": "get-all-folders.sh",
+      "content": "#!/bin/bash\n\n# Get all folders from Grafana\n\nset -e\n\nif [ -z \"$GRAFANA_URL\" ] || [ -z \"$GRAFANA_SERVICE_ACCOUNT_TOKEN\" ]; then\n  echo \"GRAFANA_URL and GRAFANA_SERVICE_ACCOUNT_TOKEN must be set\"\n  exit 1\nfi\n\nLIMIT=\"${1:-1000}\"\nPAGE=\"${2:-1}\"\nPARENT_UID=\"$3\"\nPERMISSION=\"${4:-View}\"\n\nQUERY_STRING=\"limit=${LIMIT}&page=${PAGE}&permission=${PERMISSION}\"\nif [ -n \"$PARENT_UID\" ]; then\n  QUERY_STRING=\"${QUERY_STRING}&parentUid=${PARENT_UID}\"\nfi\n\ncurl -s -H \"Authorization: Bearer ${GRAFANA_SERVICE_ACCOUNT_TOKEN}\" \\\n  \"${GRAFANA_URL}/api/folders?${QUERY_STRING}\"\n"
+    },
+    {
+      "path": "get-all-users-within-the-current-organization.sh",
+      "content": "#!/bin/bash\n\n# Get all users within the current organization from Grafana\n\nset -e\n\nif [ -z \"$GRAFANA_URL\" ] || [ -z \"$GRAFANA_SERVICE_ACCOUNT_TOKEN\" ]; then\n  echo \"GRAFANA_URL and GRAFANA_SERVICE_ACCOUNT_TOKEN must be set\"\n  exit 1\nfi\n\nQUERY=\"$1\"\nLIMIT=\"$2\"\n\nQUERY_STRING=\"\"\nif [ -n \"$QUERY\" ]; then\n  QUERY_STRING=\"query=${QUERY}\"\nfi\nif [ -n \"$LIMIT\" ]; then\n  QUERY_STRING=\"${QUERY_STRING}&limit=${LIMIT}\"\nfi\n\nURL=\"${GRAFANA_URL}/api/org/users\"\nif [ -n \"$QUERY_STRING\" ]; then\n  URL=\"${URL}?${QUERY_STRING}\"\nfi\n\ncurl -s -H \"Authorization: Bearer ${GRAFANA_SERVICE_ACCOUNT_TOKEN}\" \"$URL\"\n"
+    }
+  ],
+  "promptVersion": "2.0.0",
+  "generatedAt": "2026-06-22T17:52:06.049Z",
+  "logoUrl": "https://media.brand.dev/8cc05e4c-99b4-478b-92c4-e02d606e44e1.png"
+}

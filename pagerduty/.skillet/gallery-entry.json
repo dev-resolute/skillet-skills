@@ -1,0 +1,52 @@
+{
+  "name": "pagerduty",
+  "apiName": "PagerDuty",
+  "description": "Access and manage PagerDuty resources like services, incidents, escalation policies, and teams. Use for managing incident response and team alerts.",
+  "operations": [
+    {
+      "name": "list services",
+      "methodClass": "read",
+      "verification": "passed"
+    },
+    {
+      "name": "list incidents",
+      "methodClass": "read",
+      "verification": "passed"
+    },
+    {
+      "name": "list escalation policies",
+      "methodClass": "read",
+      "verification": "passed"
+    },
+    {
+      "name": "list teams",
+      "methodClass": "read",
+      "verification": "passed"
+    }
+  ],
+  "files": [
+    {
+      "path": "SKILL.md",
+      "content": "---\nname: pagerduty\ndescription: Access and manage PagerDuty resources like services, incidents, escalation policies, and teams. Use for managing incident response and team alerts.\n---\n\n# PagerDuty\n\nAccess and manage resources using the official PagerDuty API.\n\n## Setup\n\n1. Create an account or log in at [PagerDuty](https://www.pagerduty.com/)\n2. Generate an API token [here](https://support.pagerduty.com/docs/api-access-keys)\n3. Add to your shell profile (`~/.profile` or `~/.zprofile` for zsh):\n\n```bash\nexport PAGERDUTY_API_KEY=\"your-api-key-here\"\n```\n\n## List services\n\n```bash\n{baseDir}/list-services.sh    # Retrieve a list of services\n```\n\n## List incidents\n\n```bash\n{baseDir}/list-incidents.sh    # Retrieve a list of incidents\n```\n\n## List escalation policies\n\n```bash\n{baseDir}/list-escalation-policies.sh    # Retrieve a list of escalation policies\n```\n\n## List teams\n\n```bash\n{baseDir}/list-teams.sh    # Retrieve a list of teams\n```\n\n## Output Format\n\nResponses are JSON formatted, containing arrays like `services`, `incidents`, `escalation_policies`, and `teams`, each object includes attributes such as `id`, `name`, and `summary`."
+    },
+    {
+      "path": "list-services.sh",
+      "content": "#!/bin/bash\n\n# List services from PagerDuty\n\nset -e\n\nif [ -z \"$PAGERDUTY_API_KEY\" ]; then\n  echo \"PAGERDUTY_API_KEY must be set\"\n  exit 1\nfi\n\ncurl -s \\\n  -H \"Authorization: Token token=${PAGERDUTY_API_KEY}\" \\\n  -H \"Accept: application/vnd.pagerduty+json;version=2\" \\\n  \"https://api.pagerduty.com/services\"\n"
+    },
+    {
+      "path": "list-incidents.sh",
+      "content": "#!/bin/bash\n\n# List incidents from PagerDuty\n\nset -e\n\nif [ -z \"$PAGERDUTY_API_KEY\" ]; then\n  echo \"PAGERDUTY_API_KEY must be set\"\n  exit 1\nfi\n\ncurl -s \\\n  -H \"Authorization: Token token=${PAGERDUTY_API_KEY}\" \\\n  -H \"Accept: application/vnd.pagerduty+json;version=2\" \\\n  \"https://api.pagerduty.com/incidents\"\n"
+    },
+    {
+      "path": "list-escalation-policies.sh",
+      "content": "#!/bin/bash\n\n# List escalation policies from PagerDuty\n\nset -e\n\nif [ -z \"$PAGERDUTY_API_KEY\" ]; then\n  echo \"PAGERDUTY_API_KEY must be set\"\n  exit 1\nfi\n\ncurl -s \\\n  -H \"Authorization: Token token=${PAGERDUTY_API_KEY}\" \\\n  -H \"Accept: application/vnd.pagerduty+json;version=2\" \\\n  \"https://api.pagerduty.com/escalation_policies\"\n"
+    },
+    {
+      "path": "list-teams.sh",
+      "content": "#!/bin/bash\n\n# List teams from PagerDuty\n\nset -e\n\nif [ -z \"$PAGERDUTY_API_KEY\" ]; then\n  echo \"PAGERDUTY_API_KEY must be set\"\n  exit 1\nfi\n\ncurl -s \\\n  -H \"Authorization: Token token=${PAGERDUTY_API_KEY}\" \\\n  -H \"Accept: application/vnd.pagerduty+json;version=2\" \\\n  \"https://api.pagerduty.com/teams\"\n"
+    }
+  ],
+  "promptVersion": "2.0.0",
+  "generatedAt": "2026-06-22T17:47:40.045Z",
+  "logoUrl": "https://media.brand.dev/6f6e6ac2-9fae-418c-b4ce-d80ff5f25db0.svg"
+}
