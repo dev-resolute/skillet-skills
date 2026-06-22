@@ -1,0 +1,52 @@
+{
+  "name": "confluence",
+  "apiName": "Confluence",
+  "description": "Access Confluence API for user, group, and template information. Use for querying user, group, and template data in Confluence.",
+  "operations": [
+    {
+      "name": "get current user",
+      "methodClass": "read",
+      "verification": "passed"
+    },
+    {
+      "name": "get groups",
+      "methodClass": "read",
+      "verification": "passed"
+    },
+    {
+      "name": "get content templates",
+      "methodClass": "read",
+      "verification": "passed"
+    },
+    {
+      "name": "get blueprint templates",
+      "methodClass": "read",
+      "verification": "passed"
+    }
+  ],
+  "files": [
+    {
+      "path": "SKILL.md",
+      "content": "---\nname: confluence\ndescription: Access Confluence API for user, group, and template information. Use for querying user, group, and template data in Confluence.\n---\n\n# Confluence\n\nInteract with Confluence to retrieve information about users, groups, and templates.\n\n## Setup\n\n1. Create an account and generate an API token at [Atlassian](https://id.atlassian.com/manage/api-tokens)\n2. Add to your shell profile (`~/.profile` or `~/.zprofile` for zsh):\n\n```bash\nexport CONFLUENCE_BASE_URL=\"https://your-site.atlassian.net\"\nexport CONFLUENCE_EMAIL=\"your-email@example.com\"\nexport CONFLUENCE_API_TOKEN=\"your-api-token-here\"\n```\n\n## Get current user\n\n```bash\n{baseDir}/get-current-user.sh [operations,personalSpace,isExternalCollaborator]\n```\n### Options\n- Optional query param: `expand` (e.g., operations, personalSpace)\n\n## Get groups\n\n```bash\n{baseDir}/get-groups.sh [start] [limit] [accessType]\n```\n### Options\n- `start`: The starting index of the groups.\n- `limit`: Maximum number of groups per page.\n- `accessType`: Group permission level (e.g., user, admin).\n\n## Get content templates\n\n```bash\n{baseDir}/get-content-templates.sh [spaceKey] [start] [limit]\n```\n### Options\n- `spaceKey`: Space key to query for templates.\n- Pagination supported with `start` and `limit`.\n\n## Get blueprint templates\n\n```bash\n{baseDir}/get-blueprint-templates.sh [spaceKey] [start] [limit]\n```\n### Options\n- `spaceKey`: Space key to query for templates.\n- Pagination supported with `start` and `limit`.\n\n## Output Format\n\nEach operation returns JSON data specific to the request, such as details about users, groups, or templates."
+    },
+    {
+      "path": "get-current-user.sh",
+      "content": "#!/bin/bash\n\n# Fetch the current user details from Confluence\n\nset -e\n\nEXPAND=\"$1\"\n\nif [ -z \"$CONFLUENCE_BASE_URL\" ] || [ -z \"$CONFLUENCE_EMAIL\" ] || [ -z \"$CONFLUENCE_API_TOKEN\" ]; then\n  echo \"CONFLUENCE_BASE_URL, CONFLUENCE_EMAIL and CONFLUENCE_API_TOKEN must be set\"\n  exit 1\nfi\n\nURL=\"${CONFLUENCE_BASE_URL}/wiki/rest/api/user/current\"\n\nif [ -n \"$EXPAND\" ]; then\n  URL=\"${URL}?expand=${EXPAND}\"\nfi\n\ncurl -s -u \"$CONFLUENCE_EMAIL:$CONFLUENCE_API_TOKEN\" \"$URL\"\n"
+    },
+    {
+      "path": "get-groups.sh",
+      "content": "#!/bin/bash\n\n# Fetch groups from Confluence\n\nset -e\n\nSTART=\"$1\"\nLIMIT=\"$2\"\nACCESS_TYPE=\"$3\"\n\nif [ -z \"$CONFLUENCE_BASE_URL\" ] || [ -z \"$CONFLUENCE_EMAIL\" ] || [ -z \"$CONFLUENCE_API_TOKEN\" ]; then\n  echo \"CONFLUENCE_BASE_URL, CONFLUENCE_EMAIL and CONFLUENCE_API_TOKEN must be set\"\n  exit 1\nfi\n\nURL=\"${CONFLUENCE_BASE_URL}/wiki/rest/api/group\"\n\nPARAMS=\"\"\n\nif [ -n \"$START\" ]; then\n  PARAMS=\"start=${START}\"\nfi\n\nif [ -n \"$LIMIT\" ]; then\n  PARAMS=\"${PARAMS}&limit=${LIMIT}\"\nfi\n\nif [ -n \"$ACCESS_TYPE\" ]; then\n  PARAMS=\"${PARAMS}&accessType=${ACCESS_TYPE}\"\nfi\n\nif [ -n \"$PARAMS\" ]; then\n  URL=\"${URL}?${PARAMS}\"\nfi\n\ncurl -s -u \"$CONFLUENCE_EMAIL:$CONFLUENCE_API_TOKEN\" \"$URL\"\n"
+    },
+    {
+      "path": "get-content-templates.sh",
+      "content": "#!/bin/bash\n\n# Fetch content templates from Confluence\n\nset -e\n\nSPACE_KEY=\"$1\"\nSTART=\"$2\"\nLIMIT=\"$3\"\n\nif [ -z \"$CONFLUENCE_BASE_URL\" ] || [ -z \"$CONFLUENCE_EMAIL\" ] || [ -z \"$CONFLUENCE_API_TOKEN\" ]; then\n  echo \"CONFLUENCE_BASE_URL, CONFLUENCE_EMAIL and CONFLUENCE_API_TOKEN must be set\"\n  exit 1\nfi\n\nURL=\"${CONFLUENCE_BASE_URL}/wiki/rest/api/template/page\"\n\nPARAMS=\"\"\n\nif [ -n \"$SPACE_KEY\" ]; then\n  PARAMS=\"spaceKey=${SPACE_KEY}\"\nfi\n\nif [ -n \"$START\" ]; then\n  PARAMS=\"${PARAMS}&start=${START}\"\nfi\n\nif [ -n \"$LIMIT\" ]; then\n  PARAMS=\"${PARAMS}&limit=${LIMIT}\"\nfi\n\nif [ -n \"$PARAMS\" ]; then\n  URL=\"${URL}?${PARAMS}\"\nfi\n\ncurl -s -u \"$CONFLUENCE_EMAIL:$CONFLUENCE_API_TOKEN\" \"$URL\"\n"
+    },
+    {
+      "path": "get-blueprint-templates.sh",
+      "content": "#!/bin/bash\n\n# Fetch blueprint templates from Confluence\n\nset -e\n\nSPACE_KEY=\"$1\"\nSTART=\"$2\"\nLIMIT=\"$3\"\n\nif [ -z \"$CONFLUENCE_BASE_URL\" ] || [ -z \"$CONFLUENCE_EMAIL\" ] || [ -z \"$CONFLUENCE_API_TOKEN\" ]; then\n  echo \"CONFLUENCE_BASE_URL, CONFLUENCE_EMAIL and CONFLUENCE_API_TOKEN must be set\"\n  exit 1\nfi\n\nURL=\"${CONFLUENCE_BASE_URL}/wiki/rest/api/template/blueprint\"\n\nPARAMS=\"\"\n\nif [ -n \"$SPACE_KEY\" ]; then\n  PARAMS=\"spaceKey=${SPACE_KEY}\"\nfi\n\nif [ -n \"$START\" ]; then\n  PARAMS=\"${PARAMS}&start=${START}\"\nfi\n\nif [ -n \"$LIMIT\" ]; then\n  PARAMS=\"${PARAMS}&limit=${LIMIT}\"\nfi\n\nif [ -n \"$PARAMS\" ]; then\n  URL=\"${URL}?${PARAMS}\"\nfi\n\ncurl -s -u \"$CONFLUENCE_EMAIL:$CONFLUENCE_API_TOKEN\" \"$URL\"\n"
+    }
+  ],
+  "promptVersion": "2.0.0",
+  "generatedAt": "2026-06-21T13:55:04.472Z",
+  "logoUrl": "https://media.brand.dev/691f7f71-bb91-48f8-bd30-840777d00fd6.svg"
+}
