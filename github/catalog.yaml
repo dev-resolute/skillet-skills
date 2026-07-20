@@ -1,0 +1,44 @@
+slug: github
+version: 1.0.0
+name: GitHub
+category: dev-code
+one_liner: List repos, read and open issues across your GitHub account.
+api_domain: api.github.com
+status: live
+credentials:
+  - env_var: GITHUB_API_TOKEN
+    label: GitHub personal access token
+    help_url: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
+auth:
+  scheme: bearer
+  header: Authorization
+  env_vars: [GITHUB_API_TOKEN]
+  value_template: "Bearer ${GITHUB_API_TOKEN}"
+operations:
+  - name: list repositories
+    description: List repositories for the authenticated user.
+    method: GET
+    url: https://api.github.com/user/repos
+    read_only: true
+    params:
+      - { name: per_page, type: integer, required: false, location: query }
+      - { name: sort, type: string, required: false, location: query }
+  - name: list issues
+    description: List issues in a repository.
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/issues
+    read_only: true
+    params:
+      - { name: owner, type: string, required: true, location: path }
+      - { name: repo, type: string, required: true, location: path }
+      - { name: state, type: string, required: false, location: query }
+  - name: create issue
+    description: Open a new issue in a repository.
+    method: POST
+    url: https://api.github.com/repos/{owner}/{repo}/issues
+    read_only: false
+    params:
+      - { name: owner, type: string, required: true, location: path }
+      - { name: repo, type: string, required: true, location: path }
+      - { name: title, type: string, required: true, location: body }
+      - { name: body, type: string, required: false, location: body }

@@ -1,0 +1,18 @@
+collections:
+  - slug: payment-ops
+    name: Payment Ops
+    one_liner: Watch Stripe activity and alert your team.
+    skills: [stripe, slack, resend]
+    instructions_template: |
+      1. Use the Stripe skill to list recent charges and identify failed payments.
+      2. Post a short summary of any failures to the Slack channel #payments.
+      3. For each failed payment, send a dunning email to the customer via Resend.
+  - slug: incident-response
+    name: Incident Response
+    one_liner: Triage PagerDuty incidents into Slack and Jira.
+    skills: [pagerduty, grafana, slack, jira]
+    instructions_template: |
+      1. List open PagerDuty incidents.
+      2. Post an alert for any new high-urgency incident to the Slack channel #incidents.
+      3. Create a Jira issue for any incident that does not have one yet, and include
+         links to the relevant Grafana dashboards.

@@ -1,0 +1,39 @@
+slug: stripe
+version: 1.0.0
+name: Stripe
+category: business-support
+one_liner: Inspect customers, charges, and balance in your Stripe account.
+api_domain: api.stripe.com
+status: live
+credentials:
+  - env_var: STRIPE_API_TOKEN
+    label: Stripe secret key
+    help_url: https://docs.stripe.com/keys
+auth:
+  scheme: bearer
+  header: Authorization
+  env_vars: [STRIPE_API_TOKEN]
+  value_template: "Bearer ${STRIPE_API_TOKEN}"
+operations:
+  - name: list customers
+    description: List customers, newest first.
+    method: GET
+    url: https://api.stripe.com/v1/customers
+    read_only: true
+    params:
+      - { name: limit, type: integer, required: false, location: query }
+      - { name: email, type: string, required: false, location: query }
+  - name: list charges
+    description: List charges, optionally for one customer.
+    method: GET
+    url: https://api.stripe.com/v1/charges
+    read_only: true
+    params:
+      - { name: limit, type: integer, required: false, location: query }
+      - { name: customer, type: string, required: false, location: query }
+  - name: retrieve balance
+    description: Retrieve the current account balance.
+    method: GET
+    url: https://api.stripe.com/v1/balance
+    read_only: true
+    params: []

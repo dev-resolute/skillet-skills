@@ -1,0 +1,45 @@
+slug: jira
+version: 1.0.0
+name: Jira
+category: work-project
+one_liner: Search, read, and create issues in your Jira projects.
+api_domain: atlassian.net
+status: live
+credentials:
+  - env_var: JIRA_EMAIL
+    label: Atlassian account email
+    help_url: https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/
+  - env_var: JIRA_API_TOKEN
+    label: Jira API token
+    help_url: https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/
+auth:
+  scheme: basic
+  header: Authorization
+  env_vars: [JIRA_EMAIL, JIRA_API_TOKEN]
+  value_template: "Basic ${base64(JIRA_EMAIL:JIRA_API_TOKEN)}"
+operations:
+  - name: search issues
+    description: Search issues with JQL.
+    method: GET
+    url: https://{base_url}/rest/api/3/search
+    read_only: true
+    params:
+      - { name: base_url, type: string, required: true, location: path, description: "Your site host, e.g. yourteam.atlassian.net" }
+      - { name: jql, type: string, required: false, location: query }
+      - { name: maxResults, type: integer, required: false, location: query }
+  - name: get issue
+    description: Fetch one issue by key.
+    method: GET
+    url: https://{base_url}/rest/api/3/issue/{issue_key}
+    read_only: true
+    params:
+      - { name: base_url, type: string, required: true, location: path, description: "Your site host, e.g. yourteam.atlassian.net" }
+      - { name: issue_key, type: string, required: true, location: path }
+  - name: create issue
+    description: Create an issue (fields is the Jira fields JSON object).
+    method: POST
+    url: https://{base_url}/rest/api/3/issue
+    read_only: false
+    params:
+      - { name: base_url, type: string, required: true, location: path, description: "Your site host, e.g. yourteam.atlassian.net" }
+      - { name: fields, type: json, required: true, location: body }

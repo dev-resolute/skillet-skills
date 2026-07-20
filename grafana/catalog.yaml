@@ -1,0 +1,41 @@
+slug: grafana
+version: 1.0.0
+name: Grafana
+category: incident-observability
+one_liner: Search dashboards and read alert rules in your Grafana instance.
+api_domain: grafana.com
+status: live
+credentials:
+  - env_var: GRAFANA_SERVICE_ACCOUNT_TOKEN
+    label: Grafana service account token
+    help_url: https://grafana.com/docs/grafana/latest/administration/service-accounts/
+auth:
+  scheme: bearer
+  header: Authorization
+  env_vars: [GRAFANA_SERVICE_ACCOUNT_TOKEN]
+  value_template: "Bearer ${GRAFANA_SERVICE_ACCOUNT_TOKEN}"
+operations:
+  - name: search dashboards
+    description: Search dashboards and folders.
+    method: GET
+    url: https://{base_url}/api/search
+    read_only: true
+    params:
+      - { name: base_url, type: string, required: true, location: path, description: "Your Grafana host, e.g. yourorg.grafana.net" }
+      - { name: query, type: string, required: false, location: query }
+      - { name: limit, type: integer, required: false, location: query }
+  - name: get dashboard
+    description: Fetch one dashboard by uid.
+    method: GET
+    url: https://{base_url}/api/dashboards/uid/{uid}
+    read_only: true
+    params:
+      - { name: base_url, type: string, required: true, location: path, description: "Your Grafana host, e.g. yourorg.grafana.net" }
+      - { name: uid, type: string, required: true, location: path }
+  - name: list alert rules
+    description: List provisioned alert rules.
+    method: GET
+    url: https://{base_url}/api/v1/provisioning/alert-rules
+    read_only: true
+    params:
+      - { name: base_url, type: string, required: true, location: path, description: "Your Grafana host, e.g. yourorg.grafana.net" }

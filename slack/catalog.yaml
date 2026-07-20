@@ -1,0 +1,41 @@
+slug: slack
+version: 1.0.0
+name: Slack
+category: comms-messaging
+one_liner: Post messages, react, and read conversations in your Slack workspace.
+api_domain: slack.com
+status: live
+credentials:
+  - env_var: SLACK_API_TOKEN
+    label: Slack OAuth token
+    help_url: https://api.slack.com/authentication/basics
+auth:
+  scheme: bearer
+  header: Authorization
+  env_vars: [SLACK_API_TOKEN]
+  value_template: "Bearer ${SLACK_API_TOKEN}"
+operations:
+  - name: list conversations
+    description: List channels, groups, and DMs in the workspace.
+    method: GET
+    url: https://slack.com/api/conversations.list
+    read_only: true
+    params:
+      - { name: types, type: string, required: false, location: query }
+      - { name: limit, type: integer, required: false, location: query }
+  - name: get conversation history
+    description: Fetch recent messages for a conversation.
+    method: GET
+    url: https://slack.com/api/conversations.history
+    read_only: true
+    params:
+      - { name: channel, type: string, required: true, location: query }
+      - { name: limit, type: integer, required: false, location: query }
+  - name: post message
+    description: Send a message to a channel.
+    method: POST
+    url: https://slack.com/api/chat.postMessage
+    read_only: false
+    params:
+      - { name: channel, type: string, required: true, location: body }
+      - { name: text, type: string, required: true, location: body }

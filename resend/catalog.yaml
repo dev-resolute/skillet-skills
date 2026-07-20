@@ -1,0 +1,40 @@
+slug: resend
+version: 1.0.0
+name: Resend
+category: comms-messaging
+one_liner: Send transactional email and check delivery via Resend.
+api_domain: api.resend.com
+status: live
+credentials:
+  - env_var: RESEND_API_TOKEN
+    label: Resend API key
+    help_url: https://resend.com/docs/dashboard/api-keys/introduction
+auth:
+  scheme: bearer
+  header: Authorization
+  env_vars: [RESEND_API_TOKEN]
+  value_template: "Bearer ${RESEND_API_TOKEN}"
+operations:
+  - name: send email
+    description: Send an email.
+    method: POST
+    url: https://api.resend.com/emails
+    read_only: false
+    params:
+      - { name: from, type: string, required: true, location: body }
+      - { name: to, type: string, required: true, location: body }
+      - { name: subject, type: string, required: true, location: body }
+      - { name: html, type: string, required: true, location: body }
+  - name: get email
+    description: Fetch a sent email by id.
+    method: GET
+    url: https://api.resend.com/emails/{email_id}
+    read_only: true
+    params:
+      - { name: email_id, type: string, required: true, location: path }
+  - name: list domains
+    description: List verified sending domains.
+    method: GET
+    url: https://api.resend.com/domains
+    read_only: true
+    params: []

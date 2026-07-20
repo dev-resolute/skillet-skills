@@ -1,0 +1,46 @@
+slug: confluence
+version: 1.0.0
+name: Confluence
+category: work-project
+one_liner: Search, read, and create pages in your Confluence spaces.
+api_domain: atlassian.net
+status: live
+credentials:
+  - env_var: CONFLUENCE_EMAIL
+    label: Atlassian account email
+    help_url: https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/
+  - env_var: CONFLUENCE_API_TOKEN
+    label: Confluence API token
+    help_url: https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/
+auth:
+  scheme: basic
+  header: Authorization
+  env_vars: [CONFLUENCE_EMAIL, CONFLUENCE_API_TOKEN]
+  value_template: "Basic ${base64(CONFLUENCE_EMAIL:CONFLUENCE_API_TOKEN)}"
+operations:
+  - name: search content
+    description: Search pages with CQL.
+    method: GET
+    url: https://{base_url}/wiki/rest/api/content/search
+    read_only: true
+    params:
+      - { name: base_url, type: string, required: true, location: path, description: "Your site host, e.g. yourteam.atlassian.net" }
+      - { name: cql, type: string, required: true, location: query }
+      - { name: limit, type: integer, required: false, location: query }
+  - name: get page
+    description: Fetch one page by id.
+    method: GET
+    url: https://{base_url}/wiki/rest/api/content/{page_id}
+    read_only: true
+    params:
+      - { name: base_url, type: string, required: true, location: path, description: "Your site host, e.g. yourteam.atlassian.net" }
+      - { name: page_id, type: string, required: true, location: path }
+      - { name: expand, type: string, required: false, location: query }
+  - name: create page
+    description: Create a page (body is the Confluence content JSON object).
+    method: POST
+    url: https://{base_url}/wiki/rest/api/content
+    read_only: false
+    params:
+      - { name: base_url, type: string, required: true, location: path, description: "Your site host, e.g. yourteam.atlassian.net" }
+      - { name: content, type: json, required: true, location: body }

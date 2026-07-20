@@ -1,0 +1,39 @@
+slug: pagerduty
+version: 1.0.0
+name: PagerDuty
+category: incident-observability
+one_liner: List and inspect incidents and services in PagerDuty.
+api_domain: api.pagerduty.com
+status: live
+credentials:
+  - env_var: PAGERDUTY_API_KEY
+    label: PagerDuty REST API key
+    help_url: https://support.pagerduty.com/main/docs/api-access-keys
+auth:
+  scheme: api_key
+  header: Authorization
+  env_vars: [PAGERDUTY_API_KEY]
+  value_template: "Token token=${PAGERDUTY_API_KEY}"
+operations:
+  - name: list incidents
+    description: List incidents, filterable by status.
+    method: GET
+    url: https://api.pagerduty.com/incidents
+    read_only: true
+    params:
+      - { name: "statuses[]", type: string, required: false, location: query }
+      - { name: limit, type: integer, required: false, location: query }
+  - name: get incident
+    description: Fetch one incident by id.
+    method: GET
+    url: https://api.pagerduty.com/incidents/{incident_id}
+    read_only: true
+    params:
+      - { name: incident_id, type: string, required: true, location: path }
+  - name: list services
+    description: List services in the account.
+    method: GET
+    url: https://api.pagerduty.com/services
+    read_only: true
+    params:
+      - { name: limit, type: integer, required: false, location: query }

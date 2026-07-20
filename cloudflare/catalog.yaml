@@ -1,0 +1,39 @@
+slug: cloudflare
+version: 1.0.0
+name: Cloudflare
+category: infra-cloud
+one_liner: Inspect zones and DNS records, and purge cache on Cloudflare.
+api_domain: api.cloudflare.com
+status: live
+credentials:
+  - env_var: CLOUDFLARE_API_TOKEN
+    label: Cloudflare API token
+    help_url: https://developers.cloudflare.com/fundamentals/api/get-started/create-token/
+auth:
+  scheme: bearer
+  header: Authorization
+  env_vars: [CLOUDFLARE_API_TOKEN]
+  value_template: "Bearer ${CLOUDFLARE_API_TOKEN}"
+operations:
+  - name: list zones
+    description: List zones on the account.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/zones
+    read_only: true
+    params:
+      - { name: per_page, type: integer, required: false, location: query }
+  - name: list dns records
+    description: List DNS records for a zone.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records
+    read_only: true
+    params:
+      - { name: zone_id, type: string, required: true, location: path }
+  - name: purge cache
+    description: Purge the entire cache for a zone.
+    method: POST
+    url: https://api.cloudflare.com/client/v4/zones/{zone_id}/purge_cache
+    read_only: false
+    params:
+      - { name: zone_id, type: string, required: true, location: path }
+      - { name: purge_everything, type: boolean, required: true, location: body }
