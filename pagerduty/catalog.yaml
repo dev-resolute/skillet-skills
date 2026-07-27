@@ -1,7 +1,3 @@
-# Operations are generated from PagerDuty's OpenAPI spec — see import.yaml and
-# run `pnpm --filter @kit/engine catalog:import pagerduty` to regenerate.
-# Re-importing keeps hand-written `description` values but rewrites everything
-# else, so re-apply the `# hand-authored:` param facts below after a re-import.
 slug: pagerduty
 version: 1.1.0
 name: PagerDuty
@@ -82,10 +78,6 @@ operations:
         description: "Returns only the incidents currently assigned to the passed user(s). This expects one
           or more user IDs. Note: When using the assigned_to_user filter, you will only receive
           incidents with statuses of t"
-      # hand-authored: type/items_type. The spec declares urgencies[] as
-      # `type: string` yet marks it `uniqueItems: true` and describes it as an
-      # array; the MCP parity source types it `list[string]`. Repeat the pair
-      # to filter on both urgencies.
       - name: urgencies[]
         type: array
         items_type: string
@@ -102,9 +94,6 @@ operations:
         required: false
         location: query
         description: Time zone in which results will be rendered. This will default to the account time zone.
-      # hand-authored: type/items_type. Same spec defect as urgencies[] — the
-      # parameter's own description spells out "pass `statuses[]` more than
-      # once", which only an array can express.
       - name: statuses[]
         type: array
         items_type: string
@@ -141,9 +130,6 @@ operations:
         required: false
         location: query
         description: Array of additional details to include.
-      # hand-authored: format. Every other PagerDuty list endpoint declares
-      # since/until as `format: date-time`; /incidents omits it. The REST docs
-      # and the MCP parity source both require ISO 8601 here.
       - name: since
         type: string
         format: date-time

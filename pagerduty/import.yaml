@@ -139,3 +139,27 @@ rename:
   List Status Page Statuses: list status page statuses
   Get a Status Page Post: get status page post
   List Status Page Post Updates: list status page post updates
+
+# Curated corrections layered over the spec after import, keyed by the catalog
+# name (i.e. post-`rename`). They live here rather than in catalog.yaml because
+# a re-import rewrites every field but `description` and reserialises the YAML,
+# which would drop both the edit and any comment explaining it. Every entry
+# below is a spec defect, evidenced against PagerDuty's REST docs and the
+# parity source.
+overrides:
+  list incidents:
+    params:
+      # hand-authored: the spec types this `string`, yet its own description
+      # says "To query multiple statuses, pass `statuses[]` more than once"
+      # and its schema carries `uniqueItems: true`, an array-only keyword.
+      # The MCP parity source types it `list[string]`.
+      "statuses[]": { type: array, items_type: string }
+      # hand-authored: same defect — described as "Array of the urgencies",
+      # `uniqueItems: true`, `list[string]` in the parity source.
+      "urgencies[]": { type: array, items_type: string }
+      # hand-authored: PagerDuty's REST docs require ISO 8601 here and the
+      # parity source types both as `datetime`. Every other PagerDuty list
+      # endpoint declares `format: date-time` on these; /incidents alone
+      # omits it.
+      since: { format: date-time }
+      until: { format: date-time }
