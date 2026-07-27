@@ -52,7 +52,7 @@ available as operations, alongside the one write operation this skill has
 always shipped.
 
 Every operation takes `base_url` (your site host, e.g. `yourteam.atlassian.net`)
-as its first parameter.
+as a parameter.
 
 ### Issues
 

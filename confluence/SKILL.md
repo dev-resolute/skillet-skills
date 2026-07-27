@@ -1,11 +1,13 @@
 ---
 name: confluence
-description: Access Confluence API for user, group, and template information. Use for querying user, group, and template data in Confluence.
+description: Search and read Confluence pages, spaces, blog posts, comments, attachments, and tasks, and create pages. Use for finding, reading, and writing documentation in Confluence.
 ---
 
 # Confluence
 
-Interact with Confluence to retrieve information about users, groups, and templates.
+Search and read Confluence content — pages, spaces, blog posts, comments,
+attachments, labels, and tasks — create pages, and look up users, groups, and
+templates.
 
 ## Setup
 

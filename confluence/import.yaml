@@ -128,9 +128,18 @@ rename:
   Get task by id: get task
 
 # Operations carried over from catalog.yaml verbatim: the skill's only write
-# operation, and CQL search, which the v2 spec cannot describe. Both are
-# hand-authored in catalog.yaml and the importer copies them through untouched,
-# so their params survive every re-import.
+# operation, and CQL search, which the v2 spec cannot describe.
+#
+# HAND-AUTHORED — READ BEFORE EDITING. For these two operations catalog.yaml is
+# the source of truth, not this file and not a vendor spec: the importer copies
+# them through untouched (no description merge, no `overrides`), so edit them
+# there. Note that the importer reserialises catalog.yaml on every run and YAML
+# comments do NOT survive that, which is why this note lives here.
+#
+# `search content` in particular is transcribed by hand from the Confluence v1
+# spec (https://developer.atlassian.com/cloud/confluence/swagger.v3.json,
+# GET /wiki/rest/api/content/search) because CQL search has no v2 endpoint. If
+# Atlassian changes that contract, nothing in this pipeline will notice.
 keep:
   - search content
   - create page
