@@ -1,0 +1,194 @@
+# Regenerate catalog.yaml operations from GitHub's official OpenAPI description:
+#   pnpm --filter @kit/engine catalog:import github   (from the runespacedev repo)
+#
+# `include` entries are the names listOperations() reports for this spec —
+# `summary || operationId || "METHOD /path"`. Every GitHub operation carries a
+# summary and no two GET summaries collide, so each entry is the summary text
+# verbatim (case-sensitive). Where a name were ever to collide, the explicit
+# `"GET /path"` route form is always accepted instead.
+#
+# Coverage target: every read tool of GitHub's official MCP server that maps to
+# a REST GET, plus the two operations the catalog already shipped.
+#
+# Deliberate gaps, all of them structural rather than oversights:
+#   * Discussions (list_discussions, get_discussion, get_discussion_comments,
+#     list_discussion_categories) and Projects (projects_get, projects_list)
+#     are GraphQL-only — GitHub publishes no REST endpoints for them, so they
+#     cannot exist in this (REST) description.
+#   * Write tools (issue_write, add_issue_comment, create_pull_request,
+#     merge_pull_request, create_branch, push_files, star_repository,
+#     projects_write, …) are out of scope: the importer is GET-only. The
+#     skill's own `create issue` predates the import and is preserved by `keep`.
+#   * download_workflow_run_artifact and get_workflow_run_logs_url return a 302
+#     to a binary .zip; they are useless to a chat agent and are left out.
+#   * Copilot Spaces / github_support_docs_search exist only on the hosted
+#     remote MCP server, not the REST API.
+#   * search_pull_requests and search_orgs share endpoints already imported
+#     (`GET /search/issues` and `GET /search/users`).
+
+spec: https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json
+base_url: https://api.github.com
+parity_source: https://github.com/github/github-mcp-server
+
+include:
+  # --- context / account -------------------------------------------------
+  - Get the authenticated user
+  - List repositories for the authenticated user
+  - List repositories starred by the authenticated user
+  - List teams
+  - List team members
+  # --- repositories ------------------------------------------------------
+  - Get a repository
+  - List branches
+  - List commits
+  - Get a commit
+  - Get repository content
+  - Get a tree
+  - Get a reference
+  - Get a tag
+  - List repository tags
+  - List releases
+  - Get the latest release
+  - Get a release by tag name
+  - List repository collaborators
+  # --- issues ------------------------------------------------------------
+  - List repository issues
+  - Get an issue
+  - List issue comments
+  - List sub-issues
+  - Get parent issue
+  - List labels for an issue
+  - List labels for a repository
+  - Get a label
+  - List issue types for an organization
+  # --- pull requests -----------------------------------------------------
+  - List pull requests
+  - Get a pull request
+  - List pull requests files
+  - List commits on a pull request
+  - List review comments on a pull request
+  - List reviews for a pull request
+  - Get the combined status for a specific reference
+  - List check runs for a Git reference
+  # --- search ------------------------------------------------------------
+  - Search issues and pull requests
+  - Search repositories
+  - Search code
+  - Search commits
+  - Search users
+  # --- actions -----------------------------------------------------------
+  - List repository workflows
+  - Get a workflow
+  - List workflow runs for a workflow
+  - List workflow runs for a repository
+  - Get a workflow run
+  - List jobs for a workflow run
+  - List workflow run artifacts
+  - Get workflow run usage
+  - Get a job for a workflow run
+  # --- security ----------------------------------------------------------
+  - List code scanning alerts for a repository
+  - Get a code scanning alert
+  - List secret scanning alerts for a repository
+  - Get a secret scanning alert
+  - List Dependabot alerts for a repository
+  - Get a Dependabot alert
+  # `get_code_quality_finding` is an MCP tool; the list endpoint is imported
+  # with it because a finding number has to come from somewhere.
+  - List code quality findings for a repository
+  - Get a code quality finding
+  - List global security advisories
+  - Get a global security advisory
+  - List repository security advisories for an organization
+  - List repository security advisories
+  # --- notifications and gists -------------------------------------------
+  - List notifications for the authenticated user
+  - Get a thread
+  - List gists for the authenticated user
+  - Get a gist
+
+rename:
+  Get the authenticated user: get authenticated user
+  List repositories for the authenticated user: list repositories
+  List repositories starred by the authenticated user: list starred repositories
+  List teams: list teams
+  List team members: list team members
+
+  Get a repository: get repository
+  List branches: list branches
+  List commits: list commits
+  Get a commit: get commit
+  Get repository content: get file contents
+  Get a tree: get repository tree
+  Get a reference: get git reference
+  Get a tag: get tag
+  List repository tags: list tags
+  List releases: list releases
+  Get the latest release: get latest release
+  Get a release by tag name: get release by tag
+  List repository collaborators: list repository collaborators
+
+  List repository issues: list issues
+  Get an issue: get issue
+  List issue comments: list issue comments
+  List sub-issues: list sub-issues
+  Get parent issue: get parent issue
+  List labels for an issue: list issue labels
+  List labels for a repository: list labels
+  Get a label: get label
+  List issue types for an organization: list issue types
+
+  List pull requests: list pull requests
+  Get a pull request: get pull request
+  List pull requests files: list pull request files
+  List commits on a pull request: list pull request commits
+  List review comments on a pull request: list pull request review comments
+  List reviews for a pull request: list pull request reviews
+  Get the combined status for a specific reference: get commit status
+  List check runs for a Git reference: list check runs
+
+  Search issues and pull requests: search issues
+  Search repositories: search repositories
+  Search code: search code
+  Search commits: search commits
+  Search users: search users
+
+  List repository workflows: list workflows
+  Get a workflow: get workflow
+  List workflow runs for a workflow: list workflow runs
+  List workflow runs for a repository: list repository workflow runs
+  Get a workflow run: get workflow run
+  List jobs for a workflow run: list workflow run jobs
+  List workflow run artifacts: list workflow run artifacts
+  Get workflow run usage: get workflow run usage
+  Get a job for a workflow run: get workflow job
+
+  List code scanning alerts for a repository: list code scanning alerts
+  Get a code scanning alert: get code scanning alert
+  List secret scanning alerts for a repository: list secret scanning alerts
+  Get a secret scanning alert: get secret scanning alert
+  List Dependabot alerts for a repository: list dependabot alerts
+  Get a Dependabot alert: get dependabot alert
+  List code quality findings for a repository: list code quality findings
+  Get a code quality finding: get code quality finding
+  List global security advisories: list global security advisories
+  Get a global security advisory: get global security advisory
+  List repository security advisories for an organization: list org repository security advisories
+  List repository security advisories: list repository security advisories
+
+  List notifications for the authenticated user: list notifications
+  Get a thread: get notification
+  List gists for the authenticated user: list gists
+  Get a gist: get gist
+
+# Operations carried over from catalog.yaml verbatim. The import is GET-only,
+# so without this the skill's only write operation would be deleted on the
+# first re-import.
+keep:
+  - create issue
+
+# No `overrides` block: GitHub's description is machine-generated from the same
+# source that serves the API, and every parameter this skill exposes already
+# carries the right type, enum and format (`list issues` ships state, labels,
+# since (date-time), sort, direction, per_page and page straight from the spec).
+# Curated facts belong here, not in catalog.yaml, if that ever stops being true.

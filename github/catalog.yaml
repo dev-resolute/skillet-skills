@@ -1,8 +1,8 @@
 slug: github
-version: 1.0.0
+version: 1.1.0
 name: GitHub
 category: dev-code
-one_liner: List repos, read and open issues across your GitHub account.
+one_liner: Search and read repos, issues, pull requests, and Actions — and open issues.
 api_domain: api.github.com
 status: live
 credentials:
@@ -12,33 +12,2960 @@ credentials:
 auth:
   scheme: bearer
   header: Authorization
-  env_vars: [GITHUB_API_TOKEN]
-  value_template: "Bearer ${GITHUB_API_TOKEN}"
+  env_vars:
+    - GITHUB_API_TOKEN
+  value_template: Bearer ${GITHUB_API_TOKEN}
 operations:
+  - name: get authenticated user
+    description: Get the authenticated user
+    method: GET
+    url: https://api.github.com/user
+    read_only: true
+    params: []
   - name: list repositories
     description: List repositories for the authenticated user.
     method: GET
     url: https://api.github.com/user/repos
     read_only: true
     params:
-      - { name: per_page, type: integer, required: false, location: query }
-      - { name: sort, type: string, required: false, location: query }
+      - name: visibility
+        type: string
+        enum:
+          - all
+          - public
+          - private
+        required: false
+        location: query
+        description: Limit results to repositories with the specified visibility.
+      - name: affiliation
+        type: string
+        required: false
+        location: query
+        description: |-
+          Comma-separated list of values. Can include:  
+           * `owner`: Repositories that are owned by the authenticated user.  
+           * `collaborator`: Repositories that the user has been added to as a collaborator.  
+      - name: type
+        type: string
+        enum:
+          - all
+          - owner
+          - public
+          - private
+          - member
+        required: false
+        location: query
+        description: Limit results to repositories of the specified type. Will cause a `422` error if used
+          in the same request as **visibility** or **affiliation**.
+      - name: sort
+        type: string
+        enum:
+          - created
+          - updated
+          - pushed
+          - full_name
+        required: false
+        location: query
+        description: The property to sort the results by.
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: "The order to sort by. Default: `asc` when using `full_name`, otherwise `desc`."
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: since
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: "Only show repositories updated after the given time. This is a timestamp in [ISO
+          8601](https://en.wikipedia.org/wiki/ISO_8601) format: `YYYY-MM-DDTHH:MM:SSZ`."
+      - name: before
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: "Only show repositories updated before the given time. This is a timestamp in [ISO
+          8601](https://en.wikipedia.org/wiki/ISO_8601) format: `YYYY-MM-DDTHH:MM:SSZ`."
+  - name: list starred repositories
+    description: List repositories starred by the authenticated user
+    method: GET
+    url: https://api.github.com/user/starred
+    read_only: true
+    params:
+      - name: sort
+        type: string
+        enum:
+          - created
+          - updated
+        required: false
+        location: query
+        description: The property to sort the results by. `created` means when the repository was starred.
+          `updated` means when the repository was last pushed to.
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: The direction to sort the results by.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: list teams
+    description: List teams
+    method: GET
+    url: https://api.github.com/orgs/{org}/teams
+    read_only: true
+    params:
+      - name: org
+        type: string
+        required: true
+        location: path
+        description: The organization name. The name is not case sensitive.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: team_type
+        type: string
+        enum:
+          - all
+          - enterprise
+          - organization
+        required: false
+        location: query
+        description: Filter team results by their type. For more information, see "[What kind of team should
+          I
+          use?](https://docs.github.com/enterprise-cloud@latest/admin/concepts/enterprise-fundamentals/teams-in-an-enter
+  - name: list team members
+    description: List team members
+    method: GET
+    url: https://api.github.com/orgs/{org}/teams/{team_slug}/members
+    read_only: true
+    params:
+      - name: org
+        type: string
+        required: true
+        location: path
+        description: The organization name. The name is not case sensitive.
+      - name: team_slug
+        type: string
+        required: true
+        location: path
+        description: The slug of the team name.
+      - name: role
+        type: string
+        enum:
+          - member
+          - maintainer
+          - all
+        required: false
+        location: query
+        description: Filters members returned by their role in the team.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: get repository
+    description: Get a repository
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+  - name: list branches
+    description: List branches
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/branches
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: protected
+        type: boolean
+        required: false
+        location: query
+        description: Setting to `true` returns only branches protected by branch protections or rulesets.
+          When set to `false`, only unprotected branches are returned. Omitting this parameter
+          returns all branches.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: list commits
+    description: List commits
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/commits
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: sha
+        type: string
+        required: false
+        location: query
+        description: "SHA or branch to start listing commits from. Default: the repository’s default branch
+          (usually `main`)."
+      - name: path
+        type: string
+        required: false
+        location: query
+        description: Only commits containing this file path will be returned.
+      - name: author
+        type: string
+        required: false
+        location: query
+        description: GitHub username or email address to use to filter by commit author.
+      - name: committer
+        type: string
+        required: false
+        location: query
+        description: GitHub username or email address to use to filter by commit committer.
+      - name: since
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: "Only show results that were last updated after the given time. This is a timestamp in
+          [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format: `YYYY-MM-DDTHH:MM:SSZ`. Due to
+          limitations of Git, time"
+      - name: until
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: "Only commits before this date will be returned. This is a timestamp in [ISO
+          8601](https://en.wikipedia.org/wiki/ISO_8601) format: `YYYY-MM-DDTHH:MM:SSZ`. Due to
+          limitations of Git, timestamps must be "
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: get commit
+    description: Get a commit
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/commits/{ref}
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: ref
+        type: string
+        required: true
+        location: path
+        description: The commit reference. Can be a commit SHA, branch name (`heads/BRANCH_NAME`), or tag
+          name (`tags/TAG_NAME`). For more information, see "[Git
+          References](https://git-scm.com/book/en/v2/Git-Internals-Gi
+  - name: get file contents
+    description: Get repository content
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/contents/{path}
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: path
+        type: string
+        required: true
+        location: path
+        description: path parameter
+      - name: ref
+        type: string
+        required: false
+        location: query
+        description: "The name of the commit/branch/tag. Default: the repository’s default branch."
+  - name: get repository tree
+    description: Get a tree
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/git/trees/{tree_sha}
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: tree_sha
+        type: string
+        required: true
+        location: path
+        description: The SHA1 value or ref (branch or tag) name of the tree.
+      - name: recursive
+        type: string
+        required: false
+        location: query
+        description: Setting this parameter to any value returns the objects or subtrees referenced by the
+          tree specified in `:tree_sha`. For example, setting `recursive` to any of the following
+          will enable returning obje
+  - name: get git reference
+    description: Get a reference
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/git/ref/{ref}
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: ref
+        type: string
+        required: true
+        location: path
+        description: The Git reference. For more information, see "[Git
+          References](https://git-scm.com/book/en/v2/Git-Internals-Git-References)" in the Git
+          documentation.
+  - name: get tag
+    description: Get a tag
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/git/tags/{tag_sha}
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: tag_sha
+        type: string
+        required: true
+        location: path
+  - name: list tags
+    description: List repository tags
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/tags
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: list releases
+    description: List releases
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/releases
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: get latest release
+    description: Get the latest release
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/releases/latest
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+  - name: get release by tag
+    description: Get a release by tag name
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/releases/tags/{tag}
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: tag
+        type: string
+        required: true
+        location: path
+        description: tag parameter
+  - name: list repository collaborators
+    description: List repository collaborators
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/collaborators
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: affiliation
+        type: string
+        enum:
+          - outside
+          - direct
+          - all
+        required: false
+        location: query
+        description: Filter collaborators returned by their affiliation. `outside` means all outside
+          collaborators of an organization-owned repository. `direct` means all collaborators with
+          permissions to an organization-
+      - name: permission
+        type: string
+        enum:
+          - pull
+          - triage
+          - push
+          - maintain
+          - admin
+        required: false
+        location: query
+        description: Filter collaborators by the permissions they have on the repository. If not specified,
+          all collaborators will be returned.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
   - name: list issues
     description: List issues in a repository.
     method: GET
     url: https://api.github.com/repos/{owner}/{repo}/issues
     read_only: true
     params:
-      - { name: owner, type: string, required: true, location: path }
-      - { name: repo, type: string, required: true, location: path }
-      - { name: state, type: string, required: false, location: query }
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: milestone
+        type: string
+        required: false
+        location: query
+        description: If an `integer` is passed, it should refer to a milestone by its `number` field. If the
+          string `*` is passed, issues with any milestone are accepted. If the string `none` is
+          passed, issues without mil
+      - name: state
+        type: string
+        enum:
+          - open
+          - closed
+          - all
+        required: false
+        location: query
+        description: Indicates the state of the issues to return.
+      - name: assignee
+        type: string
+        required: false
+        location: query
+        description: Can be the name of a user. Pass in `none` for issues with no assigned user, and `*` for
+          issues assigned to any user.
+      - name: type
+        type: string
+        required: false
+        location: query
+        description: Can be the name of an issue type. If the string `*` is passed, issues with any type are
+          accepted. If the string `none` is passed, issues without type are returned.
+      - name: creator
+        type: string
+        required: false
+        location: query
+        description: The user that created the issue.
+      - name: mentioned
+        type: string
+        required: false
+        location: query
+        description: A user that's mentioned in the issue.
+      - name: issue_field_values
+        type: string
+        required: false
+        location: query
+        description: |-
+          A comma-separated list of issue field filters in `field_slug:value` format.
+          Only issues matching all specified field values are returned.
+          Requires issue fields to be enabled for the repository. Issue 
+      - name: labels
+        type: string
+        required: false
+        location: query
+        description: "A list of comma separated label names. Example: `bug,ui,@high`"
+      - name: sort
+        type: string
+        enum:
+          - created
+          - updated
+          - comments
+        required: false
+        location: query
+        description: What to sort results by.
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: The direction to sort the results by.
+      - name: since
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: "Only show results that were last updated after the given time. This is a timestamp in
+          [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format: `YYYY-MM-DDTHH:MM:SSZ`."
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: get issue
+    description: Get an issue
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/issues/{issue_number}
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: issue_number
+        type: integer
+        required: true
+        location: path
+        description: The number that identifies the issue.
+  - name: list issue comments
+    description: List issue comments
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/issues/{issue_number}/comments
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: issue_number
+        type: integer
+        required: true
+        location: path
+        description: The number that identifies the issue.
+      - name: since
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: "Only show results that were last updated after the given time. This is a timestamp in
+          [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format: `YYYY-MM-DDTHH:MM:SSZ`."
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: list sub-issues
+    description: List sub-issues
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/issues/{issue_number}/sub_issues
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: issue_number
+        type: integer
+        required: true
+        location: path
+        description: The number that identifies the issue.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: get parent issue
+    description: Get parent issue
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/issues/{issue_number}/parent
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: issue_number
+        type: integer
+        required: true
+        location: path
+        description: The number that identifies the issue.
+  - name: list issue labels
+    description: List labels for an issue
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/issues/{issue_number}/labels
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: issue_number
+        type: integer
+        required: true
+        location: path
+        description: The number that identifies the issue.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: list labels
+    description: List labels for a repository
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/labels
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: get label
+    description: Get a label
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/labels/{name}
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: name
+        type: string
+        required: true
+        location: path
+  - name: list issue types
+    description: List issue types for an organization
+    method: GET
+    url: https://api.github.com/orgs/{org}/issue-types
+    read_only: true
+    params:
+      - name: org
+        type: string
+        required: true
+        location: path
+        description: The organization name. The name is not case sensitive.
+  - name: list pull requests
+    description: List pull requests
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/pulls
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: state
+        type: string
+        enum:
+          - open
+          - closed
+          - all
+        required: false
+        location: query
+        description: Either `open`, `closed`, or `all` to filter by state.
+      - name: head
+        type: string
+        required: false
+        location: query
+        description: "Filter pulls by head user or head organization and branch name in the format of
+          `user:ref-name` or `organization:ref-name`. For example: `github:new-script-format` or
+          `octocat:test-branch`."
+      - name: base
+        type: string
+        required: false
+        location: query
+        description: "Filter pulls by base branch name. Example: `gh-pages`."
+      - name: sort
+        type: string
+        enum:
+          - created
+          - updated
+          - popularity
+          - long-running
+        required: false
+        location: query
+        description: What to sort results by. `popularity` will sort by the number of comments.
+          `long-running` will sort by date created and will limit the results to pull requests that
+          have been open for more than a mont
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: "The direction of the sort. Default: `desc` when sort is `created` or sort is not
+          specified, otherwise `asc`."
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: get pull request
+    description: Get a pull request
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/pulls/{pull_number}
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: pull_number
+        type: integer
+        required: true
+        location: path
+        description: The number that identifies the pull request.
+  - name: list pull request files
+    description: List pull requests files
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/pulls/{pull_number}/files
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: pull_number
+        type: integer
+        required: true
+        location: path
+        description: The number that identifies the pull request.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: list pull request commits
+    description: List commits on a pull request
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/pulls/{pull_number}/commits
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: pull_number
+        type: integer
+        required: true
+        location: path
+        description: The number that identifies the pull request.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: list pull request review comments
+    description: List review comments on a pull request
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/pulls/{pull_number}/comments
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: pull_number
+        type: integer
+        required: true
+        location: path
+        description: The number that identifies the pull request.
+      - name: sort
+        type: string
+        enum:
+          - created
+          - updated
+        required: false
+        location: query
+        description: The property to sort the results by.
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: The direction to sort results. Ignored without `sort` parameter.
+      - name: since
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: "Only show results that were last updated after the given time. This is a timestamp in
+          [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format: `YYYY-MM-DDTHH:MM:SSZ`."
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: list pull request reviews
+    description: List reviews for a pull request
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/pulls/{pull_number}/reviews
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: pull_number
+        type: integer
+        required: true
+        location: path
+        description: The number that identifies the pull request.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: get commit status
+    description: Get the combined status for a specific reference
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/commits/{ref}/status
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: ref
+        type: string
+        required: true
+        location: path
+        description: The commit reference. Can be a commit SHA, branch name (`heads/BRANCH_NAME`), or tag
+          name (`tags/TAG_NAME`). For more information, see "[Git
+          References](https://git-scm.com/book/en/v2/Git-Internals-Gi
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: list check runs
+    description: List check runs for a Git reference
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/commits/{ref}/check-runs
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: ref
+        type: string
+        required: true
+        location: path
+        description: The commit reference. Can be a commit SHA, branch name (`heads/BRANCH_NAME`), or tag
+          name (`tags/TAG_NAME`). For more information, see "[Git
+          References](https://git-scm.com/book/en/v2/Git-Internals-Gi
+      - name: check_name
+        type: string
+        required: false
+        location: query
+        description: Returns check runs with the specified `name`.
+      - name: status
+        type: string
+        enum:
+          - queued
+          - in_progress
+          - completed
+        required: false
+        location: query
+        description: Returns check runs with the specified `status`.
+      - name: filter
+        type: string
+        enum:
+          - latest
+          - all
+        required: false
+        location: query
+        description: Filters check runs by their `completed_at` timestamp. `latest` returns the most recent
+          check runs.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: app_id
+        type: integer
+        required: false
+        location: query
+  - name: search issues
+    description: Search issues and pull requests
+    method: GET
+    url: https://api.github.com/search/issues
+    read_only: true
+    params:
+      - name: q
+        type: string
+        required: true
+        location: query
+        description: The query contains one or more search keywords and qualifiers. Qualifiers allow you to
+          limit your search to specific areas of GitHub. The REST API supports the same qualifiers
+          as the web interface for
+      - name: sort
+        type: string
+        enum:
+          - comments
+          - reactions
+          - reactions-+1
+          - reactions--1
+          - reactions-smile
+          - reactions-thinking_face
+          - reactions-heart
+          - reactions-tada
+          - interactions
+          - created
+          - updated
+        required: false
+        location: query
+        description: Sorts the results of your query by the number of `comments`, `reactions`,
+          `reactions-+1`, `reactions--1`, `reactions-smile`, `reactions-thinking_face`,
+          `reactions-heart`, `reactions-tada`, or `interac
+      - name: order
+        type: string
+        enum:
+          - desc
+          - asc
+        required: false
+        location: query
+        description: Determines whether the first search result returned is the highest number of matches
+          (`desc`) or lowest number of matches (`asc`). This parameter is ignored unless you provide
+          `sort`.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: advanced_search
+        type: string
+        required: false
+        location: query
+        description: |-
+          Set to `true` to use advanced search.
+          Example: `http://api.github.com/search/issues?q={query}&advanced_search=true`
+      - name: search_type
+        type: string
+        enum:
+          - semantic
+          - hybrid
+        required: false
+        location: query
+        description: >-
+          The type of search to perform on issues. When not specified, the default is lexical
+          search.
+
+
+          - `semantic` — performs a pure semantic (vector) search using embedding-based
+          understanding.
+
+          - `hybrid` — c
+  - name: search repositories
+    description: Search repositories
+    method: GET
+    url: https://api.github.com/search/repositories
+    read_only: true
+    params:
+      - name: q
+        type: string
+        required: true
+        location: query
+        description: The query contains one or more search keywords and qualifiers. Qualifiers allow you to
+          limit your search to specific areas of GitHub. The REST API supports the same qualifiers
+          as the web interface for
+      - name: sort
+        type: string
+        enum:
+          - stars
+          - forks
+          - help-wanted-issues
+          - updated
+        required: false
+        location: query
+        description: "Sorts the results of your query by number of `stars`, `forks`, or `help-wanted-issues`
+          or how recently the items were `updated`. Default: [best
+          match](https://docs.github.com/rest/search/search#rankin"
+      - name: order
+        type: string
+        enum:
+          - desc
+          - asc
+        required: false
+        location: query
+        description: Determines whether the first search result returned is the highest number of matches
+          (`desc`) or lowest number of matches (`asc`). This parameter is ignored unless you provide
+          `sort`.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: search code
+    description: Search code
+    method: GET
+    url: https://api.github.com/search/code
+    read_only: true
+    params:
+      - name: q
+        type: string
+        required: true
+        location: query
+        description: The query contains one or more search keywords and qualifiers. Qualifiers allow you to
+          limit your search to specific areas of GitHub. The REST API supports the same qualifiers
+          as the web interface for
+      - name: sort
+        type: string
+        enum:
+          - indexed
+        required: false
+        location: query
+        description: "**This field is closing down.** Sorts the results of your query. Can only be
+          `indexed`, which indicates how recently a file has been indexed by the GitHub search
+          infrastructure. Default: [best match]("
+      - name: order
+        type: string
+        enum:
+          - desc
+          - asc
+        required: false
+        location: query
+        description: "**This field is closing down.** Determines whether the first search result returned is
+          the highest number of matches (`desc`) or lowest number of matches (`asc`). This parameter
+          is ignored unless you "
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: search commits
+    description: Search commits
+    method: GET
+    url: https://api.github.com/search/commits
+    read_only: true
+    params:
+      - name: q
+        type: string
+        required: true
+        location: query
+        description: The query contains one or more search keywords and qualifiers. Qualifiers allow you to
+          limit your search to specific areas of GitHub. The REST API supports the same qualifiers
+          as the web interface for
+      - name: sort
+        type: string
+        enum:
+          - author-date
+          - committer-date
+        required: false
+        location: query
+        description: "Sorts the results of your query by `author-date` or `committer-date`. Default: [best
+          match](https://docs.github.com/rest/search/search#ranking-search-results)"
+      - name: order
+        type: string
+        enum:
+          - desc
+          - asc
+        required: false
+        location: query
+        description: Determines whether the first search result returned is the highest number of matches
+          (`desc`) or lowest number of matches (`asc`). This parameter is ignored unless you provide
+          `sort`.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: search users
+    description: Search users
+    method: GET
+    url: https://api.github.com/search/users
+    read_only: true
+    params:
+      - name: q
+        type: string
+        required: true
+        location: query
+        description: The query contains one or more search keywords and qualifiers. Qualifiers allow you to
+          limit your search to specific areas of GitHub. The REST API supports the same qualifiers
+          as the web interface for
+      - name: sort
+        type: string
+        enum:
+          - followers
+          - repositories
+          - joined
+        required: false
+        location: query
+        description: "Sorts the results of your query by number of `followers` or `repositories`, or when
+          the person `joined` GitHub. Default: [best
+          match](https://docs.github.com/rest/search/search#ranking-search-results)"
+      - name: order
+        type: string
+        enum:
+          - desc
+          - asc
+        required: false
+        location: query
+        description: Determines whether the first search result returned is the highest number of matches
+          (`desc`) or lowest number of matches (`asc`). This parameter is ignored unless you provide
+          `sort`.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: list workflows
+    description: List repository workflows
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/actions/workflows
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: get workflow
+    description: Get a workflow
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/actions/workflows/{workflow_id}
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: workflow_id
+        type: string
+        required: true
+        location: path
+        description: The ID of the workflow. You can also pass the workflow file name as a string.
+  - name: list workflow runs
+    description: List workflow runs for a workflow
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/actions/workflows/{workflow_id}/runs
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: workflow_id
+        type: string
+        required: true
+        location: path
+        description: The ID of the workflow. You can also pass the workflow file name as a string.
+      - name: actor
+        type: string
+        required: false
+        location: query
+        description: Returns someone's workflow runs. Use the login for the user who created the `push`
+          associated with the check suite or workflow run.
+      - name: branch
+        type: string
+        required: false
+        location: query
+        description: Returns workflow runs associated with a branch. Use the name of the branch of the `push`.
+      - name: event
+        type: string
+        required: false
+        location: query
+        description: Returns workflow run triggered by the event you specify. For example, `push`,
+          `pull_request` or `issue`. For more information, see "[Events that trigger
+          workflows](https://docs.github.com/actions/auto
+      - name: status
+        type: string
+        enum:
+          - completed
+          - action_required
+          - cancelled
+          - failure
+          - neutral
+          - skipped
+          - stale
+          - success
+          - timed_out
+          - in_progress
+          - queued
+          - requested
+          - waiting
+          - pending
+        required: false
+        location: query
+        description: Returns workflow runs with the check run `status` or `conclusion` that you specify. For
+          example, a conclusion can be `success` or a status can be `in_progress`. Only GitHub
+          Actions can set a status of
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: created
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: Returns workflow runs created within the given date-time range. For more information on
+          the syntax, see "[Understanding the search
+          syntax](https://docs.github.com/search-github/getting-started-with-se
+      - name: exclude_pull_requests
+        type: boolean
+        required: false
+        location: query
+        description: If `true` pull requests are omitted from the response (empty array).
+      - name: check_suite_id
+        type: integer
+        required: false
+        location: query
+        description: Returns workflow runs with the `check_suite_id` that you specify.
+      - name: head_sha
+        type: string
+        required: false
+        location: query
+        description: Only returns workflow runs that are associated with the specified `head_sha`.
+  - name: list repository workflow runs
+    description: List workflow runs for a repository
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/actions/runs
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: actor
+        type: string
+        required: false
+        location: query
+        description: Returns someone's workflow runs. Use the login for the user who created the `push`
+          associated with the check suite or workflow run.
+      - name: branch
+        type: string
+        required: false
+        location: query
+        description: Returns workflow runs associated with a branch. Use the name of the branch of the `push`.
+      - name: event
+        type: string
+        required: false
+        location: query
+        description: Returns workflow run triggered by the event you specify. For example, `push`,
+          `pull_request` or `issue`. For more information, see "[Events that trigger
+          workflows](https://docs.github.com/actions/auto
+      - name: status
+        type: string
+        enum:
+          - completed
+          - action_required
+          - cancelled
+          - failure
+          - neutral
+          - skipped
+          - stale
+          - success
+          - timed_out
+          - in_progress
+          - queued
+          - requested
+          - waiting
+          - pending
+        required: false
+        location: query
+        description: Returns workflow runs with the check run `status` or `conclusion` that you specify. For
+          example, a conclusion can be `success` or a status can be `in_progress`. Only GitHub
+          Actions can set a status of
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: created
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: Returns workflow runs created within the given date-time range. For more information on
+          the syntax, see "[Understanding the search
+          syntax](https://docs.github.com/search-github/getting-started-with-se
+      - name: exclude_pull_requests
+        type: boolean
+        required: false
+        location: query
+        description: If `true` pull requests are omitted from the response (empty array).
+      - name: check_suite_id
+        type: integer
+        required: false
+        location: query
+        description: Returns workflow runs with the `check_suite_id` that you specify.
+      - name: head_sha
+        type: string
+        required: false
+        location: query
+        description: Only returns workflow runs that are associated with the specified `head_sha`.
+  - name: get workflow run
+    description: Get a workflow run
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/actions/runs/{run_id}
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: run_id
+        type: integer
+        required: true
+        location: path
+        description: The unique identifier of the workflow run.
+      - name: exclude_pull_requests
+        type: boolean
+        required: false
+        location: query
+        description: If `true` pull requests are omitted from the response (empty array).
+  - name: list workflow run jobs
+    description: List jobs for a workflow run
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/actions/runs/{run_id}/jobs
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: run_id
+        type: integer
+        required: true
+        location: path
+        description: The unique identifier of the workflow run.
+      - name: filter
+        type: string
+        enum:
+          - latest
+          - all
+        required: false
+        location: query
+        description: Filters jobs by their `completed_at` timestamp. `latest` returns jobs from the most
+          recent execution of the workflow run. `all` returns all jobs for a workflow run, including
+          from old executions of th
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: list workflow run artifacts
+    description: List workflow run artifacts
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/actions/runs/{run_id}/artifacts
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: run_id
+        type: integer
+        required: true
+        location: path
+        description: The unique identifier of the workflow run.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: name
+        type: string
+        required: false
+        location: query
+        description: The name field of an artifact. When specified, only artifacts with this name will be
+          returned.
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: The direction to sort the results by.
+  - name: get workflow run usage
+    description: Get workflow run usage
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/actions/runs/{run_id}/timing
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: run_id
+        type: integer
+        required: true
+        location: path
+        description: The unique identifier of the workflow run.
+  - name: get workflow job
+    description: Get a job for a workflow run
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/actions/jobs/{job_id}
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: job_id
+        type: integer
+        required: true
+        location: path
+        description: The unique identifier of the job.
+  - name: list code scanning alerts
+    description: List code scanning alerts for a repository
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/code-scanning/alerts
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: tool_name
+        type: string
+        required: false
+        location: query
+        description: The name of a code scanning tool. Only results by this tool will be listed. You can
+          specify the tool by using either `tool_name` or `tool_guid`, but not both.
+      - name: tool_guid
+        type: string
+        required: false
+        location: query
+        description: The GUID of a code scanning tool. Only results by this tool will be listed. Note that
+          some code scanning tools may not include a GUID in their analysis data. You can specify
+          the tool by using either `
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: ref
+        type: string
+        required: false
+        location: query
+        description: The Git reference for the results you want to list. The `ref` for a branch can be
+          formatted either as `refs/heads/<branch name>` or simply `<branch name>`. To reference a
+          pull request use `refs/pull/<
+      - name: pr
+        type: integer
+        required: false
+        location: query
+        description: The number of the pull request for the results you want to list.
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: The direction to sort the results by.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: "A cursor, as given in the [Link
+          header](https://docs.github.com/rest/guides/using-pagination-in-the-rest-api#using-link-h\
+          eaders). If specified, the query only searches for results before this cursor. "
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: A cursor, as given in the [Link
+          header](https://docs.github.com/rest/guides/using-pagination-in-the-rest-api#using-link-headers).
+          If specified, the query only searches for results after this cursor. F
+      - name: sort
+        type: string
+        enum:
+          - created
+          - updated
+        required: false
+        location: query
+        description: The property by which to sort the results.
+      - name: state
+        type: string
+        enum:
+          - open
+          - closed
+          - dismissed
+          - fixed
+        required: false
+        location: query
+        description: If specified, only code scanning alerts with this state will be returned.
+      - name: severity
+        type: string
+        enum:
+          - critical
+          - high
+          - medium
+          - low
+          - warning
+          - note
+          - error
+        required: false
+        location: query
+        description: If specified, only code scanning alerts with this severity will be returned.
+      - name: assignees
+        type: string
+        required: false
+        location: query
+        description: >-
+          Filter alerts by assignees. Provide a comma-separated list of user handles (e.g.,
+          `octocat` or `octocat,hubot`).
+
+          Use `*` to list alerts with at least one assignee or `none` to list alerts with no assi
+  - name: get code scanning alert
+    description: Get a code scanning alert
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/code-scanning/alerts/{alert_number}
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: alert_number
+        type: integer
+        required: true
+        location: path
+        description: The number that identifies an alert. You can find this at the end of the URL for a code
+          scanning alert within GitHub, and in the `number` field in the response from the `GET
+          /repos/{owner}/{repo}/code
+  - name: list secret scanning alerts
+    description: List secret scanning alerts for a repository
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/secret-scanning/alerts
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: state
+        type: string
+        enum:
+          - open
+          - resolved
+        required: false
+        location: query
+        description: Set to `open` or `resolved` to only list secret scanning alerts in a specific state.
+      - name: secret_type
+        type: string
+        required: false
+        location: query
+        description: A comma-separated list of secret types to return. All default secret patterns are
+          returned. To return generic patterns, pass the token name(s) in the parameter. See
+          "[Supported secret scanning pattern
+      - name: exclude_secret_types
+        type: string
+        required: false
+        location: query
+        description: A comma-separated list of secret types to exclude from the results. All default secret
+          patterns are returned except those matching the specified types. Cannot be combined with
+          the `secret_type` parame
+      - name: exclude_providers
+        type: string
+        required: false
+        location: query
+        description: |-
+          A comma-separated list of provider slugs to exclude from the results.
+          Provider slugs use lowercase with underscores (e.g., `github_secret_scanning`, `clojars`).
+          You can find the provider slug in the `
+      - name: providers
+        type: string
+        required: false
+        location: query
+        description: |-
+          A comma-separated list of provider slugs to filter by.
+          Provider slugs use lowercase with underscores (e.g., `github_secret_scanning`, `clojars`).
+          You can find the provider slug in the `provider_slug` 
+      - name: resolution
+        type: string
+        required: false
+        location: query
+        description: A comma-separated list of resolutions. Only secret scanning alerts with one of these
+          resolutions are listed. Valid resolutions are `false_positive`, `wont_fix`, `revoked`,
+          `pattern_edited`, `pattern_d
+      - name: assignee
+        type: string
+        required: false
+        location: query
+        description: Filters alerts by assignee. Use `*` to get all assigned alerts, `none` to get all
+          unassigned alerts, or a GitHub username to get alerts assigned to a specific user.
+      - name: sort
+        type: string
+        enum:
+          - created
+          - updated
+        required: false
+        location: query
+        description: The property to sort the results by. `created` means when the alert was created.
+          `updated` means when the alert was updated or resolved.
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: The direction to sort the results by.
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: A cursor, as given in the [Link
+          header](https://docs.github.com/rest/guides/using-pagination-in-the-rest-api#using-link-headers).
+          If specified, the query only searches for events before this cursor. T
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: A cursor, as given in the [Link
+          header](https://docs.github.com/rest/guides/using-pagination-in-the-rest-api#using-link-headers).
+          If specified, the query only searches for events after this cursor.  T
+      - name: validity
+        type: string
+        required: false
+        location: query
+        description: A comma-separated list of validities that, when present, will return alerts that match
+          the validities in this list. Valid options are `active`, `inactive`, and `unknown`.
+      - name: is_publicly_leaked
+        type: boolean
+        required: false
+        location: query
+        description: A boolean value representing whether or not to filter alerts by the publicly-leaked tag
+          being present.
+      - name: is_multi_repo
+        type: boolean
+        required: false
+        location: query
+        description: A boolean value representing whether or not to filter alerts by the multi-repo tag
+          being present.
+      - name: hide_secret
+        type: boolean
+        required: false
+        location: query
+        description: A boolean value representing whether or not to hide literal secrets in the results.
+      - name: is_bypassed
+        type: boolean
+        required: false
+        location: query
+        description: A boolean value (`true` or `false`) indicating whether to filter alerts by their push
+          protection bypass status. When set to `true`, only alerts that were created because a push
+          protection rule was byp
+      - name: included_metadata
+        type: string
+        required: false
+        location: query
+        description: >-
+          A comma-separated list of metadata fields to filter alerts by. Only alerts that have all
+          of the
+
+          specified metadata fields attached will be returned. Possible values are: `owner-email`,
+          `owner-id`,
+
+          `ow
+      - name: owner_email_hash
+        type: string
+        required: false
+        location: query
+        description: |-
+          Filters alerts to only those whose attached `owner_email` metadata field matches the
+          provided value. The value must be the lowercase hex-encoded SHA-256 hash of the email
+          address to match (for example
+  - name: get secret scanning alert
+    description: Get a secret scanning alert
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/secret-scanning/alerts/{alert_number}
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: alert_number
+        type: integer
+        required: true
+        location: path
+        description: The number that identifies an alert. You can find this at the end of the URL for a code
+          scanning alert within GitHub, and in the `number` field in the response from the `GET
+          /repos/{owner}/{repo}/code
+      - name: hide_secret
+        type: boolean
+        required: false
+        location: query
+        description: A boolean value representing whether or not to hide literal secrets in the results.
+  - name: list dependabot alerts
+    description: List Dependabot alerts for a repository
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/dependabot/alerts
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: classification
+        type: string
+        required: false
+        location: query
+        description: >-
+          A comma-separated list of vulnerability classifications. If specified, only alerts for
+          vulnerabilities with these classifications will be returned.
+
+
+          Can be: `malware`, `general`
+      - name: state
+        type: string
+        required: false
+        location: query
+        description: >-
+          A comma-separated list of states. If specified, only alerts with these states will be
+          returned.
+
+
+          Can be: `auto_dismissed`, `dismissed`, `fixed`, `open`
+      - name: severity
+        type: string
+        required: false
+        location: query
+        description: >-
+          A comma-separated list of severities. If specified, only alerts with these severities will
+          be returned.
+
+
+          Can be: `low`, `medium`, `high`, `critical`
+      - name: ecosystem
+        type: string
+        required: false
+        location: query
+        description: >-
+          A comma-separated list of ecosystems. If specified, only alerts for these ecosystems will
+          be returned.
+
+
+          Can be: `composer`, `go`, `maven`, `npm`, `nuget`, `pip`, `pub`, `rubygems`, `rust`
+      - name: package
+        type: string
+        required: false
+        location: query
+        description: A comma-separated list of package names. If specified, only alerts for these packages
+          will be returned.
+      - name: manifest
+        type: string
+        required: false
+        location: query
+        description: A comma-separated list of full manifest paths. If specified, only alerts for these
+          manifests will be returned.
+      - name: epss_percentage
+        type: string
+        required: false
+        location: query
+        description: |-
+          CVE Exploit Prediction Scoring System (EPSS) percentage. Can be specified as:
+          - An exact number (`n`)
+          - Comparators such as `>n`, `<n`, `>=n`, `<=n`
+          - A range like `n..n`, where `n` is a number from 0
+      - name: has
+        type: string
+        required: false
+        location: query
+        description: >-
+          Filters the list of alerts based on whether the alert has the given value. If specified,
+          only alerts meeting this criterion will be returned.
+
+          Multiple `has` filters can be passed to filter for alerts 
+      - name: assignee
+        type: string
+        required: false
+        location: query
+        description: >-
+          Filter alerts by assignees.
+
+          Provide a comma-separated list of user handles (e.g., `octocat` or `octocat,hubot`) to
+          return alerts assigned to any of the specified users.
+
+          Use `*` to list alerts with at 
+      - name: scope
+        type: string
+        enum:
+          - development
+          - runtime
+        required: false
+        location: query
+        description: The scope of the vulnerable dependency. If specified, only alerts with this scope will
+          be returned.
+      - name: sort
+        type: string
+        enum:
+          - created
+          - updated
+          - epss_percentage
+        required: false
+        location: query
+        description: |-
+          The property by which to sort the results.
+          `created` means when the alert was created.
+          `updated` means when the alert's state last changed.
+          `epss_percentage` sorts alerts by the Exploit Prediction Sco
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: The direction to sort the results by.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: "A cursor, as given in the [Link
+          header](https://docs.github.com/rest/guides/using-pagination-in-the-rest-api#using-link-h\
+          eaders). If specified, the query only searches for results before this cursor. "
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: A cursor, as given in the [Link
+          header](https://docs.github.com/rest/guides/using-pagination-in-the-rest-api#using-link-headers).
+          If specified, the query only searches for results after this cursor. F
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: get dependabot alert
+    description: Get a Dependabot alert
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/dependabot/alerts/{alert_number}
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: alert_number
+        type: integer
+        required: true
+        location: path
+        description: |-
+          The number that identifies a Dependabot alert in its repository.
+          You can find this at the end of the URL for a Dependabot alert within GitHub,
+          or in `number` fields in the response from the
+          `GET /repo
+  - name: list code quality findings
+    description: List code quality findings for a repository
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/code-quality/findings
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: The direction to sort the results by.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: "A cursor, as given in the [Link
+          header](https://docs.github.com/rest/guides/using-pagination-in-the-rest-api#using-link-h\
+          eaders). If specified, the query only searches for results before this cursor. "
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: A cursor, as given in the [Link
+          header](https://docs.github.com/rest/guides/using-pagination-in-the-rest-api#using-link-headers).
+          If specified, the query only searches for results after this cursor. F
+      - name: state
+        type: string
+        enum:
+          - open
+          - dismissed
+        required: false
+        location: query
+        description: If specified, only code quality findings with this state will be returned.
+  - name: get code quality finding
+    description: Get a code quality finding
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/code-quality/findings/{finding_number}
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: finding_number
+        type: integer
+        required: true
+        location: path
+        description: The number that identifies a finding.
+  - name: list global security advisories
+    description: List global security advisories
+    method: GET
+    url: https://api.github.com/advisories
+    read_only: true
+    params:
+      - name: ghsa_id
+        type: string
+        required: false
+        location: query
+        description: If specified, only advisories with this GHSA (GitHub Security Advisory) identifier will
+          be returned.
+      - name: type
+        type: string
+        enum:
+          - reviewed
+          - malware
+          - unreviewed
+        required: false
+        location: query
+        description: If specified, only advisories of this type will be returned. By default, a request with
+          no other parameters defined will only return reviewed advisories that are not malware.
+      - name: cve_id
+        type: string
+        required: false
+        location: query
+        description: If specified, only advisories with this CVE (Common Vulnerabilities and Exposures)
+          identifier will be returned.
+      - name: ecosystem
+        type: string
+        enum:
+          - rubygems
+          - npm
+          - pip
+          - maven
+          - nuget
+          - composer
+          - go
+          - rust
+          - erlang
+          - actions
+          - pub
+          - other
+          - swift
+        required: false
+        location: query
+        description: If specified, only advisories for these ecosystems will be returned.
+      - name: severity
+        type: string
+        enum:
+          - unknown
+          - low
+          - medium
+          - high
+          - critical
+        required: false
+        location: query
+        description: If specified, only advisories with these severities will be returned.
+      - name: cwes
+        type: string
+        required: false
+        location: query
+        description: >-
+          If specified, only advisories with these Common Weakness Enumerations (CWEs) will be
+          returned.
+
+
+          Example: `cwes=79,284,22` or `cwes[]=79&cwes[]=284&cwes[]=22`
+      - name: is_withdrawn
+        type: boolean
+        required: false
+        location: query
+        description: Whether to only return advisories that have been withdrawn.
+      - name: affects
+        type: string
+        required: false
+        location: query
+        description: >-
+          If specified, only return advisories that affect any of `package` or `package@version`. A
+          maximum of 1000 packages can be specified.
+
+          If the query parameter causes the URL to exceed the maximum URL len
+      - name: published
+        type: string
+        required: false
+        location: query
+        description: >-
+          If specified, only return advisories that were published on a date or date range.
+
+
+          For more information on the syntax of the date range, see "[Understanding the search
+          syntax](https://docs.github.com/
+      - name: updated
+        type: string
+        required: false
+        location: query
+        description: >-
+          If specified, only return advisories that were updated on a date or date range.
+
+
+          For more information on the syntax of the date range, see "[Understanding the search
+          syntax](https://docs.github.com/se
+      - name: modified
+        type: string
+        required: false
+        location: query
+        description: >-
+          If specified, only show advisories that were updated or published on a date or date range.
+
+
+          For more information on the syntax of the date range, see "[Understanding the search
+          syntax](https://docs.gi
+      - name: epss_percentage
+        type: string
+        required: false
+        location: query
+        description: >-
+          If specified, only return advisories that have an EPSS percentage score that matches the
+          provided value.
+
+          The EPSS percentage represents the likelihood of a CVE being exploited.
+      - name: epss_percentile
+        type: string
+        required: false
+        location: query
+        description: >-
+          If specified, only return advisories that have an EPSS percentile score that matches the
+          provided value.
+
+          The EPSS percentile represents the relative rank of the CVE's likelihood of being
+          exploited com
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: "A cursor, as given in the [Link
+          header](https://docs.github.com/rest/guides/using-pagination-in-the-rest-api#using-link-h\
+          eaders). If specified, the query only searches for results before this cursor. "
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: A cursor, as given in the [Link
+          header](https://docs.github.com/rest/guides/using-pagination-in-the-rest-api#using-link-headers).
+          If specified, the query only searches for results after this cursor. F
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: The direction to sort the results by.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: sort
+        type: string
+        enum:
+          - updated
+          - published
+          - epss_percentage
+          - epss_percentile
+        required: false
+        location: query
+        description: The property to sort the results by.
+  - name: get global security advisory
+    description: Get a global security advisory
+    method: GET
+    url: https://api.github.com/advisories/{ghsa_id}
+    read_only: true
+    params:
+      - name: ghsa_id
+        type: string
+        required: true
+        location: path
+        description: The GHSA (GitHub Security Advisory) identifier of the advisory.
+  - name: list org repository security advisories
+    description: List repository security advisories for an organization
+    method: GET
+    url: https://api.github.com/orgs/{org}/security-advisories
+    read_only: true
+    params:
+      - name: org
+        type: string
+        required: true
+        location: path
+        description: The organization name. The name is not case sensitive.
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: The direction to sort the results by.
+      - name: sort
+        type: string
+        enum:
+          - created
+          - updated
+          - published
+        required: false
+        location: query
+        description: The property to sort the results by.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: "A cursor, as given in the [Link
+          header](https://docs.github.com/rest/guides/using-pagination-in-the-rest-api#using-link-h\
+          eaders). If specified, the query only searches for results before this cursor. "
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: A cursor, as given in the [Link
+          header](https://docs.github.com/rest/guides/using-pagination-in-the-rest-api#using-link-headers).
+          If specified, the query only searches for results after this cursor. F
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of advisories to return per page. For more information, see "[Using
+          pagination in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: state
+        type: string
+        enum:
+          - triage
+          - draft
+          - published
+          - closed
+        required: false
+        location: query
+        description: Filter by the state of the repository advisories. Only advisories of this state will be
+          returned.
+  - name: list repository security advisories
+    description: List repository security advisories
+    method: GET
+    url: https://api.github.com/repos/{owner}/{repo}/security-advisories
+    read_only: true
+    params:
+      - name: owner
+        type: string
+        required: true
+        location: path
+        description: The account owner of the repository. The name is not case sensitive.
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: The name of the repository without the `.git` extension. The name is not case sensitive.
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: The direction to sort the results by.
+      - name: sort
+        type: string
+        enum:
+          - created
+          - updated
+          - published
+        required: false
+        location: query
+        description: The property to sort the results by.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: "A cursor, as given in the [Link
+          header](https://docs.github.com/rest/guides/using-pagination-in-the-rest-api#using-link-h\
+          eaders). If specified, the query only searches for results before this cursor. "
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: A cursor, as given in the [Link
+          header](https://docs.github.com/rest/guides/using-pagination-in-the-rest-api#using-link-headers).
+          If specified, the query only searches for results after this cursor. F
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of advisories to return per page. For more information, see "[Using
+          pagination in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: state
+        type: string
+        enum:
+          - triage
+          - draft
+          - published
+          - closed
+        required: false
+        location: query
+        description: Filter by state of the repository advisories. Only advisories of this state will be
+          returned.
+  - name: list notifications
+    description: List notifications for the authenticated user
+    method: GET
+    url: https://api.github.com/notifications
+    read_only: true
+    params:
+      - name: all
+        type: boolean
+        required: false
+        location: query
+        description: If `true`, show notifications marked as read.
+      - name: participating
+        type: boolean
+        required: false
+        location: query
+        description: If `true`, only shows notifications in which the user is directly participating or
+          mentioned.
+      - name: since
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: "Only show results that were last updated after the given time. This is a timestamp in
+          [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format: `YYYY-MM-DDTHH:MM:SSZ`."
+      - name: before
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: "Only show notifications updated before the given time. This is a timestamp in [ISO
+          8601](https://en.wikipedia.org/wiki/ISO_8601) format: `YYYY-MM-DDTHH:MM:SSZ`."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 50). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: get notification
+    description: Get a thread
+    method: GET
+    url: https://api.github.com/notifications/threads/{thread_id}
+    read_only: true
+    params:
+      - name: thread_id
+        type: integer
+        required: true
+        location: path
+        description: "The unique identifier of the notification thread. This corresponds to the value
+          returned in the `id` field when you retrieve notifications (for example with the [`GET
+          /notifications` operation](https:"
+  - name: list gists
+    description: List gists for the authenticated user
+    method: GET
+    url: https://api.github.com/gists
+    read_only: true
+    params:
+      - name: since
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: "Only show results that were last updated after the given time. This is a timestamp in
+          [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format: `YYYY-MM-DDTHH:MM:SSZ`."
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page (max 100). For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: The page number of the results to fetch. For more information, see "[Using pagination
+          in the REST
+          API](https://docs.github.com/rest/using-the-rest-api/using-pagination-in-the-rest-api)."
+  - name: get gist
+    description: Get a gist
+    method: GET
+    url: https://api.github.com/gists/{gist_id}
+    read_only: true
+    params:
+      - name: gist_id
+        type: string
+        required: true
+        location: path
+        description: The unique identifier of the gist.
   - name: create issue
     description: Open a new issue in a repository.
     method: POST
     url: https://api.github.com/repos/{owner}/{repo}/issues
     read_only: false
     params:
-      - { name: owner, type: string, required: true, location: path }
-      - { name: repo, type: string, required: true, location: path }
-      - { name: title, type: string, required: true, location: body }
-      - { name: body, type: string, required: false, location: body }
+      - name: owner
+        type: string
+        required: true
+        location: path
+      - name: repo
+        type: string
+        required: true
+        location: path
+      - name: title
+        type: string
+        required: true
+        location: body
+      - name: body
+        type: string
+        required: false
+        location: body
