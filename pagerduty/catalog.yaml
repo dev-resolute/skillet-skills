@@ -1,8 +1,12 @@
+# Operations are generated from PagerDuty's OpenAPI spec — see import.yaml and
+# run `pnpm --filter @kit/engine catalog:import pagerduty` to regenerate.
+# Re-importing keeps hand-written `description` values but rewrites everything
+# else, so re-apply the `# hand-authored:` param facts below after a re-import.
 slug: pagerduty
-version: 1.0.0
+version: 1.1.0
 name: PagerDuty
 category: incident-observability
-one_liner: List and inspect incidents and services in PagerDuty.
+one_liner: Read incidents, services, schedules, and on-call data from PagerDuty.
 api_domain: api.pagerduty.com
 status: live
 credentials:
@@ -12,8 +16,9 @@ credentials:
 auth:
   scheme: api_key
   header: Authorization
-  env_vars: [PAGERDUTY_API_KEY]
-  value_template: "Token token=${PAGERDUTY_API_KEY}"
+  env_vars:
+    - PAGERDUTY_API_KEY
+  value_template: Token token=${PAGERDUTY_API_KEY}
 operations:
   - name: list incidents
     description: List incidents, filterable by status.
@@ -21,19 +26,1660 @@ operations:
     url: https://api.pagerduty.com/incidents
     read_only: true
     params:
-      - { name: "statuses[]", type: string, required: false, location: query }
-      - { name: limit, type: integer, required: false, location: query }
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page. Maximum of 100.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Offset to start pagination search results.
+      - name: total
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          By default the `total` field in pagination responses is set to `null` to provide the
+          fastest possible response times. Set `total` to `true` for this field to be populated.
+
+
+          See our [Pagination Docs](h
+      - name: date_range
+        type: string
+        enum:
+          - all
+        required: false
+        location: query
+        description: When set to all, the since and until parameters and defaults are ignored.
+      - name: incident_key
+        type: string
+        required: false
+        location: query
+        description: Incident de-duplication key. Incidents with child alerts do not have an incident key;
+          querying by incident key will return incidents whose alerts have alert_key matching the
+          given incident key.
+      - name: service_ids[]
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Returns only the incidents associated with the passed service(s). This expects one or
+          more service IDs.
+      - name: team_ids[]
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: An array of team IDs. Only results related to these teams will be returned. Account
+          must have the `teams` ability to use this parameter.
+      - name: user_ids[]
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: "Returns only the incidents currently assigned to the passed user(s). This expects one
+          or more user IDs. Note: When using the assigned_to_user filter, you will only receive
+          incidents with statuses of t"
+      # hand-authored: type/items_type. The spec declares urgencies[] as
+      # `type: string` yet marks it `uniqueItems: true` and describes it as an
+      # array; the MCP parity source types it `list[string]`. Repeat the pair
+      # to filter on both urgencies.
+      - name: urgencies[]
+        type: array
+        items_type: string
+        enum:
+          - high
+          - low
+        required: false
+        location: query
+        description: Array of the urgencies of the incidents to be returned. Defaults to all urgencies.
+          Account must have the `urgencies` ability to do this.
+      - name: time_zone
+        type: string
+        format: tzinfo
+        required: false
+        location: query
+        description: Time zone in which results will be rendered. This will default to the account time zone.
+      # hand-authored: type/items_type. Same spec defect as urgencies[] — the
+      # parameter's own description spells out "pass `statuses[]` more than
+      # once", which only an array can express.
+      - name: statuses[]
+        type: array
+        items_type: string
+        enum:
+          - triggered
+          - acknowledged
+          - resolved
+        required: false
+        location: query
+        description: "Return only incidents with the given statuses. To query multiple statuses, pass
+          `statuses[]` more than once, for example:
+          `https://api.pagerduty.com/incidents?statuses[]=triggered&statuses[]=acknowled"
+      - name: sort_by
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Used to specify both the field you wish to sort the results on
+          (incident_number/created_at/resolved_at/urgency), as well as the direction (asc/desc) of
+          the results. The sort_by field and direction sho
+      - name: include[]
+        type: string
+        enum:
+          - acknowledgers
+          - agents
+          - assignees
+          - conference_bridge
+          - escalation_policies
+          - first_trigger_log_entries
+          - priorities
+          - services
+          - teams
+          - users
+        required: false
+        location: query
+        description: Array of additional details to include.
+      # hand-authored: format. Every other PagerDuty list endpoint declares
+      # since/until as `format: date-time`; /incidents omits it. The REST docs
+      # and the MCP parity source both require ISO 8601 here.
+      - name: since
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The start of the date range over which you want to search. Maximum range is 6 months
+          and default is 1 month.
+      - name: until
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The end of the date range over which you want to search. Maximum range is 6 months and
+          default is 1 month.
   - name: get incident
     description: Fetch one incident by id.
     method: GET
-    url: https://api.pagerduty.com/incidents/{incident_id}
+    url: https://api.pagerduty.com/incidents/{id}
     read_only: true
     params:
-      - { name: incident_id, type: string, required: true, location: path }
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+      - name: include[]
+        type: string
+        enum:
+          - acknowledgers
+          - agents
+          - assignees
+          - conference_bridge
+          - custom_fields
+          - escalation_policies
+          - first_trigger_log_entries
+          - priorities
+          - services
+          - teams
+          - users
+        required: false
+        location: query
+        description: Array of additional details to include.
+  - name: list incident notes
+    description: List notes for an incident
+    method: GET
+    url: https://api.pagerduty.com/incidents/{id}/notes
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+  - name: list incident log entries
+    description: List log entries for an incident
+    method: GET
+    url: https://api.pagerduty.com/incidents/{id}/log_entries
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Offset to start pagination search results.
+      - name: total
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          By default the `total` field in pagination responses is set to `null` to provide the
+          fastest possible response times. Set `total` to `true` for this field to be populated.
+
+
+          See our [Pagination Docs](h
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+      - name: time_zone
+        type: string
+        format: tzinfo
+        required: false
+        location: query
+        description: Time zone in which results will be rendered. This will default to the account time zone.
+      - name: since
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The start of the date range over which you want to search.
+      - name: until
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The end of the date range over which you want to search.
+      - name: is_overview
+        type: boolean
+        required: false
+        location: query
+        description: If `true`, will return a subset of log entries that show only the most important
+          changes to the incident.
+      - name: include[]
+        type: string
+        enum:
+          - incidents
+          - services
+          - channels
+          - teams
+        required: false
+        location: query
+        description: Array of additional Models to include in response.
+  - name: list alerts for incident
+    description: List alerts for an incident
+    method: GET
+    url: https://api.pagerduty.com/incidents/{id}/alerts
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Offset to start pagination search results.
+      - name: total
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          By default the `total` field in pagination responses is set to `null` to provide the
+          fastest possible response times. Set `total` to `true` for this field to be populated.
+
+
+          See our [Pagination Docs](h
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+      - name: alert_key
+        type: string
+        required: false
+        location: query
+        description: Alert de-duplication key.
+      - name: statuses[]
+        type: string
+        enum:
+          - triggered
+          - resolved
+        required: false
+        location: query
+        description: Return only alerts with the given statuses. (More status codes may be introduced in the
+          future.)
+      - name: sort_by
+        type: string
+        enum:
+          - created_at
+          - resolved_at
+          - created_at:asc
+          - created_at:desc
+          - resolved_at:asc
+          - resolved_at:desc
+        required: false
+        location: query
+        description: Used to specify both the field you wish to sort the results on
+          (created_at/resolved_at), as well as the direction (asc/desc) of the results. The sort_by
+          field and direction should be separated by a co
+      - name: include[]
+        type: string
+        enum:
+          - services
+          - first_trigger_log_entries
+          - incidents
+        required: false
+        location: query
+        description: Array of additional details to include.
+  - name: get alert for incident
+    description: Get an alert
+    method: GET
+    url: https://api.pagerduty.com/incidents/{id}/alerts/{alert_id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+      - name: alert_id
+        type: string
+        required: true
+        location: path
+        description: The id of the alert to retrieve.
+  - name: get past incidents
+    description: Get Past Incidents
+    method: GET
+    url: https://api.pagerduty.com/incidents/{id}/past_incidents
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results to be returned in the response.
+      - name: total
+        type: boolean
+        required: false
+        location: query
+        description: By default the `total` field in the response body is set to `null` to provide the
+          fastest possible response times. Set `total` to `true` for this field to be populated with
+          the total number of Past In
+      - name: id
+        type: string
+        required: true
+        location: path
+  - name: get related incidents
+    description: Get Related Incidents
+    method: GET
+    url: https://api.pagerduty.com/incidents/{id}/related_incidents
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+      - name: additional_details[]
+        type: string
+        enum:
+          - incident
+        required: false
+        location: query
+        description: Array of additional attributes to any of the returned incidents for related incidents.
+  - name: get outlier incident
+    description: Get Outlier Incident
+    method: GET
+    url: https://api.pagerduty.com/incidents/{id}/outlier_incident
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+      - name: since
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The start of the date range over which you want to search.
+      - name: additional_details[]
+        type: string
+        enum:
+          - incident
+        required: false
+        location: query
+        description: Array of additional attributes to any of the returned incidents for related incidents.
+  - name: list incident change events
+    description: List related Change Events for an Incident
+    method: GET
+    url: https://api.pagerduty.com/incidents/{id}/related_change_events
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page.
   - name: list services
     description: List services in the account.
     method: GET
     url: https://api.pagerduty.com/services
     read_only: true
     params:
-      - { name: limit, type: integer, required: false, location: query }
+      - name: query
+        type: string
+        required: false
+        location: query
+        description: Filters the result, showing only the records whose name matches the query.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Offset to start pagination search results.
+      - name: total
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          By default the `total` field in pagination responses is set to `null` to provide the
+          fastest possible response times. Set `total` to `true` for this field to be populated.
+
+
+          See our [Pagination Docs](h
+      - name: team_ids[]
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: An array of team IDs. Only results related to these teams will be returned. Account
+          must have the `teams` ability to use this parameter.
+      - name: time_zone
+        type: string
+        format: tzinfo
+        required: false
+        location: query
+        description: Time zone in which results will be rendered. This will default to the account time zone.
+      - name: sort_by
+        type: string
+        enum:
+          - name
+          - name:asc
+          - name:desc
+        required: false
+        location: query
+        description: Used to specify the field you wish to sort the results on.
+      - name: include[]
+        type: string
+        enum:
+          - escalation_policies
+          - teams
+          - integrations
+          - auto_pause_notifications_parameters
+        required: false
+        location: query
+        description: Array of additional details to include.
+      - name: name
+        type: string
+        required: false
+        location: query
+        description: Filters the results, showing only services with the specified name.
+  - name: get service
+    description: Get a service
+    method: GET
+    url: https://api.pagerduty.com/services/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+      - name: include[]
+        type: string
+        enum:
+          - escalation_policies
+          - teams
+          - auto_pause_notifications_parameters
+          - integrations
+        required: false
+        location: query
+        description: Array of additional details to include.
+  - name: list service change events
+    description: List Change Events for a service
+    method: GET
+    url: https://api.pagerduty.com/services/{id}/change_events
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+      - name: since
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The start of the date range over which you want to search, as a UTC ISO 8601 datetime
+          string. Will return an HTTP 400 for non-UTC datetimes.
+      - name: until
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The end of the date range over which you want to search, as a UTC ISO 8601 datetime
+          string. Will return an HTTP 400 for non-UTC datetimes.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Offset to start pagination search results.
+      - name: total
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          By default the `total` field in pagination responses is set to `null` to provide the
+          fastest possible response times. Set `total` to `true` for this field to be populated.
+
+
+          See our [Pagination Docs](h
+      - name: team_ids[]
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: An array of team IDs. Only results related to these teams will be returned. Account
+          must have the `teams` ability to use this parameter.
+      - name: integration_ids[]
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: An array of integration IDs. Only results related to these integrations will be returned.
+  - name: list business services
+    description: List Business Services
+    method: GET
+    url: https://api.pagerduty.com/business_services
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Offset to start pagination search results.
+      - name: total
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          By default the `total` field in pagination responses is set to `null` to provide the
+          fastest possible response times. Set `total` to `true` for this field to be populated.
+
+
+          See our [Pagination Docs](h
+  - name: get business service dependencies
+    description: Get Business Service dependencies
+    method: GET
+    url: https://api.pagerduty.com/service_dependencies/business_services/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+  - name: get technical service dependencies
+    description: Get technical service dependencies
+    method: GET
+    url: https://api.pagerduty.com/service_dependencies/technical_services/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+  - name: list teams
+    description: List teams
+    method: GET
+    url: https://api.pagerduty.com/teams
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Offset to start pagination search results.
+      - name: total
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          By default the `total` field in pagination responses is set to `null` to provide the
+          fastest possible response times. Set `total` to `true` for this field to be populated.
+
+
+          See our [Pagination Docs](h
+      - name: query
+        type: string
+        required: false
+        location: query
+        description: Filters the result, showing only the records whose name matches the query.
+  - name: get team
+    description: Get a team
+    method: GET
+    url: https://api.pagerduty.com/teams/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+      - name: include[]
+        type: string
+        enum:
+          - privileges
+        required: false
+        location: query
+        description: Array of additional Models to include in response.
+  - name: list team members
+    description: List members of a team
+    method: GET
+    url: https://api.pagerduty.com/teams/{id}/members
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Offset to start pagination search results.
+      - name: total
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          By default the `total` field in pagination responses is set to `null` to provide the
+          fastest possible response times. Set `total` to `true` for this field to be populated.
+
+
+          See our [Pagination Docs](h
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+      - name: include[]
+        type: string
+        enum:
+          - users
+        required: false
+        location: query
+        description: Array of additional Models to include in response.
+  - name: list users
+    description: List users
+    method: GET
+    url: https://api.pagerduty.com/users
+    read_only: true
+    params:
+      - name: query
+        type: string
+        required: false
+        location: query
+        description: Filters the result, showing only the records whose name matches the query.
+      - name: team_ids[]
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: An array of team IDs. Only results related to these teams will be returned. Account
+          must have the `teams` ability to use this parameter.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Offset to start pagination search results.
+      - name: total
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          By default the `total` field in pagination responses is set to `null` to provide the
+          fastest possible response times. Set `total` to `true` for this field to be populated.
+
+
+          See our [Pagination Docs](h
+      - name: include[]
+        type: string
+        enum:
+          - contact_methods
+          - notification_rules
+          - teams
+          - subdomains
+        required: false
+        location: query
+        description: Array of additional Models to include in response.
+  - name: get user
+    description: Get a user
+    method: GET
+    url: https://api.pagerduty.com/users/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+      - name: include[]
+        type: string
+        enum:
+          - contact_methods
+          - notification_rules
+          - teams
+          - subdomains
+          - calendar_urls
+        required: false
+        location: query
+        description: Array of additional Models to include in response. Use `calendar_urls` to include
+          `http_cal_url` and `web_cal_url`; account admins with `can_update_user` may use this to
+          retrieve another user's calend
+  - name: get current user
+    description: Get the current user
+    method: GET
+    url: https://api.pagerduty.com/users/me
+    read_only: true
+    params:
+      - name: include[]
+        type: string
+        enum:
+          - contact_methods
+          - notification_rules
+          - teams
+          - subdomains
+          - calendar_urls
+        required: false
+        location: query
+        description: Array of additional Models to include in response. Use `calendar_urls` to include
+          `http_cal_url` and `web_cal_url`; account admins with `can_update_user` may use this to
+          retrieve another user's calend
+  - name: list schedules
+    description: List schedules
+    method: GET
+    url: https://api.pagerduty.com/schedules
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Offset to start pagination search results.
+      - name: total
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          By default the `total` field in pagination responses is set to `null` to provide the
+          fastest possible response times. Set `total` to `true` for this field to be populated.
+
+
+          See our [Pagination Docs](h
+      - name: query
+        type: string
+        required: false
+        location: query
+        description: Filters the result, showing only the records whose name matches the query.
+      - name: include[]
+        type: string
+        enum:
+          - schedule_layers
+          - overrides_subschedule
+          - final_schedule
+        required: false
+        location: query
+        description: Array of additional details to include.
+      - name: time_zone
+        type: string
+        format: tzinfo
+        required: false
+        location: query
+        description: Time zone in which results will be rendered. This will default to the current user's
+          time zone and then the account's time zone.
+      - name: include_next_oncall_for_user
+        type: string
+        required: false
+        location: query
+        description: Specify an `user_id`, and the schedule list API will return information about this
+          user's next on-call.
+      - name: since
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The start of the date range over which you want to show schedule entries. Defaults to 2
+          weeks before until if an until is given. Optional parameter. When provided with include[]
+          for schedule types, po
+      - name: until
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The end of the date range over which you want to show schedule entries. Defaults to 2
+          weeks after since if a since is given. Optional parameter. When provided with include[]
+          for schedule types, popula
+      - name: team_ids[]
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: An array of team IDs. Only results related to these teams will be returned. Account
+          must have the `teams` ability to use this parameter.
+  - name: get schedule
+    description: Get a schedule
+    method: GET
+    url: https://api.pagerduty.com/schedules/{id}
+    read_only: true
+    params:
+      - name: time_zone
+        type: string
+        format: tzinfo
+        required: false
+        location: query
+        description: Time zone in which results will be rendered. This will default to the schedule's time zone.
+      - name: since
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The start of the date range over which you want to show schedule entries. Defaults to 2
+          weeks before until if an until is given. Optional parameter. When provided with include[]
+          for schedule types, po
+      - name: until
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The end of the date range over which you want to show schedule entries. Defaults to 2
+          weeks after since if a since is given. Optional parameter. When provided with include[]
+          for schedule types, popula
+      - name: overflow
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          Any on-call schedule entries that pass the date range bounds will be truncated at the
+          bounds, unless the parameter `overflow=true` is passed. This parameter defaults to false.
+
+          For instance, if your sc
+      - name: include_next_oncall_for_user
+        type: string
+        required: false
+        location: query
+        description: Specify an `user_id`, and the schedule list API will return information about this
+          user's next on-call.
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the schedule.
+  - name: list schedule users
+    description: List users on call.
+    method: GET
+    url: https://api.pagerduty.com/schedules/{id}/users
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the schedule.
+      - name: since
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The start of the date range over which you want to search.
+      - name: until
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The end of the date range over which you want to search.
+  - name: list oncalls
+    description: List all of the on-calls
+    method: GET
+    url: https://api.pagerduty.com/oncalls
+    read_only: true
+    params:
+      - name: time_zone
+        type: string
+        format: tzinfo
+        required: false
+        location: query
+        description: Time zone in which results will be rendered. This will default to the account time zone.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Offset to start pagination search results.
+      - name: total
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          By default the `total` field in pagination responses is set to `null` to provide the
+          fastest possible response times. Set `total` to `true` for this field to be populated.
+
+
+          See our [Pagination Docs](h
+      - name: include[]
+        type: string
+        enum:
+          - escalation_policies
+          - users
+          - schedules
+        required: false
+        location: query
+        description: Array of additional details to include.
+      - name: user_ids[]
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Filters the results, showing only on-calls for the specified user IDs.
+      - name: escalation_policy_ids[]
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Filters the results, showing only on-calls for the specified escalation policy IDs.
+      - name: schedule_ids[]
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Filters the results, showing only on-calls for the specified schedule IDs. If `null` is
+          provided in the array, it includes permanent on-calls due to direct user escalation
+          targets.
+      - name: since
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The start of the time range over which you want to search. If an on-call period
+          overlaps with the range, it will be included in the result. Defaults to current time.
+          On-call shifts are limited to 90 d
+      - name: until
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The end of the time range over which you want to search. If an on-call period overlaps
+          with the range, it will be included in the result. Defaults to current time. On-call
+          shifts are limited to 90 day
+      - name: earliest
+        type: boolean
+        required: false
+        location: query
+        description: This will filter on-calls such that only the earliest on-call for each combination of
+          escalation policy, escalation level, and user is returned. This is useful for determining
+          when the "next" on-calls
+  - name: list escalation policies
+    description: List escalation policies
+    method: GET
+    url: https://api.pagerduty.com/escalation_policies
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Offset to start pagination search results.
+      - name: total
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          By default the `total` field in pagination responses is set to `null` to provide the
+          fastest possible response times. Set `total` to `true` for this field to be populated.
+
+
+          See our [Pagination Docs](h
+      - name: query
+        type: string
+        required: false
+        location: query
+        description: Filters the result, showing only the records whose name matches the query.
+      - name: user_ids[]
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Filters the results, showing only escalation policies on which any of the users is a
+          target.
+      - name: team_ids[]
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: An array of team IDs. Only results related to these teams will be returned. Account
+          must have the `teams` ability to use this parameter.
+      - name: include[]
+        type: string
+        enum:
+          - services
+          - teams
+          - targets
+          - escalation_rule_assignment_strategies
+        required: false
+        location: query
+        description: Array of additional Models to include in response.
+      - name: sort_by
+        type: string
+        enum:
+          - name
+          - name:asc
+          - name:desc
+        required: false
+        location: query
+        description: Used to specify the field you wish to sort the results on.
+  - name: get escalation policy
+    description: Get an escalation policy
+    method: GET
+    url: https://api.pagerduty.com/escalation_policies/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+      - name: include[]
+        type: string
+        enum:
+          - services
+          - teams
+          - targets
+          - escalation_rule_assignment_strategies
+        required: false
+        location: query
+        description: Array of additional Models to include in response.
+  - name: list log entries
+    description: List log entries
+    method: GET
+    url: https://api.pagerduty.com/log_entries
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Offset to start pagination search results.
+      - name: total
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          By default the `total` field in pagination responses is set to `null` to provide the
+          fastest possible response times. Set `total` to `true` for this field to be populated.
+
+
+          See our [Pagination Docs](h
+      - name: time_zone
+        type: string
+        format: tzinfo
+        required: false
+        location: query
+        description: Time zone in which results will be rendered. This will default to the account time zone.
+      - name: since
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The start of the date range over which you want to search.
+      - name: until
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The end of the date range over which you want to search.
+      - name: is_overview
+        type: boolean
+        required: false
+        location: query
+        description: If `true`, will return a subset of log entries that show only the most important
+          changes to the incident.
+      - name: include[]
+        type: string
+        enum:
+          - incidents
+          - services
+          - channels
+          - teams
+        required: false
+        location: query
+        description: Array of additional Models to include in response.
+      - name: team_ids[]
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: An array of team IDs. Only results related to these teams will be returned. Account
+          must have the `teams` ability to use this parameter.
+  - name: get log entry
+    description: Get a log entry
+    method: GET
+    url: https://api.pagerduty.com/log_entries/{id}
+    read_only: true
+    params:
+      - name: time_zone
+        type: string
+        format: tzinfo
+        required: false
+        location: query
+        description: Time zone in which results will be rendered. This will default to the account time zone.
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+      - name: include[]
+        type: string
+        enum:
+          - incidents
+          - services
+          - channels
+          - teams
+        required: false
+        location: query
+        description: Array of additional Models to include in response.
+  - name: list change events
+    description: List Change Events
+    method: GET
+    url: https://api.pagerduty.com/change_events
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Offset to start pagination search results.
+      - name: total
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          By default the `total` field in pagination responses is set to `null` to provide the
+          fastest possible response times. Set `total` to `true` for this field to be populated.
+
+
+          See our [Pagination Docs](h
+      - name: team_ids[]
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: An array of team IDs. Only results related to these teams will be returned. Account
+          must have the `teams` ability to use this parameter.
+      - name: integration_ids[]
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: An array of integration IDs. Only results related to these integrations will be returned.
+      - name: since
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The start of the date range over which you want to search, as a UTC ISO 8601 datetime
+          string. Will return an HTTP 400 for non-UTC datetimes.
+      - name: until
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The end of the date range over which you want to search, as a UTC ISO 8601 datetime
+          string. Will return an HTTP 400 for non-UTC datetimes.
+  - name: get change event
+    description: Get a Change Event
+    method: GET
+    url: https://api.pagerduty.com/change_events/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+  - name: list alert grouping settings
+    description: List alert grouping settings
+    method: GET
+    url: https://api.pagerduty.com/alert_grouping_settings
+    read_only: true
+    params:
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: Cursor to retrieve next page; only present if next page exists.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: Cursor to retrieve previous page; only present if not on first page.
+      - name: total
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          By default the `total` field in pagination responses is set to `null` to provide the
+          fastest possible response times. Set `total` to `true` for this field to be populated.
+
+
+          See our [Pagination Docs](h
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page.
+      - name: service_ids[]
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: An array of service IDs. Only results related to these services will be returned.
+  - name: get alert grouping setting
+    description: Get an Alert Grouping Setting
+    method: GET
+    url: https://api.pagerduty.com/alert_grouping_settings/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+  - name: list event orchestrations
+    description: List Event Orchestrations
+    method: GET
+    url: https://api.pagerduty.com/event_orchestrations
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Offset to start pagination search results.
+      - name: sort_by
+        type: string
+        enum:
+          - name:asc
+          - name:desc
+          - routes:asc
+          - routes:desc
+          - created_at:asc
+          - created_at:desc
+        required: false
+        location: query
+        description: Used to specify the field you wish to sort the results on.
+  - name: get event orchestration
+    description: Get an Orchestration
+    method: GET
+    url: https://api.pagerduty.com/event_orchestrations/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of an Event Orchestration.
+  - name: get event orchestration router
+    description: Get the Router for an Event Orchestration
+    method: GET
+    url: https://api.pagerduty.com/event_orchestrations/{id}/router
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of an Event Orchestration.
+  - name: get event orchestration global
+    description: Get the Global Orchestration for an Event Orchestration
+    method: GET
+    url: https://api.pagerduty.com/event_orchestrations/{id}/global
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of an Event Orchestration.
+  - name: get service event orchestration
+    description: Get the Service Orchestration for a Service
+    method: GET
+    url: https://api.pagerduty.com/event_orchestrations/services/{service_id}
+    read_only: true
+    params:
+      - name: service_id
+        type: string
+        required: true
+        location: path
+        description: The service ID
+      - name: include[]
+        type: string
+        enum:
+          - migrated_metadata
+        required: false
+        location: query
+        description: Array of additional Models to include in response.
+  - name: list incident workflows
+    description: List Incident Workflows
+    method: GET
+    url: https://api.pagerduty.com/incident_workflows
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Offset to start pagination search results.
+      - name: total
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          By default the `total` field in pagination responses is set to `null` to provide the
+          fastest possible response times. Set `total` to `true` for this field to be populated.
+
+
+          See our [Pagination Docs](h
+      - name: query
+        type: string
+        required: false
+        location: query
+        description: Filters the result, showing only the records whose name matches the query.
+      - name: include[]
+        type: string
+        enum:
+          - steps
+          - team
+        required: false
+        location: query
+        description: Array of additional details to include.
+  - name: get incident workflow
+    description: Get an Incident Workflow
+    method: GET
+    url: https://api.pagerduty.com/incident_workflows/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+  - name: list priorities
+    description: List priorities
+    method: GET
+    url: https://api.pagerduty.com/priorities
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Offset to start pagination search results.
+      - name: total
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          By default the `total` field in pagination responses is set to `null` to provide the
+          fastest possible response times. Set `total` to `true` for this field to be populated.
+
+
+          See our [Pagination Docs](h
+  - name: list webhook subscriptions
+    description: List webhook subscriptions
+    method: GET
+    url: https://api.pagerduty.com/webhook_subscriptions
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Offset to start pagination search results.
+      - name: total
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          By default the `total` field in pagination responses is set to `null` to provide the
+          fastest possible response times. Set `total` to `true` for this field to be populated.
+
+
+          See our [Pagination Docs](h
+      - name: filter_type
+        type: string
+        enum:
+          - account
+          - service
+          - team
+        required: false
+        location: query
+        description: The type of resource to filter upon.
+      - name: filter_id
+        type: string
+        required: false
+        location: query
+        description: The id of the resource to filter upon. Required if filter_type is service or team.
+  - name: get webhook subscription
+    description: Get a webhook subscription
+    method: GET
+    url: https://api.pagerduty.com/webhook_subscriptions/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+  - name: list extension schemas
+    description: List extension schemas
+    method: GET
+    url: https://api.pagerduty.com/extension_schemas
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Offset to start pagination search results.
+      - name: total
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          By default the `total` field in pagination responses is set to `null` to provide the
+          fastest possible response times. Set `total` to `true` for this field to be populated.
+
+
+          See our [Pagination Docs](h
+  - name: get extension schema
+    description: Get an extension vendor
+    method: GET
+    url: https://api.pagerduty.com/extension_schemas/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+  - name: list status pages
+    description: List Status Pages
+    method: GET
+    url: https://api.pagerduty.com/status_pages
+    read_only: true
+    params:
+      - name: status_page_type
+        type: string
+        enum:
+          - public
+          - private
+        required: false
+        location: query
+        description: The type of the Status Page.
+  - name: list status page impacts
+    description: List Status Page Impacts
+    method: GET
+    url: https://api.pagerduty.com/status_pages/{id}/impacts
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+      - name: post_type
+        type: string
+        enum:
+          - incident
+          - maintenance
+        required: false
+        location: query
+        description: Filter by Post type.
+  - name: list status page severities
+    description: List Status Page Severities
+    method: GET
+    url: https://api.pagerduty.com/status_pages/{id}/severities
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+      - name: post_type
+        type: string
+        enum:
+          - incident
+          - maintenance
+        required: false
+        location: query
+        description: Filter by Post type.
+  - name: list status page statuses
+    description: List Status Page Statuses
+    method: GET
+    url: https://api.pagerduty.com/status_pages/{id}/statuses
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+      - name: post_type
+        type: string
+        enum:
+          - incident
+          - maintenance
+        required: false
+        location: query
+        description: Filter by Post type.
+  - name: get status page post
+    description: Get a Status Page Post
+    method: GET
+    url: https://api.pagerduty.com/status_pages/{id}/posts/{post_id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+      - name: post_id
+        type: string
+        required: true
+        location: path
+        description: The ID of the Status Page Post.
+      - name: include[]
+        type: array
+        items_type: string
+        enum:
+          - status_page_post_update
+        required: false
+        location: query
+        description: Array of additional Models to include in response.
+  - name: list status page post updates
+    description: List Status Page Post Updates
+    method: GET
+    url: https://api.pagerduty.com/status_pages/{id}/posts/{post_id}/post_updates
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the resource.
+      - name: post_id
+        type: string
+        required: true
+        location: path
+        description: The ID of the Status Page Post.
+      - name: reviewed_status
+        type: string
+        enum:
+          - approved
+          - not_reviewed
+        required: false
+        location: query
+        description: Filter by the reviewed status of the Post Update to retrieve.

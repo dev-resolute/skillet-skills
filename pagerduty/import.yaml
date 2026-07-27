@@ -1,0 +1,141 @@
+# Regenerate catalog.yaml operations from PagerDuty's official OpenAPI spec:
+#   pnpm --filter @kit/engine catalog:import pagerduty   (from the runespacedev repo)
+#
+# `include` entries are the names listOperations() reports for this spec —
+# `summary || operationId || "METHOD /path"`. PagerDuty gives every operation a
+# summary, so entries are the summary text verbatim (case-sensitive, trailing
+# punctuation included). Where two operations share a summary (PagerDuty
+# declares "List schedules" on both the v2 and v3 routes) the entry must use
+# the explicit "METHOD /path" route form instead.
+#
+# Coverage target: every read tool of PagerDuty's official MCP server that maps
+# to a GET on the REST API, plus `list incident log entries`. The MCP server's
+# five Analytics read tools are deliberately absent — they are POST
+# /analytics/metrics/* and the catalog is GET-only.
+
+spec: https://raw.githubusercontent.com/PagerDuty/api-schema/main/reference/REST/openapiv3.json
+base_url: https://api.pagerduty.com
+parity_source: https://github.com/PagerDuty/pagerduty-mcp-server
+
+include:
+  # --- incidents ---------------------------------------------------------
+  - List incidents
+  - Get an incident
+  - List notes for an incident
+  - List log entries for an incident
+  - List alerts for an incident
+  - Get an alert
+  - Get Past Incidents
+  - Get Related Incidents
+  - Get Outlier Incident
+  - List related Change Events for an Incident
+  # --- services ----------------------------------------------------------
+  - List services
+  - Get a service
+  - List Change Events for a service
+  - List Business Services
+  - Get Business Service dependencies
+  - Get technical service dependencies
+  # --- directory ---------------------------------------------------------
+  - List teams
+  - Get a team
+  - List members of a team
+  - List users
+  - Get a user
+  - Get the current user
+  # --- on-call -----------------------------------------------------------
+  # "List schedules"/"Get a schedule" are ambiguous (v2 + /v3 both use them);
+  # the v2 routes are what the MCP server reads, so name them by route.
+  - GET /schedules
+  - GET /schedules/{id}
+  - List users on call.
+  - List all of the on-calls
+  - List escalation policies
+  - Get an escalation policy
+  # --- activity ----------------------------------------------------------
+  - List log entries
+  - Get a log entry
+  - List Change Events
+  - Get a Change Event
+  # --- routing and automation -------------------------------------------
+  - List alert grouping settings
+  - Get an Alert Grouping Setting
+  - List Event Orchestrations
+  - Get an Orchestration
+  - Get the Router for an Event Orchestration
+  - Get the Global Orchestration for an Event Orchestration
+  - Get the Service Orchestration for a Service
+  - List Incident Workflows
+  - Get an Incident Workflow
+  - List priorities
+  - List webhook subscriptions
+  - Get a webhook subscription
+  - List extension schemas
+  - Get an extension vendor
+  # --- status pages ------------------------------------------------------
+  - List Status Pages
+  - List Status Page Impacts
+  - List Status Page Severities
+  - List Status Page Statuses
+  - Get a Status Page Post
+  - List Status Page Post Updates
+
+rename:
+  List incidents: list incidents
+  Get an incident: get incident
+  List notes for an incident: list incident notes
+  List log entries for an incident: list incident log entries
+  List alerts for an incident: list alerts for incident
+  Get an alert: get alert for incident
+  Get Past Incidents: get past incidents
+  Get Related Incidents: get related incidents
+  Get Outlier Incident: get outlier incident
+  List related Change Events for an Incident: list incident change events
+
+  List services: list services
+  Get a service: get service
+  List Change Events for a service: list service change events
+  List Business Services: list business services
+  Get Business Service dependencies: get business service dependencies
+  Get technical service dependencies: get technical service dependencies
+
+  List teams: list teams
+  Get a team: get team
+  List members of a team: list team members
+  List users: list users
+  Get a user: get user
+  Get the current user: get current user
+
+  GET /schedules: list schedules
+  GET /schedules/{id}: get schedule
+  List users on call.: list schedule users
+  List all of the on-calls: list oncalls
+  List escalation policies: list escalation policies
+  Get an escalation policy: get escalation policy
+
+  List log entries: list log entries
+  Get a log entry: get log entry
+  List Change Events: list change events
+  Get a Change Event: get change event
+
+  List alert grouping settings: list alert grouping settings
+  Get an Alert Grouping Setting: get alert grouping setting
+  List Event Orchestrations: list event orchestrations
+  Get an Orchestration: get event orchestration
+  Get the Router for an Event Orchestration: get event orchestration router
+  Get the Global Orchestration for an Event Orchestration: get event orchestration global
+  Get the Service Orchestration for a Service: get service event orchestration
+  List Incident Workflows: list incident workflows
+  Get an Incident Workflow: get incident workflow
+  List priorities: list priorities
+  List webhook subscriptions: list webhook subscriptions
+  Get a webhook subscription: get webhook subscription
+  List extension schemas: list extension schemas
+  Get an extension vendor: get extension schema
+
+  List Status Pages: list status pages
+  List Status Page Impacts: list status page impacts
+  List Status Page Severities: list status page severities
+  List Status Page Statuses: list status page statuses
+  Get a Status Page Post: get status page post
+  List Status Page Post Updates: list status page post updates
