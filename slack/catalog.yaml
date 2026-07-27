@@ -1,8 +1,8 @@
 slug: slack
-version: 1.0.0
+version: 1.1.0
 name: Slack
 category: comms-messaging
-one_liner: Post messages, react, and read conversations in your Slack workspace.
+one_liner: Search and read Slack conversations, threads, users, and files, and post messages.
 api_domain: slack.com
 status: live
 credentials:
@@ -12,8 +12,9 @@ credentials:
 auth:
   scheme: bearer
   header: Authorization
-  env_vars: [SLACK_API_TOKEN]
-  value_template: "Bearer ${SLACK_API_TOKEN}"
+  env_vars:
+    - SLACK_API_TOKEN
+  value_template: Bearer ${SLACK_API_TOKEN}
 operations:
   - name: list conversations
     description: List channels, groups, and DMs in the workspace.
@@ -21,21 +22,696 @@ operations:
     url: https://slack.com/api/conversations.list
     read_only: true
     params:
-      - { name: types, type: string, required: false, location: query }
-      - { name: limit, type: integer, required: false, location: query }
+      - name: types
+        type: string
+        required: false
+        location: query
+        description: Comma-separated channel types to include, from public_channel, private_channel, mpim,
+          im. Default public_channel.
+      - name: exclude_archived
+        type: boolean
+        required: false
+        location: query
+        description: Exclude archived channels. Default false.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Page size. Default 100, must be under 1000.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: next_cursor from the previous response's response_metadata.
+      - name: team_id
+        type: string
+        required: false
+        location: query
+        description: Encoded team id. Required when the token belongs to an org-wide app.
+  - name: get conversation info
+    description: Get metadata about one conversation — name, topic, purpose, membership and archive state.
+    method: GET
+    url: https://slack.com/api/conversations.info
+    read_only: true
+    params:
+      - name: channel
+        type: string
+        required: true
+        location: query
+        description: Conversation ID.
+      - name: include_locale
+        type: boolean
+        required: false
+        location: query
+        description: Include the conversation's locale. Default false.
+      - name: include_num_members
+        type: boolean
+        required: false
+        location: query
+        description: Include the member count. Default false.
   - name: get conversation history
     description: Fetch recent messages for a conversation.
     method: GET
     url: https://slack.com/api/conversations.history
     read_only: true
     params:
-      - { name: channel, type: string, required: true, location: query }
-      - { name: limit, type: integer, required: false, location: query }
+      - name: channel
+        type: string
+        required: true
+        location: query
+        description: Conversation ID to fetch history for.
+      - name: oldest
+        type: string
+        required: false
+        location: query
+        description: Start of the time range, as a message ts. Default 0.
+      - name: latest
+        type: string
+        required: false
+        location: query
+        description: End of the time range, as a message ts. Defaults to now.
+      - name: inclusive
+        type: boolean
+        required: false
+        location: query
+        description: Include messages at the oldest/latest boundary. Ignored unless one is set.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Page size. Default 100, maximum 999.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: next_cursor from the previous response's response_metadata.
+      - name: include_all_metadata
+        type: boolean
+        required: false
+        location: query
+        description: Return all message metadata. Default false.
+  - name: list thread replies
+    description: Fetch a message thread — the parent message and its replies.
+    method: GET
+    url: https://slack.com/api/conversations.replies
+    read_only: true
+    params:
+      - name: channel
+        type: string
+        required: true
+        location: query
+        description: Conversation ID the thread lives in.
+      - name: ts
+        type: string
+        required: true
+        location: query
+        description: ts of the thread parent, or of any message in the thread.
+      - name: oldest
+        type: string
+        required: false
+        location: query
+        description: Start of the time range, as a message ts. Default 0.
+      - name: latest
+        type: string
+        required: false
+        location: query
+        description: End of the time range, as a message ts. Defaults to now.
+      - name: inclusive
+        type: boolean
+        required: false
+        location: query
+        description: Include messages at the oldest/latest boundary.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Page size. Default 1000.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: next_cursor from the previous response's response_metadata.
+      - name: include_all_metadata
+        type: boolean
+        required: false
+        location: query
+        description: Return all message metadata. Default false.
+  - name: list conversation members
+    description: List the user IDs belonging to a conversation.
+    method: GET
+    url: https://slack.com/api/conversations.members
+    read_only: true
+    params:
+      - name: channel
+        type: string
+        required: true
+        location: query
+        description: Conversation ID.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Page size. Default 100.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: next_cursor from the previous response's response_metadata.
+  - name: list user conversations
+    description: List the conversations a given user is a member of. Defaults to the calling user.
+    method: GET
+    url: https://slack.com/api/users.conversations
+    read_only: true
+    params:
+      - name: user
+        type: string
+        required: false
+        location: query
+        description: User ID. Defaults to the token's own user.
+      - name: types
+        type: string
+        required: false
+        location: query
+        description: Comma-separated channel types to include, from public_channel, private_channel, mpim,
+          im. Default public_channel.
+      - name: exclude_archived
+        type: boolean
+        required: false
+        location: query
+        description: Exclude archived channels. Default false.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Page size. Default 100, maximum 999.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: next_cursor from the previous response's response_metadata.
+      - name: team_id
+        type: string
+        required: false
+        location: query
+        description: Encoded team id. Required when the token belongs to an org-wide app.
+  - name: list users
+    description: List every user in the workspace, including deactivated accounts and bots. Always pass
+      limit — omitting it asks Slack for the whole directory in one response and can time out.
+    method: GET
+    url: https://slack.com/api/users.list
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: "Page size. No default: omitting it requests the entire directory."
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: next_cursor from the previous response's response_metadata.
+      - name: include_locale
+        type: boolean
+        required: false
+        location: query
+        description: Include each user's locale. Default false.
+      - name: team_id
+        type: string
+        required: false
+        location: query
+        description: Encoded team id. Required when the token belongs to an org-wide app.
+  - name: get user info
+    description: Get one user's identity — name, real name, title, timezone, admin flags and profile.
+    method: GET
+    url: https://slack.com/api/users.info
+    read_only: true
+    params:
+      - name: user
+        type: string
+        required: true
+        location: query
+        description: User ID.
+      - name: include_locale
+        type: boolean
+        required: false
+        location: query
+        description: Include the user's locale. Default false.
+  - name: lookup user by email
+    description: Find a workspace user by their registered email address.
+    method: GET
+    url: https://slack.com/api/users.lookupByEmail
+    read_only: true
+    params:
+      - name: email
+        type: string
+        required: true
+        location: query
+        description: Email address to look up.
+  - name: get user profile
+    description: Retrieve a user's profile, including custom fields and their current status.
+    method: GET
+    url: https://slack.com/api/users.profile.get
+    read_only: true
+    params:
+      - name: user
+        type: string
+        required: false
+        location: query
+        description: User to retrieve profile info for. Defaults to the token's own user.
+      - name: include_labels
+        type: boolean
+        required: false
+        location: query
+        description: Include labels for custom profile field IDs. Heavily rate-limited; not recommended.
+  - name: get user presence
+    description: Get a user's presence — active or away.
+    method: GET
+    url: https://slack.com/api/users.getPresence
+    read_only: true
+    params:
+      - name: user
+        type: string
+        required: false
+        location: query
+        description: User to get presence for. Defaults to the token's own user.
+  - name: search messages
+    description: Search messages the token's user can see. Requires a USER token with search:read — bot
+      tokens are rejected with not_allowed_token_type.
+    method: GET
+    url: https://slack.com/api/search.messages
+    read_only: true
+    params:
+      - name: query
+        type: string
+        required: true
+        location: query
+        description: Search query. Supports Slack search modifiers such as in:#channel and from:@user.
+      - name: count
+        type: integer
+        required: false
+        location: query
+        description: Results per page. Default 20, maximum 100.
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Page number. Default 1. Do not mix with cursor.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: "Cursormark pagination: send * for the first call, then next_cursor. Do not mix with page."
+      - name: sort
+        type: string
+        enum:
+          - score
+          - timestamp
+        required: false
+        location: query
+        description: Sort matches by relevance or recency. Default score.
+      - name: sort_dir
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: Sort direction. Default desc.
+      - name: highlight
+        type: boolean
+        required: false
+        location: query
+        description: Wrap matched terms in highlight markers.
+      - name: team_id
+        type: string
+        required: false
+        location: query
+        description: Encoded team id. Required when the token belongs to an org-wide app.
+  - name: search files
+    description: Search files the token's user can see. Requires a USER token with search:read — bot
+      tokens are rejected.
+    method: GET
+    url: https://slack.com/api/search.files
+    read_only: true
+    params:
+      - name: query
+        type: string
+        required: true
+        location: query
+        description: Search query.
+      - name: count
+        type: integer
+        required: false
+        location: query
+        description: Results per page. Default 20.
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Page number. Default 1.
+      - name: sort
+        type: string
+        enum:
+          - score
+          - timestamp
+        required: false
+        location: query
+        description: Sort matches by relevance or recency. Default score.
+      - name: sort_dir
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: Sort direction. Default desc.
+      - name: highlight
+        type: boolean
+        required: false
+        location: query
+        description: Wrap matched terms in highlight markers.
+      - name: team_id
+        type: string
+        required: false
+        location: query
+        description: Encoded team id. Required when the token belongs to an org-wide app.
+  - name: get message reactions
+    description: Get the reactions on one message or file. Supply exactly one target.
+    method: GET
+    url: https://slack.com/api/reactions.get
+    read_only: true
+    params:
+      - name: channel
+        type: string
+        required: false
+        location: query
+        description: Channel holding the message. Use with timestamp.
+      - name: timestamp
+        type: string
+        required: false
+        location: query
+        description: ts of the message to inspect. Use with channel.
+      - name: file
+        type: string
+        required: false
+        location: query
+        description: File ID to inspect instead of a message.
+      - name: file_comment
+        type: string
+        required: false
+        location: query
+        description: File comment ID to inspect instead of a message.
+      - name: full
+        type: boolean
+        required: false
+        location: query
+        description: Always return the complete reaction list rather than a truncated one.
+  - name: list user reactions
+    description: List the items a user has reacted to. Defaults to the token's own user.
+    method: GET
+    url: https://slack.com/api/reactions.list
+    read_only: true
+    params:
+      - name: user
+        type: string
+        required: false
+        location: query
+        description: Show reactions made by this user. Defaults to the token's own user.
+      - name: count
+        type: integer
+        required: false
+        location: query
+        description: Results per page. Default 100.
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Page number. Default 1.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Page size when using cursor pagination.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: next_cursor from the previous response's response_metadata.
+      - name: full
+        type: boolean
+        required: false
+        location: query
+        description: Always return the complete reaction list for each item.
+      - name: team_id
+        type: string
+        required: false
+        location: query
+        description: Encoded team id. Required when the token belongs to an org-wide app.
+  - name: list pinned items
+    description: List the items pinned in a channel.
+    method: GET
+    url: https://slack.com/api/pins.list
+    read_only: true
+    params:
+      - name: channel
+        type: string
+        required: true
+        location: query
+        description: Channel to list pinned items for.
+  - name: list files
+    description: List files visible to the token. Paginates with count/page and returns a paging object
+      rather than a cursor.
+    method: GET
+    url: https://slack.com/api/files.list
+    read_only: true
+    params:
+      - name: channel
+        type: string
+        required: false
+        location: query
+        description: Only files shared in this channel.
+      - name: user
+        type: string
+        required: false
+        location: query
+        description: Only files created by this user.
+      - name: ts_from
+        type: string
+        required: false
+        location: query
+        description: Only files created after this timestamp.
+      - name: ts_to
+        type: string
+        required: false
+        location: query
+        description: Only files created before this timestamp.
+      - name: types
+        type: string
+        required: false
+        location: query
+        description: Comma-separated file types to filter by, e.g. spaces,snippets. Default all.
+      - name: count
+        type: integer
+        required: false
+        location: query
+        description: Results per page. Default 100.
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Page number. Default 1.
+      - name: show_files_hidden_by_limit
+        type: boolean
+        required: false
+        location: query
+        description: Include files hidden by the workspace's file-history limit.
+      - name: team_id
+        type: string
+        required: false
+        location: query
+        description: Encoded team id. Required when the token belongs to an org-wide app.
+  - name: get file info
+    description: Get one file's metadata, its share history, and a page of its comments.
+    method: GET
+    url: https://slack.com/api/files.info
+    read_only: true
+    params:
+      - name: file
+        type: string
+        required: true
+        location: query
+        description: File ID.
+      - name: count
+        type: integer
+        required: false
+        location: query
+        description: Comments per page. Default 100.
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Comment page number. Default 1.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Comment page size when using cursor pagination.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: next_cursor from the previous response's response_metadata.
+  - name: get team info
+    description: Get the workspace's name, domain, icon and enterprise linkage.
+    method: GET
+    url: https://slack.com/api/team.info
+    read_only: true
+    params:
+      - name: team
+        type: string
+        required: false
+        location: query
+        description: Team ID to look up. Defaults to the token's own team.
+      - name: domain
+        type: string
+        required: false
+        location: query
+        description: Look up by domain instead of ID. Only honoured when team is omitted, and only for
+          same-enterprise domains.
+  - name: get team profile fields
+    description: Get the workspace's custom profile field definitions, so profile field IDs can be
+      resolved to labels.
+    method: GET
+    url: https://slack.com/api/team.profile.get
+    read_only: true
+    params:
+      - name: visibility
+        type: string
+        enum:
+          - all
+          - visible
+          - hidden
+        required: false
+        location: query
+        description: Which fields to return.
+  - name: list emoji
+    description: List the workspace's custom emoji and their image URLs or aliases.
+    method: GET
+    url: https://slack.com/api/emoji.list
+    read_only: true
+    params:
+      - name: include_categories
+        type: boolean
+        required: false
+        location: query
+        description: Include standard emoji category metadata.
+  - name: list usergroups
+    description: List the workspace's user groups.
+    method: GET
+    url: https://slack.com/api/usergroups.list
+    read_only: true
+    params:
+      - name: include_count
+        type: boolean
+        required: false
+        location: query
+        description: Include each group's member count.
+      - name: include_disabled
+        type: boolean
+        required: false
+        location: query
+        description: Include disabled user groups.
+      - name: include_users
+        type: boolean
+        required: false
+        location: query
+        description: Include each group's member list.
+      - name: team_id
+        type: string
+        required: false
+        location: query
+        description: Encoded team id. Required when the token belongs to an org-wide app.
+  - name: list usergroup users
+    description: List the users belonging to one user group.
+    method: GET
+    url: https://slack.com/api/usergroups.users.list
+    read_only: true
+    params:
+      - name: usergroup
+        type: string
+        required: true
+        location: query
+        description: User group ID.
+      - name: include_disabled
+        type: boolean
+        required: false
+        location: query
+        description: Include disabled user groups.
+      - name: team_id
+        type: string
+        required: false
+        location: query
+        description: Encoded team id. Required when the token belongs to an org-wide app.
+  - name: get message permalink
+    description: Get the permalink URL for a specific message.
+    method: GET
+    url: https://slack.com/api/chat.getPermalink
+    read_only: true
+    params:
+      - name: channel
+        type: string
+        required: true
+        location: query
+        description: Conversation containing the message.
+      - name: message_ts
+        type: string
+        required: true
+        location: query
+        description: ts of the message, unique within the channel.
+  - name: get dnd info
+    description: Get one user's Do Not Disturb schedule and whether snooze is active.
+    method: GET
+    url: https://slack.com/api/dnd.info
+    read_only: true
+    params:
+      - name: user
+        type: string
+        required: false
+        location: query
+        description: User to fetch status for. Defaults to the token's own user.
+      - name: team_id
+        type: string
+        required: false
+        location: query
+        description: Encoded team id the user belongs to. Required when the token belongs to an org-wide app.
+  - name: get team dnd info
+    description: Get the Do Not Disturb status of several users at once.
+    method: GET
+    url: https://slack.com/api/dnd.teamInfo
+    read_only: true
+    params:
+      - name: users
+        type: string
+        required: true
+        location: query
+        description: Comma-separated list of user IDs, e.g. U1234,W4567.
+      - name: team_id
+        type: string
+        required: false
+        location: query
+        description: Encoded team id the users belong to. Required when the token belongs to an org-wide app.
   - name: post message
     description: Send a message to a channel.
     method: POST
     url: https://slack.com/api/chat.postMessage
     read_only: false
     params:
-      - { name: channel, type: string, required: true, location: body }
-      - { name: text, type: string, required: true, location: body }
+      - name: channel
+        type: string
+        required: true
+        location: body
+      - name: text
+        type: string
+        required: true
+        location: body

@@ -1,0 +1,177 @@
+# Regenerate catalog.yaml operations for Slack:
+#   pnpm --filter @kit/engine catalog:import slack   (from the runespacedev repo)
+#
+# NOTE THE `spec:` — it is a LOCAL, HAND-AUTHORED file, not a vendor URL. Every
+# other skill in this catalog imports from the vendor's own OpenAPI 3
+# description. Slack does not publish one.
+#
+# ---------------------------------------------------------------------------
+# Why the fallback, measured rather than assumed
+# ---------------------------------------------------------------------------
+# The only Slack OpenAPI artifact that ever existed is
+# https://raw.githubusercontent.com/slackapi/slack-api-specs/master/web-api/slack_web_openapi_v2.json
+# The repo is ARCHIVED — last commit 2021-09-03 — and its CHANGELOG's August
+# 2020 promise of "an OpenAPI 3.0 spec for you soon" was never fulfilled.
+#
+# It was imported anyway, to measure rather than guess. It parses (the engine
+# accepts `swagger: "2.0"` because `looksLikeSpec` only requires an
+# openapi/swagger/paths field) and produces operations — but broken ones. Over
+# its 80 GET methods:
+#
+#   * 0 of 299 GET parameters carry a `schema` object. Swagger 2.0 puts `type`
+#     on the parameter itself, and extractParams reads `param.schema`, so
+#     EVERY parameter imports as `type: string` — `limit`, `count` and `page`
+#     stop being integers, `exclude_archived` and `inclusive` stop being
+#     booleans.
+#   * 0 parameters declare an enum, for the same reason. `sort`, `sort_dir`
+#     and `visibility` lose their allowed values.
+#   * 54 of 80 GET methods declare a QUERY parameter named `token`. The
+#     importer strips a HEADER param that matches auth.header, but not a query
+#     one, so every operation would mount the workspace credential as an
+#     ordinary tool input.
+#   * `required` is wrong where it matters: the spec does not mark `channel`
+#     required on conversations.history, so the skill's own required flag would
+#     have been dropped.
+#   * Methods added since 2021 are simply absent — bookmarks.list, search.all,
+#     search.files, users.profile.get.
+#
+# So the catalog is generated from `slack-read-methods.openapi.yaml`, an
+# OpenAPI 3.0 document written by hand from the current reference pages at
+# https://docs.slack.dev/reference/methods/. That keeps the pipeline uniform:
+# catalog.yaml is still generated, `catalog:import slack` is still idempotent,
+# and the hand-authored facts sit in a reviewable spec instead of being edited
+# into catalog.yaml where a re-import would erase them.
+#
+# ---------------------------------------------------------------------------
+# Coverage target
+# ---------------------------------------------------------------------------
+# Slack's official MCP server is hosted-only at https://mcp.slack.com/mcp
+# (docs: https://docs.slack.dev/ai/slack-mcp-server/, confidential OAuth, no
+# self-hostable repo). Its 12 read tools and the Web API method each is built
+# on:
+#
+#   slack_search_public / slack_search_public_and_private  search.messages,
+#                                                          search.files
+#   slack_search_channels                                  conversations.list
+#   slack_search_users                                     users.list,
+#                                                          users.lookupByEmail
+#   slack_search_emojis                                    emoji.list
+#   slack_read_channel                                     conversations.history
+#   slack_read_thread                                      conversations.replies
+#   slack_read_file                                        files.info
+#   slack_read_user_profile                                users.info,
+#                                                          users.profile.get
+#   slack_list_channel_members                             conversations.members
+#   slack_get_reactions                                    reactions.get
+#   slack_read_canvas                                      canvases.*
+#
+# All of those are covered except `slack_read_canvas`: canvas reads go through
+# canvases.sections.lookup, which is POST, and canvas files come back through
+# files.info, which is already here. The catalog then adds the workspace
+# directory reads the MCP server does not expose at all — conversations.info,
+# users.conversations, users.getPresence, reactions.list, pins.list,
+# files.list, team.info, team.profile.get, usergroups.list,
+# usergroups.users.list, chat.getPermalink, dnd.info, dnd.teamInfo.
+#
+# Deliberate gaps:
+#   * Write tools (slack_send_message, slack_add_reaction, slack_create_canvas,
+#     slack_schedule_message, …) — the importer is GET-only. The skill's own
+#     `post message` predates the import and is preserved by `keep`.
+#   * `bookmarks.list` and `auth.test` are documented as POST, so they cannot
+#     be catalog reads: the runtime classifies POST as mutating and refuses it
+#     unless writes are enabled.
+#   * `channels.list`, `groups.list`, `im.list` and `mpim.list` stopped
+#     functioning on 2021-02-24; `conversations.list` replaces all four.
+#   * `reminders.list` is deprecated — Slack states the reminder methods "have
+#     become degraded or useless" since March 2023.
+#   * `search.all` is the union of search.messages and search.files and would
+#     be a third tool covering no new ground.
+#
+# Token note: search.messages and search.files require a USER token with
+# search:read. Slack rejects a bot token with not_allowed_token_type. Every
+# other operation works with either.
+
+spec: slack-read-methods.openapi.yaml
+base_url: https://slack.com/api
+parity_source: https://docs.slack.dev/ai/slack-mcp-server/
+
+# Entries are operationIds — the Slack method names — because the hand-authored
+# spec deliberately omits `summary`, and listOperations falls through to
+# operationId.
+include:
+  # --- conversations -----------------------------------------------------
+  - conversations.list
+  - conversations.info
+  - conversations.history
+  - conversations.replies
+  - conversations.members
+  - users.conversations
+  # --- users -------------------------------------------------------------
+  - users.list
+  - users.info
+  - users.lookupByEmail
+  - users.profile.get
+  - users.getPresence
+  # --- search ------------------------------------------------------------
+  - search.messages
+  - search.files
+  # --- reactions and pins ------------------------------------------------
+  - reactions.get
+  - reactions.list
+  - pins.list
+  # --- files -------------------------------------------------------------
+  - files.list
+  - files.info
+  # --- workspace ---------------------------------------------------------
+  - team.info
+  - team.profile.get
+  - emoji.list
+  - usergroups.list
+  - usergroups.users.list
+  - chat.getPermalink
+  - dnd.info
+  - dnd.teamInfo
+
+rename:
+  conversations.list: list conversations
+  conversations.info: get conversation info
+  conversations.history: get conversation history
+  conversations.replies: list thread replies
+  conversations.members: list conversation members
+  users.conversations: list user conversations
+
+  users.list: list users
+  users.info: get user info
+  users.lookupByEmail: lookup user by email
+  users.profile.get: get user profile
+  users.getPresence: get user presence
+
+  search.messages: search messages
+  search.files: search files
+
+  reactions.get: get message reactions
+  reactions.list: list user reactions
+  pins.list: list pinned items
+
+  files.list: list files
+  files.info: get file info
+
+  team.info: get team info
+  team.profile.get: get team profile fields
+  emoji.list: list emoji
+  usergroups.list: list usergroups
+  usergroups.users.list: list usergroup users
+  chat.getPermalink: get message permalink
+  dnd.info: get dnd info
+  dnd.teamInfo: get team dnd info
+
+# Operations carried over from catalog.yaml verbatim. The import is GET-only,
+# so without this the skill's only write operation would be deleted on the
+# first re-import.
+keep:
+  - post message
+
+# No `overrides` block, and there never should be one for this skill: the spec
+# is hand-authored, so a wrong type or a missing enum is fixed in
+# slack-read-methods.openapi.yaml, at the source, rather than patched after
+# the fact.
