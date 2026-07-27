@@ -1,0 +1,292 @@
+# Regenerate catalog.yaml operations from Stripe's official OpenAPI 3 spec:
+#   pnpm --filter @kit/engine catalog:import stripe   (from the runespacedev repo)
+#
+# `include` entries are the names listOperations() reports for this spec —
+# `summary || operationId || "METHOD /path"`. Every Stripe operation carries a
+# summary, so entries are the summary text verbatim (case-sensitive; Stripe
+# capitalises product nouns mid-sentence: "List all PaymentIntents", "List a
+# Customer's PaymentMethods"). Stripe reuses a summary across product lines in
+# nine places — "List all disputes" names both `/v1/disputes` and
+# `/v1/issuing/disputes` — and those entries must use the explicit
+# "METHOD /path" route form instead. Each one is commented at its use site.
+#
+# Spec choice: `openapi/spec3.json` (the v1 tree) rather than
+# `latest/openapi.spec3.json`. Both declare `openapi: 3.0.0`, the same
+# `info.version` and the same `servers: [{url: https://api.stripe.com/}]`, and
+# the two are byte-identical for every operation imported here. `latest/` adds
+# 23 `/v2/*` paths (Core Events, Money Management) that this skill does not
+# cover and is minified, which makes it unreadable when diffing an import.
+#
+# Coverage target: Stripe's official MCP server no longer publishes a
+# per-resource read surface to mirror. As of the tool table on
+# https://docs.stripe.com/mcp its read tools are generic proxies —
+# `stripe_api_read` (any `GET /v1/*`), `stripe_api_search`, `stripe_api_details`,
+# `search_stripe_resources`, `fetch_stripe_resources`, `get_stripe_account_info`
+# — so literal parity would be all 262 GET operations in the spec. This catalog
+# is the union of:
+#
+#   (a) the nine per-resource read tools the server shipped before that
+#       redesign (`@stripe/agent-toolkit` <= 0.7.12, the last published
+#       concrete read surface): list_customers, list_products, list_prices,
+#       list_invoices, list_payment_intents, list_subscriptions, list_coupons,
+#       list_disputes, retrieve_balance; and
+#   (b) the `list` + `retrieve` pair for every core payments, billing, catalog
+#       and Connect object those tools imply — which is what `stripe_api_read`
+#       and `fetch_stripe_resources` reach in practice.
+#
+# The (a) tools were markedly THINNER than what is imported here: the old
+# `list_customers` accepted only `limit` and `email` — no `created`, no
+# `starting_after`/`ending_before`, no `expand`. Every operation below carries
+# the endpoint's full documented query surface.
+#
+# Deliberate gaps:
+#   * Write tools (create_customer, create_payment_link, create_invoice,
+#     finalize_invoice, create_refund, update_subscription, cancel_subscription,
+#     …) — the importer is GET-only.
+#   * `search_stripe_documentation`, `stripe_implementation_planner`,
+#     `send_stripe_mcp_feedback` and `stripe_report` are Stripe-hosted MCP
+#     services, not REST endpoints on api.stripe.com.
+#   * `/v1/*/search` (the query-language search endpoints) are GET but take a
+#     Stripe Query Language string; they are omitted for the same reason the
+#     list endpoints are preferred — the filters below are typed and the agent
+#     does not have to compose a query dialect.
+#   * Issuing, Treasury, Terminal, Climate, Identity, Tax Calculations, Sigma
+#     and Reporting are separate Stripe products with their own onboarding;
+#     none is in the (a) set and none is core to a payments/billing read
+#     surface.
+
+spec: https://raw.githubusercontent.com/stripe/openapi/master/openapi/spec3.json
+base_url: https://api.stripe.com
+parity_source: https://docs.stripe.com/mcp
+
+include:
+  # --- balance and money movement ---------------------------------------
+  - Retrieve balance
+  # "List all balance transactions"/"Retrieve a balance transaction" also name
+  # the legacy /v1/balance/history routes; pin the current ones by route.
+  - GET /v1/balance_transactions
+  - GET /v1/balance_transactions/{id}
+  - List all payouts
+  - Retrieve a payout
+  - List all transfers
+  - Retrieve a transfer
+  - List all application fees
+  - Retrieve an application fee
+  # --- payments ----------------------------------------------------------
+  - List all charges
+  - Retrieve a charge
+  - List all PaymentIntents
+  - Retrieve a PaymentIntent
+  - List all SetupIntents
+  - Retrieve a SetupIntent
+  # "List all refunds" also names GET /v1/charges/{charge}/refunds.
+  - GET /v1/refunds
+  - Retrieve a refund
+  # "List all disputes"/"Retrieve a dispute" also name the Issuing routes.
+  - GET /v1/disputes
+  - GET /v1/disputes/{dispute}
+  - List PaymentMethods
+  - Retrieve a PaymentMethod
+  # --- customers ---------------------------------------------------------
+  - List all customers
+  - Retrieve a customer
+  - List a Customer's PaymentMethods
+  - List customer balance transactions
+  # --- billing: invoices -------------------------------------------------
+  - List all invoices
+  - Retrieve an invoice
+  - Retrieve an invoice's line items
+  - List all invoice items
+  - Retrieve an invoice item
+  # --- billing: subscriptions -------------------------------------------
+  - List subscriptions
+  # "Retrieve a subscription" also names the nested customer route.
+  - GET /v1/subscriptions/{subscription_exposed_id}
+  - List all subscription items
+  - Retrieve a subscription item
+  - List all schedules
+  - Retrieve a schedule
+  - List all credit notes
+  - Retrieve a credit note
+  - List all quotes
+  - Retrieve a quote
+  # --- catalog -----------------------------------------------------------
+  - List all products
+  # "Retrieve a product" also names GET /v1/climate/products/{product}.
+  - GET /v1/products/{id}
+  - List all prices
+  - Retrieve a price
+  - List all plans
+  - Retrieve a plan
+  - List all coupons
+  - Retrieve a coupon
+  - List all promotion codes
+  - Retrieve a promotion code
+  - List all tax rates
+  - Retrieve a tax rate
+  - List all tax codes
+  - Retrieve a tax code
+  # --- checkout and payment links ---------------------------------------
+  - List all Checkout Sessions
+  - Retrieve a Checkout Session
+  - Retrieve a Checkout Session's line items
+  - List all payment links
+  - Retrieve payment link
+  - Retrieve a payment link's line items
+  # --- account and Connect ----------------------------------------------
+  # "Retrieve account" names BOTH /v1/account (the caller's own account) and
+  # /v1/accounts/{account} (a connected account); both are wanted, so both use
+  # the route form.
+  - GET /v1/account
+  - List all connected accounts
+  - GET /v1/accounts/{account}
+  # --- platform ----------------------------------------------------------
+  - List all events
+  - Retrieve an event
+  - List all files
+  - Retrieve a file
+  - List all webhook endpoints
+  - Retrieve a webhook endpoint
+
+rename:
+  Retrieve balance: retrieve balance
+  GET /v1/balance_transactions: list balance transactions
+  GET /v1/balance_transactions/{id}: get balance transaction
+  List all payouts: list payouts
+  Retrieve a payout: get payout
+  List all transfers: list transfers
+  Retrieve a transfer: get transfer
+  List all application fees: list application fees
+  Retrieve an application fee: get application fee
+
+  List all charges: list charges
+  Retrieve a charge: get charge
+  List all PaymentIntents: list payment intents
+  Retrieve a PaymentIntent: get payment intent
+  List all SetupIntents: list setup intents
+  Retrieve a SetupIntent: get setup intent
+  GET /v1/refunds: list refunds
+  Retrieve a refund: get refund
+  GET /v1/disputes: list disputes
+  GET /v1/disputes/{dispute}: get dispute
+  List PaymentMethods: list payment methods
+  Retrieve a PaymentMethod: get payment method
+
+  List all customers: list customers
+  Retrieve a customer: get customer
+  List a Customer's PaymentMethods: list customer payment methods
+  List customer balance transactions: list customer balance transactions
+
+  List all invoices: list invoices
+  Retrieve an invoice: get invoice
+  Retrieve an invoice's line items: list invoice line items
+  List all invoice items: list invoice items
+  Retrieve an invoice item: get invoice item
+
+  List subscriptions: list subscriptions
+  GET /v1/subscriptions/{subscription_exposed_id}: get subscription
+  List all subscription items: list subscription items
+  Retrieve a subscription item: get subscription item
+  List all schedules: list subscription schedules
+  Retrieve a schedule: get subscription schedule
+  List all credit notes: list credit notes
+  Retrieve a credit note: get credit note
+  List all quotes: list quotes
+  Retrieve a quote: get quote
+
+  List all products: list products
+  GET /v1/products/{id}: get product
+  List all prices: list prices
+  Retrieve a price: get price
+  List all plans: list plans
+  Retrieve a plan: get plan
+  List all coupons: list coupons
+  Retrieve a coupon: get coupon
+  List all promotion codes: list promotion codes
+  Retrieve a promotion code: get promotion code
+  List all tax rates: list tax rates
+  Retrieve a tax rate: get tax rate
+  List all tax codes: list tax codes
+  Retrieve a tax code: get tax code
+
+  List all Checkout Sessions: list checkout sessions
+  Retrieve a Checkout Session: get checkout session
+  Retrieve a Checkout Session's line items: list checkout session line items
+  List all payment links: list payment links
+  Retrieve payment link: get payment link
+  Retrieve a payment link's line items: list payment link line items
+
+  GET /v1/account: get account
+  List all connected accounts: list connected accounts
+  GET /v1/accounts/{account}: get connected account
+
+  List all events: list events
+  Retrieve an event: get event
+  List all files: list files
+  Retrieve a file: get file
+  List all webhook endpoints: list webhook endpoints
+  Retrieve a webhook endpoint: get webhook endpoint
+
+# Curated corrections layered over the spec after import, keyed by the catalog
+# name (i.e. post-`rename`); `*` applies to every operation carrying the param.
+# They live here rather than in catalog.yaml because a re-import rewrites every
+# field but `description` and reserialises the YAML, which would drop both the
+# edit and any comment explaining it.
+overrides:
+  "*":
+    params:
+      # hand-authored: type + description on Stripe's eight date-range filters.
+      # Every one of them is declared as
+      #   schema: { anyOf: [ {type: object, title: range_query_specs,
+      #                       properties: {gt, gte, lt, lte: integer}},
+      #                      {type: integer} ] }
+      # with `style: deepObject`. The schema has no top-level `type`, so
+      # extractParams maps it to `string` — which is wrong for either branch.
+      # A catalog param is one scalar name/value pair, so only the second
+      # branch (the exact Unix timestamp) is expressible; the object branch
+      # serialises as `created[gte]=…&created[lte]=…`, which needs four extra
+      # parameter names the importer has no way to synthesise. The type is
+      # corrected to `integer` and each description states the scalar meaning,
+      # replacing the spec's "during the given date interval" wording, which
+      # would otherwise promise range filtering the tool cannot perform.
+      created:
+        type: integer
+        description: >-
+          Creation time as a Unix timestamp (seconds). Matches objects created
+          at exactly this second; Stripe's range form (created[gte],
+          created[lte]) is a deepObject and is not expressible here.
+      arrival_date:
+        type: integer
+        description: >-
+          Payout arrival date as a Unix timestamp (seconds), matched exactly.
+          Stripe's range form (arrival_date[gte]) is not expressible here.
+      due_date:
+        type: integer
+        description: >-
+          Invoice due date as a Unix timestamp (seconds), matched exactly.
+          Stripe's range form (due_date[gte]) is not expressible here.
+      current_period_start:
+        type: integer
+        description: >-
+          Start of the subscription's current billing period as a Unix
+          timestamp (seconds), matched exactly. Range form not expressible.
+      current_period_end:
+        type: integer
+        description: >-
+          End of the subscription's current billing period as a Unix timestamp
+          (seconds), matched exactly. Range form not expressible.
+      canceled_at:
+        type: integer
+        description: >-
+          Cancellation time as a Unix timestamp (seconds), matched exactly.
+          Range form not expressible.
+      completed_at:
+        type: integer
+        description: >-
+          Completion time as a Unix timestamp (seconds), matched exactly.
+          Range form not expressible.
+      released_at:
+        type: integer
+        description: >-
+          Release time as a Unix timestamp (seconds), matched exactly. Range
+          form not expressible.
