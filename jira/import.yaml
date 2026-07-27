@@ -1,0 +1,177 @@
+# Regenerate catalog.yaml operations from Atlassian's official Jira Cloud
+# platform REST v3 OpenAPI description:
+#   pnpm --filter @kit/engine catalog:import jira   (from the runespacedev repo)
+#
+# `include` entries are the names listOperations() reports for this spec —
+# `summary || operationId || "METHOD /path"`. Every Jira operation carries a
+# summary and no two GET summaries collide, so each entry is the summary text
+# verbatim (case-sensitive, trailing "(GET)" included). The explicit
+# `"GET /path"` route form is always accepted if that ever changes.
+#
+# Jira Cloud is a per-site API: `base_url` templates the site host into every
+# URL (`https://yourteam.atlassian.net`), matching the convention the catalog
+# has used since the skill's first three hand-written operations, so the
+# existing email + API-token basic auth keeps working unchanged. The spec's own
+# `servers` entry is the placeholder host `https://your-domain.atlassian.net`,
+# which is why the host cannot come from the spec.
+#
+# Coverage target: every read tool of Atlassian's official Remote MCP Server
+# that maps to a REST GET, plus the core read surface those tools imply
+# (comments, changelog, worklogs, fields, statuses, users, filters,
+# dashboards). MCP read tools and their endpoints:
+#   getJiraIssue                     GET /issue/{issueIdOrKey}
+#   searchJiraIssuesUsingJql         GET /search/jql
+#   getTransitionsForJiraIssue       GET /issue/{issueIdOrKey}/transitions
+#   getJiraIssueRemoteIssueLinks     GET /issue/{issueIdOrKey}/remotelink
+#   getIssueLinkTypes                GET /issueLinkType
+#   getVisibleJiraProjects           GET /project/search
+#   getJiraProjectIssueTypesMetadata GET /issue/createmeta/{p}/issuetypes
+#   getJiraIssueTypeMetaWithFields   GET /issue/createmeta/{p}/issuetypes/{t}
+#   lookupJiraAccountId              GET /user/search
+#   atlassianUserInfo                GET /myself
+#
+# Deliberate gaps:
+#   * Write tools (createJiraIssue, editJiraIssue, transitionJiraIssue,
+#     addCommentToJiraIssue, addWorklogToJiraIssue) are out of scope — the
+#     importer is GET-only. The skill's own `create issue` predates the import
+#     and is preserved by `keep`.
+#   * getAccessibleAtlassianResources reads
+#     api.atlassian.com/oauth/token/accessible-resources, an OAuth-only
+#     endpoint outside this spec and outside this skill's basic-auth scheme.
+#   * searchAtlassian / fetchAtlassian / getTeamworkGraph* are cross-product
+#     Rovo services with no single Jira REST endpoint behind them.
+#   * `GET /rest/api/3/search` (the old JQL search with `startAt`) is excluded:
+#     its own summary in the spec is "Currently being removed. Search for
+#     issues using JQL (GET)". `search issues` binds to `/search/jql`, whose
+#     pagination is `nextPageToken`, not `startAt`.
+
+spec: https://developer.atlassian.com/cloud/jira/platform/swagger-v3.v3.json
+base_url: https://{base_url}
+parity_source: https://support.atlassian.com/atlassian-rovo-mcp-server/docs/supported-tools/
+
+include:
+  # --- issues ------------------------------------------------------------
+  - Search for issues using JQL enhanced search (GET)
+  - Get issue
+  - Get comments
+  - Get comment
+  - Get changelogs
+  - Get transitions
+  - Get issue worklogs
+  - Get issue watchers
+  - Get votes
+  - Get edit issue metadata
+  - Get remote issue links
+  - Get issue picker suggestions
+  - Get issue link
+  - Get issue link types
+  - Get attachment metadata
+  - Get create metadata issue types for a project
+  - Get create field metadata for a project and issue type id
+  # --- projects ----------------------------------------------------------
+  - Get projects paginated
+  - Get project
+  - Get recent projects
+  - Get project components
+  - Get project versions
+  - Get all statuses for project
+  - Get project roles for project
+  # --- configuration -----------------------------------------------------
+  - Get all issue types for user
+  - Get issue type
+  - Get fields
+  - Get all statuses
+  - Get status
+  - Search priorities
+  - Search resolutions
+  - Get all labels
+  - Get field reference data (GET)
+  # --- people ------------------------------------------------------------
+  - Get current user
+  - Get user
+  - Find users
+  - Find users assignable to issues
+  - Get all users
+  - Get users from group
+  - Find groups
+  # --- saved views -------------------------------------------------------
+  - Search for filters
+  - Get filter
+  - Get my filters
+  - Get all dashboards
+  - Get dashboard
+  # --- instance ----------------------------------------------------------
+  - Get my permissions
+  - Get Jira instance info
+
+rename:
+  Search for issues using JQL enhanced search (GET): search issues
+  Get issue: get issue
+  Get comments: list issue comments
+  Get comment: get issue comment
+  Get changelogs: list issue changelog
+  Get transitions: list issue transitions
+  Get issue worklogs: list issue worklogs
+  Get issue watchers: list issue watchers
+  Get votes: get issue votes
+  Get edit issue metadata: get issue edit metadata
+  Get remote issue links: list issue remote links
+  Get issue picker suggestions: find issues by text
+  Get issue link: get issue link
+  Get issue link types: list issue link types
+  Get attachment metadata: get attachment metadata
+  Get create metadata issue types for a project: list project issue types metadata
+  Get create field metadata for a project and issue type id: list issue type field metadata
+
+  Get projects paginated: list projects
+  Get project: get project
+  Get recent projects: list recent projects
+  Get project components: list project components
+  Get project versions: list project versions
+  Get all statuses for project: list project statuses
+  Get project roles for project: list project roles
+
+  Get all issue types for user: list issue types
+  Get issue type: get issue type
+  Get fields: list fields
+  Get all statuses: list statuses
+  Get status: get status
+  Search priorities: list priorities
+  Search resolutions: list resolutions
+  Get all labels: list labels
+  Get field reference data (GET): get jql reference data
+
+  Get current user: get current user
+  Get user: get user
+  Find users: search users
+  Find users assignable to issues: find assignable users
+  Get all users: list users
+  Get users from group: list group members
+  Find groups: find groups
+
+  Search for filters: search filters
+  Get filter: get filter
+  Get my filters: list my filters
+  Get all dashboards: list dashboards
+  Get dashboard: get dashboard
+
+  Get my permissions: get my permissions
+  Get Jira instance info: get instance info
+
+# Operations carried over from catalog.yaml verbatim. The import is GET-only,
+# so without this the skill's only write operation would be deleted on the
+# first re-import.
+keep:
+  - create issue
+
+# Curated corrections layered over the spec after import, keyed by the catalog
+# name (i.e. post-`rename`). `*` applies to every operation that has the param.
+overrides:
+  "*":
+    params:
+      # hand-authored: `base_url` is not a spec parameter — it is the site host
+      # the importer auto-declares from `base_url:` above, so the spec cannot
+      # describe it. The guidance is the same on all 47 operations and is the
+      # text the skill's original hand-written operations carried.
+      base_url:
+        description: Your site host, e.g. yourteam.atlassian.net
