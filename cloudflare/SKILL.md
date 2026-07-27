@@ -89,7 +89,7 @@ buckets and rulesets use a `cursor` instead.
 ### Workers
 
 - `list workers` — filter by `tags`
-- `download worker script` — returns the script source
+- `download worker script` — returns raw JavaScript, not JSON; long scripts are truncated in chat
 - `get worker settings`
 - `list worker domains` — filter by `zone_id`, `zone_name`, `service`, `hostname`, `environment`
 - `get workers subdomain`

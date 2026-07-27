@@ -24,6 +24,17 @@
 #   * Only arguments the reference page documents are listed. Defaults and
 #     limits live in the description text because Slack does not express them
 #     as schema keywords.
+#   * Keep every `description` under 200 characters. firstString() truncates at
+#     that length and cuts mid-word.
+#
+# EDITING A DESCRIPTION HERE IS NOT ENOUGH ON ITS OWN. mergeOperations keeps the
+# description already in catalog.yaml over the one an import produces — that is
+# what protects hand-curated text everywhere else in this catalog, but it also
+# means a changed description here will not land while catalog.yaml still holds
+# the old one. Delete that operation's `description:` line from catalog.yaml
+# once, then re-import; the two agree again afterwards and stay byte-identical
+# across re-imports. Params, types, enums and required flags are NOT affected —
+# those come from this file on every import.
 
 openapi: 3.0.3
 info:
@@ -41,10 +52,12 @@ paths:
   /conversations.list:
     get:
       operationId: conversations.list
+      # Keep under 200 characters: firstString() truncates a description at
+      # that length, and it cuts mid-word.
       description: >-
-        List channels, private channels, DMs and group DMs in the workspace.
-        Filters are applied after a page is fetched, so a page can come back
-        near-empty while more results remain — always follow next_cursor.
+        List channels, private channels, DMs and group DMs. Filters apply after
+        a page is fetched, so a page can come back near-empty while more results
+        remain — always follow next_cursor.
       parameters:
         - { name: types, in: query, required: false, schema: { type: string }, description: "Comma-separated channel types to include, from public_channel, private_channel, mpim, im. Default public_channel." }
         - { name: exclude_archived, in: query, required: false, schema: { type: boolean }, description: "Exclude archived channels. Default false." }

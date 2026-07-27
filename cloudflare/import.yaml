@@ -236,7 +236,7 @@ keep:
 # `page`/`per_page`). Recorded here so the absence reads as a finding, not an
 # omission.
 #
-# 22 operation DESCRIPTIONS are hand-written in catalog.yaml rather than taken
+# 23 operation DESCRIPTIONS are hand-written in catalog.yaml rather than taken
 # from the spec, because Cloudflare's summaries are written for a docs sidebar
 # where the product is implied by the surrounding page, and a catalog
 # description is an agent's tool description with no such context. The two
@@ -247,4 +247,28 @@ keep:
 # Subdomain" name no product at all. `mergeOperations` keeps an existing
 # description over the spec summary, so those edits survive every re-import —
 # verified byte-identical. Edit them in catalog.yaml; a comment marking them
-# there would not survive, since the CLI reserialises that file.
+# THERE would not survive, since the CLI reserialises that file, so the
+# complete list lives here instead:
+#
+#   get dns analytics report          get dns analytics report by time
+#   get zone dns settings             get account dns settings
+#   list account logpush jobs         list zone logpush jobs
+#   get worker settings               list worker domains
+#   get workers subdomain             list worker routes
+#   get worker route                  list kv namespaces
+#   get kv namespace                  list kv keys
+#   list r2 buckets                   get r2 bucket
+#   list pages projects               get pages project
+#   list pages deployments            get pages deployment
+#   list load balancer pools          list load balancer monitors
+#   download worker script
+#
+# `download worker script` is the odd one out: its summary ("Download Worker")
+# is accurate, but the endpoint returns application/javascript with no JSON
+# envelope and the runtime truncates a tool result at 4,000 characters. Its
+# description says both things outright so the model does not reach for it as a
+# way to read a whole Worker.
+#
+# Three more descriptions are hand-written but predate this import — `list
+# zones`, `list dns records` and the kept `purge cache` — and are preserved the
+# same way.

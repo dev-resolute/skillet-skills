@@ -17,7 +17,9 @@ auth:
   value_template: Bearer ${SLACK_API_TOKEN}
 operations:
   - name: list conversations
-    description: List channels, groups, and DMs in the workspace.
+    description: List channels, private channels, DMs and group DMs. Filters apply after a page is
+      fetched, so a page can come back near-empty while more results remain — always follow
+      next_cursor.
     method: GET
     url: https://slack.com/api/conversations.list
     read_only: true
@@ -70,7 +72,8 @@ operations:
         location: query
         description: Include the member count. Default false.
   - name: get conversation history
-    description: Fetch recent messages for a conversation.
+    description: Fetch a page of messages and events from a conversation, newest first. Thread replies
+      are not included — read those with conversations.replies.
     method: GET
     url: https://slack.com/api/conversations.history
     read_only: true

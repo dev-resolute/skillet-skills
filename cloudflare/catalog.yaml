@@ -38,14 +38,17 @@ operations:
         type: string
         required: false
         location: query
+        description: Name of the account.
       - name: page
         type: number
         required: false
         location: query
+        description: Page number of paginated results.
       - name: per_page
         type: number
         required: false
         location: query
+        description: Maximum number of results per page.
       - name: direction
         type: string
         enum:
@@ -53,6 +56,7 @@ operations:
           - desc
         required: false
         location: query
+        description: Direction to order results.
   - name: get account
     description: Account Details
     method: GET
@@ -63,6 +67,7 @@ operations:
         type: string
         required: true
         location: path
+        description: Account identifier tag.
   - name: list account members
     description: List Members
     method: GET
@@ -73,6 +78,7 @@ operations:
         type: string
         required: true
         location: path
+        description: Account identifier tag.
       - name: order
         type: string
         enum:
@@ -82,6 +88,7 @@ operations:
           - status
         required: false
         location: query
+        description: Field to order results by.
       - name: status
         type: string
         enum:
@@ -90,14 +97,17 @@ operations:
           - rejected
         required: false
         location: query
+        description: A member's status in the account.
       - name: page
         type: number
         required: false
         location: query
+        description: Page number of paginated results.
       - name: per_page
         type: number
         required: false
         location: query
+        description: Maximum number of results per page.
       - name: direction
         type: string
         enum:
@@ -105,6 +115,7 @@ operations:
           - desc
         required: false
         location: query
+        description: Direction to order results.
   - name: list account roles
     description: List Roles
     method: GET
@@ -115,14 +126,17 @@ operations:
         type: string
         required: true
         location: path
+        description: Account identifier tag.
       - name: page
         type: number
         required: false
         location: query
+        description: Page number of paginated results.
       - name: per_page
         type: number
         required: false
         location: query
+        description: Number of roles per page.
   - name: list account api tokens
     description: List Tokens
     method: GET
@@ -133,14 +147,17 @@ operations:
         type: string
         required: true
         location: path
+        description: Account identifier tag.
       - name: page
         type: number
         required: false
         location: query
+        description: Page number of paginated results.
       - name: per_page
         type: number
         required: false
         location: query
+        description: Maximum number of results per page.
       - name: direction
         type: string
         enum:
@@ -148,6 +165,7 @@ operations:
           - desc
         required: false
         location: query
+        description: Direction to order results.
       - name: include_expired
         type: boolean
         required: false
@@ -163,6 +181,14 @@ operations:
         type: string
         required: false
         location: query
+        description: |-
+          A domain name. Optional filter operators can be provided to extend refine the search:
+            * `equal` (default)
+            * `not_equal`
+            * `starts_with`
+            * `ends_with`
+            * `contains`
+            * `starts_with_case_sensi
       - name: status
         type: string
         enum:
@@ -172,6 +198,7 @@ operations:
           - moved
         required: false
         location: query
+        description: Specify a zone status to filter by.
       - name: type
         type: array
         items_type: string
@@ -182,22 +209,36 @@ operations:
           - internal
         required: false
         location: query
+        description: Zone types to filter by. Multiple types can be specified as a comma-separated list
+          (e.g., ?type=full,partial,secondary). When this parameter is not provided, zones with type
+          "internal" are excluded fr
       - name: account.id
         type: string
         required: false
         location: query
+        description: Filter by an account ID.
       - name: account.name
         type: string
         required: false
         location: query
+        description: |-
+          An account Name. Optional filter operators can be provided to extend refine the search:
+            * `equal` (default)
+            * `not_equal`
+            * `starts_with`
+            * `ends_with`
+            * `contains`
+            * `starts_with_case_sen
       - name: page
         type: number
         required: false
         location: query
+        description: Page number of paginated results.
       - name: per_page
         type: number
         required: false
         location: query
+        description: Number of zones per page.
       - name: order
         type: string
         enum:
@@ -208,6 +249,7 @@ operations:
           - plan.id
         required: false
         location: query
+        description: Field to order zones by.
       - name: direction
         type: string
         enum:
@@ -215,6 +257,7 @@ operations:
           - desc
         required: false
         location: query
+        description: Direction to order zones.
       - name: match
         type: string
         enum:
@@ -222,6 +265,7 @@ operations:
           - all
         required: false
         location: query
+        description: Whether to match all search requirements or at least one (any).
   - name: get zone
     description: Zone Details
     method: GET
@@ -232,6 +276,7 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier
   - name: list zone settings
     description: Get all zone settings
     method: GET
@@ -242,6 +287,7 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier
   - name: get zone setting
     description: Get zone setting
     method: GET
@@ -252,10 +298,12 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier
       - name: setting_id
         type: string
         required: true
         location: path
+        description: Setting name
   - name: list zone plans
     description: List Available Plans
     method: GET
@@ -266,6 +314,7 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier
   - name: list dns records
     description: List DNS records for a zone.
     method: GET
@@ -276,26 +325,32 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
       - name: name
         type: string
         required: false
         location: query
+        description: Exact value of the DNS record name. This is a convenience alias for `name.exact`.
       - name: name.exact
         type: string
         required: false
         location: query
+        description: Exact value of the DNS record name. Name filters are case-insensitive.
       - name: name.contains
         type: string
         required: false
         location: query
+        description: Substring of the DNS record name. Name filters are case-insensitive.
       - name: name.startswith
         type: string
         required: false
         location: query
+        description: Prefix of the DNS record name. Name filters are case-insensitive.
       - name: name.endswith
         type: string
         required: false
         location: query
+        description: Suffix of the DNS record name. Name filters are case-insensitive.
       - name: type
         type: string
         enum:
@@ -322,30 +377,37 @@ operations:
           - URI
         required: false
         location: query
+        description: Record type.
       - name: content
         type: string
         required: false
         location: query
+        description: Exact value of the DNS record content. This is a convenience alias for `content.exact`.
       - name: content.exact
         type: string
         required: false
         location: query
+        description: Exact value of the DNS record content. Content filters are case-insensitive.
       - name: content.contains
         type: string
         required: false
         location: query
+        description: Substring of the DNS record content. Content filters are case-insensitive.
       - name: content.startswith
         type: string
         required: false
         location: query
+        description: Prefix of the DNS record content. Content filters are case-insensitive.
       - name: content.endswith
         type: string
         required: false
         location: query
+        description: Suffix of the DNS record content. Content filters are case-insensitive.
       - name: proxied
         type: boolean
         required: false
         location: query
+        description: Whether the record is receiving the performance and security benefits of Cloudflare.
       - name: match
         type: string
         enum:
@@ -353,66 +415,100 @@ operations:
           - all
         required: false
         location: query
+        description: Whether to match all search requirements or at least one (any). If set to `all`, acts
+          like a logical AND between filters. If set to `any`, acts like a logical OR instead. Note
+          that the interaction bet
       - name: comment
         type: string
         required: false
         location: query
+        description: Exact value of the DNS record comment. This is a convenience alias for `comment.exact`.
       - name: comment.present
         type: string
         required: false
         location: query
+        description: If this parameter is present, only records *with* a comment are returned.
       - name: comment.absent
         type: string
         required: false
         location: query
+        description: If this parameter is present, only records *without* a comment are returned.
       - name: comment.exact
         type: string
         required: false
         location: query
+        description: Exact value of the DNS record comment. Comment filters are case-insensitive.
       - name: comment.contains
         type: string
         required: false
         location: query
+        description: Substring of the DNS record comment. Comment filters are case-insensitive.
       - name: comment.startswith
         type: string
         required: false
         location: query
+        description: Prefix of the DNS record comment. Comment filters are case-insensitive.
       - name: comment.endswith
         type: string
         required: false
         location: query
+        description: Suffix of the DNS record comment. Comment filters are case-insensitive.
       - name: tag
         type: string
         required: false
         location: query
+        description: >-
+          Condition on the DNS record tag.
+
+
+          Parameter values can be of the form `<tag-name>:<tag-value>` to search for an exact
+          `name:value` pair, or just `<tag-name>` to search for records with a specific tag 
       - name: tag.present
         type: string
         required: false
         location: query
+        description: Name of a tag which must be present on the DNS record. Tag filters are case-insensitive.
       - name: tag.absent
         type: string
         required: false
         location: query
+        description: Name of a tag which must *not* be present on the DNS record. Tag filters are
+          case-insensitive.
       - name: tag.exact
         type: string
         required: false
         location: query
+        description: A tag and value, of the form `<tag-name>:<tag-value>`. The API will only return DNS
+          records that have a tag named `<tag-name>` whose value is `<tag-value>`. Tag filters are
+          case-insensitive.
       - name: tag.contains
         type: string
         required: false
         location: query
+        description: A tag and value, of the form `<tag-name>:<tag-value>`. The API will only return DNS
+          records that have a tag named `<tag-name>` whose value contains `<tag-value>`. Tag filters
+          are case-insensitive.
       - name: tag.startswith
         type: string
         required: false
         location: query
+        description: A tag and value, of the form `<tag-name>:<tag-value>`. The API will only return DNS
+          records that have a tag named `<tag-name>` whose value starts with `<tag-value>`. Tag
+          filters are case-insensitive.
       - name: tag.endswith
         type: string
         required: false
         location: query
+        description: A tag and value, of the form `<tag-name>:<tag-value>`. The API will only return DNS
+          records that have a tag named `<tag-name>` whose value ends with `<tag-value>`. Tag
+          filters are case-insensitive.
       - name: search
         type: string
         required: false
         location: query
+        description: "Allows searching in multiple properties of a DNS record simultaneously. This parameter
+          is intended for human users, not automation. Its exact behavior is intentionally left
+          unspecified and is subject "
       - name: tag_match
         type: string
         enum:
@@ -420,14 +516,19 @@ operations:
           - all
         required: false
         location: query
+        description: Whether to match all tag search requirements or at least one (any). If set to `all`,
+          acts like a logical AND between tag filters. If set to `any`, acts like a logical OR
+          instead. Note that the regular
       - name: page
         type: number
         required: false
         location: query
+        description: Page number of paginated results.
       - name: per_page
         type: number
         required: false
         location: query
+        description: Number of DNS records per page.
       - name: order
         type: string
         enum:
@@ -438,6 +539,7 @@ operations:
           - proxied
         required: false
         location: query
+        description: Field to order DNS records by.
       - name: direction
         type: string
         enum:
@@ -445,18 +547,28 @@ operations:
           - desc
         required: false
         location: query
+        description: Direction to order DNS records in.
       - name: include_shadow_metadata
         type: boolean
         required: false
         location: query
+        description: Whether to include shadow metadata in the `meta` field of each record in the response.
+          See [Shadowed
+          records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).
       - name: shadowed_by_name
         type: string
         required: false
         location: query
+        description: Filters to records at or below the given NS delegation name, excluding the NS records
+          that form the delegation itself. The value must be a subdomain of the zone; the zone apex
+          is not accepted. Require
       - name: shadowing_name
         type: string
         required: false
         location: query
+        description: Returns NS records that shadow the given name, searching at the name itself and each of
+          its ancestor names within the zone, excluding the zone apex. The value must be a subdomain
+          of the zone; the zone
   - name: get dns record
     description: DNS Record Details
     method: GET
@@ -467,14 +579,19 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
       - name: zone_id
         type: string
         required: true
         location: path
+        description: Identifier.
       - name: include_shadow_metadata
         type: boolean
         required: false
         location: query
+        description: Whether to include shadow metadata in the `meta` field of each record in the response.
+          See [Shadowed
+          records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).
   - name: get zone dns settings
     description: Show the zone's DNS settings (nameservers, flattening, multi-provider).
     method: GET
@@ -485,6 +602,7 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
   - name: get account dns settings
     description: Show the account's default DNS settings for new zones.
     method: GET
@@ -495,6 +613,7 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
   - name: get dns analytics report
     description: DNS query analytics for a zone, aggregated over the period as a table.
     method: GET
@@ -505,36 +624,45 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
       - name: metrics
         type: string
         required: false
         location: query
+        description: A comma-separated list of metrics to query.
       - name: dimensions
         type: string
         required: false
         location: query
+        description: A comma-separated list of dimensions to group results by.
       - name: since
         type: string
         format: date-time
         required: false
         location: query
+        description: Start date and time of requesting data period in ISO 8601 format.
       - name: until
         type: string
         format: date-time
         required: false
         location: query
+        description: End date and time of requesting data period in ISO 8601 format.
       - name: limit
         type: integer
         required: false
         location: query
+        description: Limit number of returned metrics.
       - name: sort
         type: string
         required: false
         location: query
+        description: A comma-separated list of dimensions to sort by, where each dimension may be prefixed
+          by - (descending) or + (ascending).
       - name: filters
         type: string
         required: false
         location: query
+        description: Segmentation filter in 'attribute operator value' format.
   - name: get dns analytics report by time
     description: DNS query analytics for a zone, bucketed into a time series.
     method: GET
@@ -545,36 +673,45 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
       - name: metrics
         type: string
         required: false
         location: query
+        description: A comma-separated list of metrics to query.
       - name: dimensions
         type: string
         required: false
         location: query
+        description: A comma-separated list of dimensions to group results by.
       - name: since
         type: string
         format: date-time
         required: false
         location: query
+        description: Start date and time of requesting data period in ISO 8601 format.
       - name: until
         type: string
         format: date-time
         required: false
         location: query
+        description: End date and time of requesting data period in ISO 8601 format.
       - name: limit
         type: integer
         required: false
         location: query
+        description: Limit number of returned metrics.
       - name: sort
         type: string
         required: false
         location: query
+        description: A comma-separated list of dimensions to sort by, where each dimension may be prefixed
+          by - (descending) or + (ascending).
       - name: filters
         type: string
         required: false
         location: query
+        description: Segmentation filter in 'attribute operator value' format.
       - name: time_delta
         type: string
         enum:
@@ -590,6 +727,7 @@ operations:
           - minute
         required: false
         location: query
+        description: Unit of time to group data by.
   - name: list workers
     description: List Workers
     method: GET
@@ -600,6 +738,7 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
       - name: tags
         type: string
         required: false
@@ -607,7 +746,9 @@ operations:
         description: "Filter scripts by tags. Format: comma-separated list of tag:allowed pairs where
           allowed is 'yes' or 'no'."
   - name: download worker script
-    description: Download Worker
+    description: Fetch a Worker script's source. Returns the raw JavaScript module text, NOT JSON — no
+      success/result envelope — and long scripts are truncated in chat, so use it to inspect a
+      specific Worker, not to copy one wholesale.
     method: GET
     url: https://api.cloudflare.com/client/v4/accounts/{account_id}/workers/scripts/{script_name}
     read_only: true
@@ -616,10 +757,12 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
       - name: script_name
         type: string
         required: true
         location: path
+        description: Name of the script, used in URLs and route configuration.
   - name: get worker settings
     description: Get a Worker script's settings — bindings, compatibility date, and tags.
     method: GET
@@ -630,10 +773,12 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
       - name: script_name
         type: string
         required: true
         location: path
+        description: Name of the script, used in URLs and route configuration.
   - name: list worker domains
     description: List the custom domains attached to Workers on the account.
     method: GET
@@ -644,26 +789,32 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
       - name: zone_id
         type: string
         required: false
         location: query
+        description: ID of the zone containing the domain hostname.
       - name: zone_name
         type: string
         required: false
         location: query
+        description: Name of the zone containing the domain hostname.
       - name: service
         type: string
         required: false
         location: query
+        description: Name of the Worker associated with the domain.
       - name: hostname
         type: string
         required: false
         location: query
+        description: Hostname of the domain.
       - name: environment
         type: string
         required: false
         location: query
+        description: Worker environment associated with the domain.
   - name: get workers subdomain
     description: Get the account's workers.dev subdomain.
     method: GET
@@ -674,6 +825,7 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
   - name: list worker routes
     description: List the route patterns that map zone URLs to Worker scripts.
     method: GET
@@ -684,6 +836,7 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
   - name: get worker route
     description: Get one route pattern that maps zone URLs to a Worker script.
     method: GET
@@ -694,10 +847,12 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
       - name: zone_id
         type: string
         required: true
         location: path
+        description: Identifier.
   - name: list kv namespaces
     description: List Workers KV namespaces on the account.
     method: GET
@@ -708,14 +863,17 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
       - name: page
         type: number
         required: false
         location: query
+        description: Page number of paginated results.
       - name: per_page
         type: number
         required: false
         location: query
+        description: Maximum number of results per page.
       - name: order
         type: string
         enum:
@@ -723,6 +881,7 @@ operations:
           - title
         required: false
         location: query
+        description: Field to order results by.
       - name: direction
         type: string
         enum:
@@ -730,6 +889,7 @@ operations:
           - desc
         required: false
         location: query
+        description: Direction to order namespaces.
   - name: get kv namespace
     description: Get one Workers KV namespace.
     method: GET
@@ -740,10 +900,12 @@ operations:
         type: string
         required: true
         location: path
+        description: Namespace identifier tag.
       - name: account_id
         type: string
         required: true
         location: path
+        description: Identifier.
   - name: list kv keys
     description: List the keys stored in a Workers KV namespace.
     method: GET
@@ -754,22 +916,31 @@ operations:
         type: string
         required: true
         location: path
+        description: Namespace identifier tag.
       - name: account_id
         type: string
         required: true
         location: path
+        description: Identifier.
       - name: limit
         type: number
         required: false
         location: query
+        description: Limits the number of keys returned in the response. The cursor attribute may be used to
+          iterate over the next batch of keys if there are more than the limit.
       - name: prefix
         type: string
         required: false
         location: query
+        description: Filters returned keys by a name prefix. Exact matches and any key names that begin with
+          the prefix will be returned.
       - name: cursor
         type: string
         required: false
         location: query
+        description: Opaque token indicating the position from which to continue when requesting the next
+          set of records if the amount of list results was limited by the limit parameter. A valid
+          value for the cursor can b
   - name: list r2 buckets
     description: List R2 object-storage buckets on the account.
     method: GET
@@ -780,24 +951,29 @@ operations:
         type: string
         required: true
         location: path
+        description: Account ID.
       - name: name_contains
         type: string
         required: false
         location: query
+        description: Bucket names to filter by. Only buckets with this phrase in their name will be returned.
       - name: start_after
         type: string
         required: false
         location: query
+        description: Bucket name to start searching after. Buckets are ordered lexicographically.
       - name: per_page
         type: number
         required: false
         location: query
+        description: Maximum number of buckets to return in a single call.
       - name: order
         type: string
         enum:
           - name
         required: false
         location: query
+        description: Field to order buckets by.
       - name: direction
         type: string
         enum:
@@ -805,10 +981,13 @@ operations:
           - desc
         required: false
         location: query
+        description: Direction to order buckets.
       - name: cursor
         type: string
         required: false
         location: query
+        description: Pagination cursor received during the last List Buckets call. R2 buckets are paginated
+          using cursors instead of page numbers.
       - name: cf-r2-jurisdiction
         type: string
         enum:
@@ -817,6 +996,7 @@ operations:
           - fedramp
         required: false
         location: header
+        description: Jurisdiction where objects in this bucket are guaranteed to be stored.
   - name: get r2 bucket
     description: Get one R2 object-storage bucket.
     method: GET
@@ -827,10 +1007,12 @@ operations:
         type: string
         required: true
         location: path
+        description: Account ID.
       - name: bucket_name
         type: string
         required: true
         location: path
+        description: Name of the bucket.
       - name: cf-r2-jurisdiction
         type: string
         enum:
@@ -839,6 +1021,7 @@ operations:
           - fedramp
         required: false
         location: header
+        description: Jurisdiction where objects in this bucket are guaranteed to be stored.
   - name: list d1 databases
     description: List D1 Databases
     method: GET
@@ -849,18 +1032,22 @@ operations:
         type: string
         required: true
         location: path
+        description: Account identifier tag.
       - name: name
         type: string
         required: false
         location: query
+        description: a database name to search for.
       - name: page
         type: number
         required: false
         location: query
+        description: Page number of paginated results.
       - name: per_page
         type: number
         required: false
         location: query
+        description: Number of items per page.
   - name: get d1 database
     description: Get D1 Database
     method: GET
@@ -871,6 +1058,7 @@ operations:
         type: string
         required: true
         location: path
+        description: Account identifier tag.
       - name: database_id
         type: string
         required: true
@@ -940,6 +1128,7 @@ operations:
         type: string
         required: true
         location: path
+        description: A Resource identifier.
   - name: get queue
     description: Get Queue
     method: GET
@@ -950,10 +1139,12 @@ operations:
         type: string
         required: true
         location: path
+        description: A Resource identifier.
       - name: account_id
         type: string
         required: true
         location: path
+        description: A Resource identifier.
   - name: list pages projects
     description: List Cloudflare Pages projects on the account.
     method: GET
@@ -964,14 +1155,17 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
       - name: page
         type: integer
         required: false
         location: query
+        description: Which page of projects to fetch.
       - name: per_page
         type: integer
         required: false
         location: query
+        description: How many projects to return per page.
   - name: get pages project
     description: Get one Cloudflare Pages project.
     method: GET
@@ -982,10 +1176,12 @@ operations:
         type: string
         required: true
         location: path
+        description: Name of the project.
       - name: account_id
         type: string
         required: true
         location: path
+        description: Identifier.
   - name: list pages deployments
     description: List the deployments of a Cloudflare Pages project.
     method: GET
@@ -996,10 +1192,12 @@ operations:
         type: string
         required: true
         location: path
+        description: Name of the project.
       - name: account_id
         type: string
         required: true
         location: path
+        description: Identifier.
       - name: env
         type: string
         enum:
@@ -1007,14 +1205,17 @@ operations:
           - preview
         required: false
         location: query
+        description: What type of deployments to fetch.
       - name: page
         type: integer
         required: false
         location: query
+        description: Which page of deployments to fetch.
       - name: per_page
         type: integer
         required: false
         location: query
+        description: How many deployments to return per page.
   - name: get pages deployment
     description: Get one deployment of a Cloudflare Pages project.
     method: GET
@@ -1025,14 +1226,17 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
       - name: project_name
         type: string
         required: true
         location: path
+        description: Name of the project.
       - name: account_id
         type: string
         required: true
         location: path
+        description: Identifier.
   - name: list ai gateways
     description: List Gateways
     method: GET
@@ -1055,6 +1259,7 @@ operations:
         type: string
         required: false
         location: query
+        description: Search by id
   - name: list ai gateway logs
     description: List Gateway Logs
     method: GET
@@ -1069,6 +1274,7 @@ operations:
         type: string
         required: true
         location: path
+        description: gateway id
       - name: search
         type: string
         required: false
@@ -1211,6 +1417,7 @@ operations:
         type: string
         required: true
         location: path
+        description: gateway id
       - name: account_id
         type: string
         required: true
@@ -1229,6 +1436,7 @@ operations:
         type: string
         required: true
         location: path
+        description: gateway id
       - name: account_id
         type: string
         required: true
@@ -1247,6 +1455,7 @@ operations:
         type: string
         required: true
         location: path
+        description: gateway id
       - name: account_id
         type: string
         required: true
@@ -1261,11 +1470,13 @@ operations:
         type: string
         required: true
         location: path
+        description: The unique id that identifies the account.
       - name: account_name
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters by the account name.
       - name: action_result
         type: array
         items_type: string
@@ -1274,6 +1485,7 @@ operations:
           - failure
         required: false
         location: query
+        description: Filters by whether the action was successful or not.
       - name: action_type
         type: array
         items_type: string
@@ -1284,6 +1496,7 @@ operations:
           - update
         required: false
         location: query
+        description: Filters by the action type.
       - name: actor_context
         type: array
         items_type: string
@@ -1295,31 +1508,37 @@ operations:
           - origin_ca_key
         required: false
         location: query
+        description: Filters by the actor context.
       - name: actor_email
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters by the actor's email address.
       - name: actor_id
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters by the actor ID. This can be either the Account ID or User ID.
       - name: actor_ip_address
         type: array
         items_type: string
         required: false
         location: query
+        description: The IP address where the action was initiated.
       - name: actor_token_id
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters by the API token ID when the actor context is an api_token or oauth.
       - name: actor_token_name
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters by the API token name when the actor context is an api_token or oauth.
       - name: actor_type
         type: array
         items_type: string
@@ -1330,51 +1549,61 @@ operations:
           - user
         required: false
         location: query
+        description: Filters by the actor type.
       - name: audit_log_id
         type: array
         items_type: string
         required: false
         location: query
+        description: Finds a specific log by its ID.
       - name: id
         type: array
         items_type: string
         required: false
         location: query
+        description: Finds a specific log by its ID.
       - name: raw_cf_ray_id
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters by the response CF Ray ID.
       - name: raw_method
         type: array
         items_type: string
         required: false
         location: query
+        description: The HTTP method for the API call.
       - name: raw_status_code
         type: array
         items_type: integer
         required: false
         location: query
+        description: The response status code that was returned.
       - name: raw_uri
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters by the request URI.
       - name: resource_id
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters by the resource ID.
       - name: resource_product
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters audit logs by the Cloudflare product associated with the changed resource.
       - name: resource_type
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters audit logs based on the unique type of resource changed by the action.
       - name: resource_scope
         type: array
         items_type: string
@@ -1385,26 +1614,34 @@ operations:
           - memberships
         required: false
         location: query
+        description: Filters by the resource scope, specifying whether the resource is associated with an
+          user, an account, a zone, or a membership.
       - name: product_category
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters audit logs by one or more predefined product categories. Each product category
+          expands into a curated set of resource_product values and is unioned with any explicit
+          resource_product filter. M
       - name: zone_id
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters by the zone ID.
       - name: zone_name
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters by the zone name associated with the change.
       - name: account_name.not
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters out audit logs by the account name.
       - name: action_result.not
         type: array
         items_type: string
@@ -1413,6 +1650,7 @@ operations:
           - failure
         required: false
         location: query
+        description: Filters out audit logs by whether the action was successful or not.
       - name: action_type.not
         type: array
         items_type: string
@@ -1423,6 +1661,7 @@ operations:
           - update
         required: false
         location: query
+        description: Filters out audit logs by the action type.
       - name: actor_context.not
         type: array
         items_type: string
@@ -1434,31 +1673,38 @@ operations:
           - origin_ca_key
         required: false
         location: query
+        description: Filters out audit logs by the actor context.
       - name: actor_email.not
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters out audit logs by the actor's email address.
       - name: actor_id.not
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters out audit logs by the actor ID. This can be either the Account ID or User ID.
       - name: actor_ip_address.not
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters out audit logs IP address where the action was initiated.
       - name: actor_token_id.not
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters out audit logs by the API token ID when the actor context is an api_token or oauth.
       - name: actor_token_name.not
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters out audit logs by the API token name when the actor context is an api_token or
+          oauth.
       - name: actor_type.not
         type: array
         items_type: string
@@ -1469,51 +1715,61 @@ operations:
           - user
         required: false
         location: query
+        description: Filters out audit logs by the actor type.
       - name: audit_log_id.not
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters out audit logs by their IDs.
       - name: id.not
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters out audit logs by their IDs.
       - name: raw_cf_ray_id.not
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters out audit logs by the response CF Ray ID.
       - name: raw_method.not
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters out audit logs by the HTTP method for the API call.
       - name: raw_status_code.not
         type: array
         items_type: integer
         required: false
         location: query
+        description: Filters out audit logs by the response status code that was returned.
       - name: raw_uri.not
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters out audit logs by the request URI.
       - name: resource_id.not
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters out audit logs by the resource ID.
       - name: resource_product.not
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters out audit logs by the Cloudflare product associated with the changed resource.
       - name: resource_type.not
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters out audit logs based on the unique type of resource changed by the action.
       - name: resource_scope.not
         type: array
         items_type: string
@@ -1524,16 +1780,20 @@ operations:
           - memberships
         required: false
         location: query
+        description: Filters out audit logs by the resource scope, specifying whether the resource is
+          associated with an user, an account, a zone, or a membership.
       - name: zone_id.not
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters out audit logs by the zone ID.
       - name: zone_name.not
         type: array
         items_type: string
         required: false
         location: query
+        description: Filters out audit logs by the zone name associated with the change.
       - name: since
         type: string
         format: date
@@ -1555,14 +1815,20 @@ operations:
           - asc
         required: false
         location: query
+        description: Sets sorting order.
       - name: limit
         type: number
         required: false
         location: query
+        description: The number limits the objects to return. The cursor attribute may be used to iterate
+          over the next batch of objects if there are more than the limit.
       - name: cursor
         type: string
         required: false
         location: query
+        description: The cursor is an opaque token used to paginate through large sets of records. It
+          indicates the position from which to continue when requesting the next set of records. A
+          valid cursor value can be obta
   - name: list account logpush jobs
     description: List Logpush jobs configured on the account.
     method: GET
@@ -1573,6 +1839,7 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
   - name: list zone logpush jobs
     description: List Logpush jobs configured on one zone.
     method: GET
@@ -1583,6 +1850,7 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
   - name: list zone rulesets
     description: List zone rulesets
     method: GET
@@ -1593,14 +1861,17 @@ operations:
         type: string
         required: true
         location: path
+        description: The unique ID of the zone.
       - name: cursor
         type: string
         required: false
         location: query
+        description: The cursor to use for the next page.
       - name: per_page
         type: integer
         required: false
         location: query
+        description: The number of rulesets to return per page.
   - name: get zone ruleset
     description: Get a zone ruleset
     method: GET
@@ -1611,10 +1882,12 @@ operations:
         type: string
         required: true
         location: path
+        description: The unique ID of the ruleset.
       - name: zone_id
         type: string
         required: true
         location: path
+        description: The unique ID of the zone.
   - name: list account rulesets
     description: List account rulesets
     method: GET
@@ -1625,14 +1898,17 @@ operations:
         type: string
         required: true
         location: path
+        description: The unique ID of the account.
       - name: cursor
         type: string
         required: false
         location: query
+        description: The cursor to use for the next page.
       - name: per_page
         type: integer
         required: false
         location: query
+        description: The number of rulesets to return per page.
   - name: list ip access rules
     description: List IP Access rules
     method: GET
@@ -1643,6 +1919,7 @@ operations:
         type: string
         required: true
         location: path
+        description: Defines an identifier.
       - name: mode
         type: string
         enum:
@@ -1653,6 +1930,7 @@ operations:
           - managed_challenge
         required: false
         location: query
+        description: The action to apply to a matched request.
       - name: configuration.target
         type: string
         enum:
@@ -1662,14 +1940,25 @@ operations:
           - country
         required: false
         location: query
+        description: The target to search in existing rules.
       - name: configuration.value
         type: string
         required: false
         location: query
+        description: >-
+          The target value to search for in existing rules: an IP address, an IP address range, or a
+          country code, depending on the provided `configuration.target`.
+
+          Notes: You can search for a single IPv4 addre
       - name: notes
         type: string
         required: false
         location: query
+        description: >-
+          The string to search for in the notes of existing IP Access rules.
+
+          Notes: For example, the string 'attack' would match IP Access rules with notes 'Attack
+          26/02' and 'Attack 27/02'. The search is case 
       - name: match
         type: string
         enum:
@@ -1677,14 +1966,18 @@ operations:
           - all
         required: false
         location: query
+        description: When set to `all`, all the search requirements must match. When set to `any`, only one
+          of the search requirements has to match.
       - name: page
         type: number
         required: false
         location: query
+        description: Requested page within paginated list of results.
       - name: per_page
         type: number
         required: false
         location: query
+        description: Maximum number of results requested.
       - name: order
         type: string
         enum:
@@ -1693,6 +1986,7 @@ operations:
           - mode
         required: false
         location: query
+        description: The field used to sort returned rules.
       - name: direction
         type: string
         enum:
@@ -1700,6 +1994,7 @@ operations:
           - desc
         required: false
         location: query
+        description: The direction used to sort returned rules.
   - name: list page rules
     description: List Page Rules
     method: GET
@@ -1710,6 +2005,7 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
       - name: order
         type: string
         enum:
@@ -1717,6 +2013,7 @@ operations:
           - priority
         required: false
         location: query
+        description: The field used to sort returned Page Rules.
       - name: direction
         type: string
         enum:
@@ -1724,6 +2021,7 @@ operations:
           - desc
         required: false
         location: query
+        description: The direction used to sort returned Page Rules.
       - name: match
         type: string
         enum:
@@ -1731,6 +2029,8 @@ operations:
           - all
         required: false
         location: query
+        description: When set to `all`, all the search requirements must match. When set to `any`, only one
+          of the search requirements has to match.
       - name: status
         type: string
         enum:
@@ -1738,6 +2038,7 @@ operations:
           - disabled
         required: false
         location: query
+        description: The status of the Page Rule.
   - name: list certificate packs
     description: List Certificate Packs
     method: GET
@@ -1748,20 +2049,24 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
       - name: page
         type: number
         required: false
         location: query
+        description: Page number of paginated results.
       - name: per_page
         type: number
         required: false
         location: query
+        description: Number of certificate packs per page.
       - name: status
         type: string
         enum:
           - all
         required: false
         location: query
+        description: Include Certificate Packs of all statuses, not just active ones.
       - name: deploy
         type: string
         enum:
@@ -1769,6 +2074,7 @@ operations:
           - production
         required: false
         location: query
+        description: Specify the deployment environment for the certificate packs.
   - name: list custom hostnames
     description: List Custom Hostnames
     method: GET
@@ -1779,34 +2085,48 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
       - name: hostname
         type: string
         required: false
         location: query
+        description: Fully qualified domain name to match against. This parameter cannot be used with the
+          'id', 'hostname.exact', 'hostname.contain', or 'hostname.startsWith' parameters.
       - name: hostname.exact
         type: string
         required: false
         location: query
+        description: Fully qualified domain name to match against. This parameter cannot be used with the
+          'id', 'hostname', 'hostname.contain', or 'hostname.startsWith' parameters.
       - name: hostname.startsWith
         type: string
         required: false
         location: query
+        description: Filters hostnames by a prefix match on the hostname value. This parameter cannot be
+          used with the 'id', 'hostname', 'hostname.exact', or 'hostname.contain' parameters.
       - name: hostname.contain
         type: string
         required: false
         location: query
+        description: Filters hostnames by a substring match on the hostname value. This parameter cannot be
+          used with the 'id', 'hostname', 'hostname.exact', or 'hostname.startsWith' parameters.
       - name: id
         type: string
         required: false
         location: query
+        description: Hostname ID to match against. This ID was generated and returned during the initial
+          custom_hostname creation. This parameter cannot be used with the 'hostname',
+          'hostname.exact', 'hostname.contain', o
       - name: page
         type: number
         required: false
         location: query
+        description: Page number of paginated results.
       - name: per_page
         type: number
         required: false
         location: query
+        description: Number of hostnames per page.
       - name: order
         type: string
         enum:
@@ -1814,6 +2134,7 @@ operations:
           - ssl_status
         required: false
         location: query
+        description: Field to order hostnames by.
       - name: direction
         type: string
         enum:
@@ -1821,6 +2142,7 @@ operations:
           - desc
         required: false
         location: query
+        description: Direction to order hostnames.
       - name: ssl_status
         type: string
         enum:
@@ -1847,6 +2169,7 @@ operations:
           - holding_deployment
         required: false
         location: query
+        description: Filter by SSL certificate status.
       - name: hostname_status
         type: string
         enum:
@@ -1868,6 +2191,7 @@ operations:
           - blocked
         required: false
         location: query
+        description: Filter by the hostname's activation status.
       - name: certificate_authority
         type: string
         enum:
@@ -1876,14 +2200,17 @@ operations:
           - ssl_com
         required: false
         location: query
+        description: Filter by the certificate authority that issued the SSL certificate.
       - name: wildcard
         type: boolean
         required: false
         location: query
+        description: Filter by whether the custom hostname is a wildcard hostname.
       - name: custom_origin_server
         type: string
         required: false
         location: query
+        description: Filter by custom origin server name.
       - name: ssl
         type: integer
         enum:
@@ -1891,6 +2218,7 @@ operations:
           - "1"
         required: false
         location: query
+        description: Whether to filter hostnames based on if they have SSL enabled.
   - name: get argo smart routing setting
     description: Get Argo Smart Routing setting
     method: GET
@@ -1901,6 +2229,7 @@ operations:
         type: string
         required: true
         location: path
+        description: Specifies the zone associated with the API call.
   - name: list load balancers
     description: List Load Balancers
     method: GET
@@ -1921,10 +2250,12 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
       - name: monitor
         type: string
         required: false
         location: query
+        description: The ID of the Monitor to use for checking the health of origins within this pool.
   - name: list load balancer monitors
     description: List load balancer health monitors on the account.
     method: GET
@@ -1935,6 +2266,7 @@ operations:
         type: string
         required: true
         location: path
+        description: Identifier.
   - name: purge cache
     description: Purge the entire cache for a zone.
     method: POST
