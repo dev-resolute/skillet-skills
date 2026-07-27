@@ -1,8 +1,8 @@
 slug: confluence
-version: 1.0.0
+version: 1.1.0
 name: Confluence
 category: work-project
-one_liner: Search, read, and create pages in your Confluence spaces.
+one_liner: Search and read pages, spaces, and comments in Confluence — and create pages.
 api_domain: atlassian.net
 status: live
 credentials:
@@ -15,32 +15,2173 @@ credentials:
 auth:
   scheme: basic
   header: Authorization
-  env_vars: [CONFLUENCE_EMAIL, CONFLUENCE_API_TOKEN]
-  value_template: "Basic ${base64(CONFLUENCE_EMAIL:CONFLUENCE_API_TOKEN)}"
+  env_vars:
+    - CONFLUENCE_EMAIL
+    - CONFLUENCE_API_TOKEN
+  value_template: Basic ${base64(CONFLUENCE_EMAIL:CONFLUENCE_API_TOKEN)}
 operations:
+  - name: list pages
+    description: Get pages
+    method: GET
+    url: https://{base_url}/wiki/api/v2/pages
+    read_only: true
+    params:
+      - name: id
+        type: array
+        items_type: integer
+        required: false
+        location: query
+        description: Filter the results based on page ids. Multiple page ids can be specified as a
+          comma-separated list.
+      - name: space-id
+        type: array
+        items_type: integer
+        required: false
+        location: query
+        description: Filter the results based on space ids. Multiple space ids can be specified as a
+          comma-separated list.
+      - name: sort
+        type: string
+        enum:
+          - id
+          - -id
+          - created-date
+          - -created-date
+          - modified-date
+          - -modified-date
+          - title
+          - -title
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: status
+        type: array
+        items_type: string
+        enum:
+          - current
+          - archived
+          - deleted
+          - trashed
+        required: false
+        location: query
+        description: Filter the results to pages based on their status. By default, `current` and `archived`
+          are used.
+      - name: title
+        type: string
+        required: false
+        location: query
+        description: Filter the results to pages based on their title.
+      - name: body-format
+        type: string
+        enum:
+          - storage
+          - atlas_doc_format
+        required: false
+        location: query
+        description: The content format types to be returned in the `body` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `body` field.
+      - name: subtype
+        type: string
+        enum:
+          - live
+          - page
+        required: false
+        location: query
+        description: Filter the results to pages based on their subtype.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of pages per result to return. If more results exist, use the `Link`
+          header to retrieve a relative URL that will return the next set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: get page
+    description: Fetch one page by id.
+    method: GET
+    url: https://{base_url}/wiki/api/v2/pages/{id}
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the page to be returned. If you don't know the page ID, use Get pages and
+          filter the results.
+      - name: body-format
+        type: string
+        enum:
+          - storage
+          - atlas_doc_format
+          - view
+          - export_view
+          - anonymous_export_view
+          - styled_view
+          - editor
+        required: false
+        location: query
+        description: The content format types to be returned in the `body` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `body` field.
+      - name: get-draft
+        type: boolean
+        required: false
+        location: query
+        description: Retrieve the draft version of this page.
+      - name: status
+        type: array
+        items_type: string
+        enum:
+          - current
+          - archived
+          - trashed
+          - deleted
+          - historical
+          - draft
+        required: false
+        location: query
+        description: Filter the page being retrieved by its status.
+      - name: version
+        type: integer
+        required: false
+        location: query
+        description: Allows you to retrieve a previously published version. Specify the previous version's
+          number to retrieve its details.
+      - name: include-labels
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes labels associated with this page in the response.
+          The number of results will be limited to 50 and sorted in the default sort order. 
+          A `meta` and `_links` property will be present to indicate
+      - name: include-properties
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes content properties associated with this page in the response.
+          The number of results will be limited to 50 and sorted in the default sort order. 
+          A `meta` and `_links` property will be present
+      - name: include-operations
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          Includes operations associated with this page in the response, as defined in the
+          `Operation` object.
+
+          The number of results will be limited to 50 and sorted in the default sort order. 
+
+          A `meta` and `_l
+      - name: include-likes
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes likes associated with this page in the response.
+          The number of results will be limited to 50 and sorted in the default sort order. 
+          A `meta` and `_links` property will be present to indicate 
+      - name: include-versions
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes versions associated with this page in the response.
+          The number of results will be limited to 50 and sorted in the default sort order. 
+          A `meta` and `_links` property will be present to indica
+      - name: include-version
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes the current version associated with this page in the response.
+          By default this is included and can be omitted by setting the value to `false`.
+      - name: include-favorited-by-current-user-status
+        type: boolean
+        required: false
+        location: query
+        description: Includes whether this page has been favorited by the current user.
+      - name: include-webresources
+        type: boolean
+        required: false
+        location: query
+        description: Includes web resources that can be used to render page content on a client.
+      - name: include-collaborators
+        type: boolean
+        required: false
+        location: query
+        description: Includes collaborators on the page.
+      - name: include-direct-children
+        type: boolean
+        required: false
+        location: query
+        description: Includes direct children of the page, as defined in the `ChildrenResponse` object.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list page ancestors
+    description: Get all ancestors of page
+    method: GET
+    url: https://{base_url}/wiki/api/v2/pages/{id}/ancestors
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the page.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of pages per result to return. If more results exist, call this endpoint
+          with the highest ancestor's ID to fetch the next set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list page descendants
+    description: Get descendants of page
+    method: GET
+    url: https://{base_url}/wiki/api/v2/pages/{id}/descendants
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the page.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of items per result to return. If more results exist, call the endpoint
+          with the cursor to fetch the next set of results.
+      - name: depth
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum depth of descendants to return. If more results are required, use the endpoint
+          corresponding to the content type of the deepest descendant to fetch more descendants.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list page children
+    description: Get direct children of a page
+    method: GET
+    url: https://{base_url}/wiki/api/v2/pages/{id}/direct-children
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the parent page.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of items per result to return. If more results exist, use the `Link`
+          header to retrieve a relative URL that will return the next set of results.
+      - name: sort
+        type: string
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list page versions
+    description: Get page versions
+    method: GET
+    url: https://{base_url}/wiki/api/v2/pages/{id}/versions
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the page to be queried for its versions. If you don't know the page ID, use
+          Get pages and filter the results.
+      - name: body-format
+        type: string
+        enum:
+          - storage
+          - atlas_doc_format
+        required: false
+        location: query
+        description: The content format types to be returned in the `body` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `body` field.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of versions per result to return. If more results exist, use the `Link`
+          header to retrieve a relative URL that will return the next set of results.
+      - name: sort
+        type: string
+        enum:
+          - modified-date
+          - -modified-date
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list page labels
+    description: Get labels for page
+    method: GET
+    url: https://{base_url}/wiki/api/v2/pages/{id}/labels
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the page for which labels should be returned.
+      - name: prefix
+        type: string
+        enum:
+          - my
+          - team
+          - global
+          - system
+        required: false
+        location: query
+        description: Filter the results to labels based on their prefix.
+      - name: sort
+        type: string
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of labels per result to return. If more results exist, use the `Link`
+          header to retrieve a relative URL that will return the next set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list page attachments
+    description: Get attachments for page
+    method: GET
+    url: https://{base_url}/wiki/api/v2/pages/{id}/attachments
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the page for which attachments should be returned.
+      - name: sort
+        type: string
+        enum:
+          - created-date
+          - -created-date
+          - modified-date
+          - -modified-date
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: status
+        type: array
+        items_type: string
+        enum:
+          - current
+          - archived
+          - trashed
+        required: false
+        location: query
+        description: Filter the results to attachments based on their status. By default, `current` and
+          `archived` are used.
+      - name: mediaType
+        type: string
+        required: false
+        location: query
+        description: Filters on the mediaType of attachments. Only one may be specified.
+      - name: filename
+        type: string
+        required: false
+        location: query
+        description: Filters on the file-name of attachments. Only one may be specified.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of attachments per result to return. If more results exist, use the
+          `Link` header to retrieve a relative URL that will return the next set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list page footer comments
+    description: Get footer comments for page
+    method: GET
+    url: https://{base_url}/wiki/api/v2/pages/{id}/footer-comments
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the page for which footer comments should be returned.
+      - name: body-format
+        type: string
+        enum:
+          - storage
+          - atlas_doc_format
+        required: false
+        location: query
+        description: The content format type to be returned in the `body` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `body` field.
+      - name: status
+        type: array
+        items_type: string
+        enum:
+          - current
+          - archived
+          - trashed
+          - deleted
+          - historical
+          - draft
+        required: false
+        location: query
+        description: Filter the footer comment being retrieved by its status.
+      - name: sort
+        type: string
+        enum:
+          - created-date
+          - -created-date
+          - modified-date
+          - -modified-date
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of footer comments per result to return. If more results exist, use the
+          `Link` header to retrieve a relative URL that will return the next set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list page inline comments
+    description: Get inline comments for page
+    method: GET
+    url: https://{base_url}/wiki/api/v2/pages/{id}/inline-comments
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the page for which inline comments should be returned.
+      - name: body-format
+        type: string
+        enum:
+          - storage
+          - atlas_doc_format
+        required: false
+        location: query
+        description: The content format type to be returned in the `body` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `body` field.
+      - name: status
+        type: array
+        items_type: string
+        enum:
+          - current
+          - archived
+          - trashed
+          - deleted
+          - historical
+          - draft
+        required: false
+        location: query
+        description: Filter the inline comment being retrieved by its status.
+      - name: resolution-status
+        type: array
+        items_type: string
+        enum:
+          - resolved
+          - open
+          - dangling
+          - reopened
+        required: false
+        location: query
+        description: Filter the inline comment being retrieved by its resolution status.
+      - name: sort
+        type: string
+        enum:
+          - created-date
+          - -created-date
+          - modified-date
+          - -modified-date
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of inline comments per result to return. If more results exist, use the
+          `Link` header to retrieve a relative URL that will return the next set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list spaces
+    description: Get spaces
+    method: GET
+    url: https://{base_url}/wiki/api/v2/spaces
+    read_only: true
+    params:
+      - name: ids
+        type: array
+        items_type: integer
+        required: false
+        location: query
+        description: Filter the results to spaces based on their IDs. Multiple IDs can be specified as a
+          comma-separated list.
+      - name: keys
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Filter the results to spaces based on their keys. Multiple keys can be specified as a
+          comma-separated list.
+      - name: type
+        type: string
+        enum:
+          - global
+          - collaboration
+          - knowledge_base
+          - personal
+          - system
+          - onboarding
+          - xflow_sample_space
+        required: false
+        location: query
+        description: Filter the results to spaces based on their type.
+      - name: status
+        type: string
+        enum:
+          - current
+          - archived
+        required: false
+        location: query
+        description: Filter the results to spaces based on their status.
+      - name: labels
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Filter the results to spaces based on their labels. Multiple labels can be specified as
+          a comma-separated list.
+      - name: favorited-by
+        type: string
+        required: false
+        location: query
+        description: Filter the results to spaces favorited by the user with the specified account ID.
+      - name: not-favorited-by
+        type: string
+        required: false
+        location: query
+        description: Filter the results to spaces NOT favorited by the user with the specified account ID.
+      - name: sort
+        type: string
+        enum:
+          - id
+          - -id
+          - key
+          - -key
+          - name
+          - -name
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: description-format
+        type: string
+        enum:
+          - plain
+          - view
+        required: false
+        location: query
+        description: The content format type to be returned in the `description` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `description` fi
+      - name: include-icon
+        type: boolean
+        required: false
+        location: query
+        description: If the icon for the space should be fetched or not.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of spaces per result to return. If more results exist, use the `Link`
+          response header to retrieve a relative URL that will return the next set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: get space
+    description: Get space by id
+    method: GET
+    url: https://{base_url}/wiki/api/v2/spaces/{id}
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the space to be returned.
+      - name: description-format
+        type: string
+        enum:
+          - plain
+          - view
+        required: false
+        location: query
+        description: The content format type to be returned in the `description` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `description` fi
+      - name: include-icon
+        type: boolean
+        required: false
+        location: query
+        description: If the icon for the space should be fetched or not.
+      - name: include-operations
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          Includes operations associated with this space in the response, as defined in the
+          `Operation` object.
+
+          The number of results will be limited to 50 and sorted in the default sort order.
+
+          A `meta` and `_l
+      - name: include-properties
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes space properties associated with this space in the response.
+          The number of results will be limited to 50 and sorted in the default sort order.
+          A `meta` and `_links` property will be present t
+      - name: include-permissions
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes space permissions associated with this space in the response.
+          The number of results will be limited to 50 and sorted in the default sort order.
+          A `meta` and `_links` property will be present 
+      - name: include-role-assignments
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          Includes role assignments associated with this space in the response. This parameter is
+          only accepted for EAP sites.
+
+          The number of results will be limited to 50 and sorted in the default sort order.
+
+          A
+      - name: include-labels
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes labels associated with this space in the response.
+          The number of results will be limited to 50 and sorted in the default sort order.
+          A `meta` and `_links` property will be present to indicate
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list pages in space
+    description: Get pages in space
+    method: GET
+    url: https://{base_url}/wiki/api/v2/spaces/{id}/pages
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the space for which pages should be returned.
+      - name: depth
+        type: string
+        enum:
+          - all
+          - root
+        required: false
+        location: query
+        description: Filter the results to pages at the root level of the space or to all pages in the space.
+      - name: sort
+        type: string
+        enum:
+          - id
+          - -id
+          - created-date
+          - -created-date
+          - modified-date
+          - -modified-date
+          - title
+          - -title
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: status
+        type: array
+        items_type: string
+        enum:
+          - current
+          - archived
+          - deleted
+          - trashed
+        required: false
+        location: query
+        description: Filter the results to pages based on their status. By default, `current` and `archived`
+          are used.
+      - name: title
+        type: string
+        required: false
+        location: query
+        description: Filter the results to pages based on their title.
+      - name: body-format
+        type: string
+        enum:
+          - storage
+          - atlas_doc_format
+        required: false
+        location: query
+        description: The content format types to be returned in the `body` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `body` field.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of pages per result to return. If more results exist, use the `Link`
+          header to retrieve a relative URL that will return the next set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list blog posts in space
+    description: Get blog posts in space
+    method: GET
+    url: https://{base_url}/wiki/api/v2/spaces/{id}/blogposts
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the space for which blog posts should be returned.
+      - name: sort
+        type: string
+        enum:
+          - id
+          - -id
+          - created-date
+          - -created-date
+          - modified-date
+          - -modified-date
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: status
+        type: array
+        items_type: string
+        enum:
+          - current
+          - deleted
+          - trashed
+        required: false
+        location: query
+        description: Filter the results to blog posts based on their status. By default, `current` is used.
+      - name: title
+        type: string
+        required: false
+        location: query
+        description: Filter the results to blog posts based on their title.
+      - name: body-format
+        type: string
+        enum:
+          - storage
+          - atlas_doc_format
+        required: false
+        location: query
+        description: The content format types to be returned in the `body` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `body` field.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of blog posts per result to return. If more results exist, use the
+          `Link` header to retrieve a relative URL that will return the next set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list space labels
+    description: Get labels for space
+    method: GET
+    url: https://{base_url}/wiki/api/v2/spaces/{id}/labels
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the space for which labels should be returned.
+      - name: prefix
+        type: string
+        enum:
+          - my
+          - team
+        required: false
+        location: query
+        description: Filter the results to labels based on their prefix.
+      - name: sort
+        type: string
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of labels per result to return. If more results exist, use the `Link`
+          header to retrieve a relative URL that will return the next set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list blog posts
+    description: Get blog posts
+    method: GET
+    url: https://{base_url}/wiki/api/v2/blogposts
+    read_only: true
+    params:
+      - name: id
+        type: array
+        items_type: integer
+        required: false
+        location: query
+        description: Filter the results based on blog post ids. Multiple blog post ids can be specified as a
+          comma-separated list.
+      - name: space-id
+        type: array
+        items_type: integer
+        required: false
+        location: query
+        description: Filter the results based on space ids. Multiple space ids can be specified as a
+          comma-separated list.
+      - name: sort
+        type: string
+        enum:
+          - id
+          - -id
+          - created-date
+          - -created-date
+          - modified-date
+          - -modified-date
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: status
+        type: array
+        items_type: string
+        enum:
+          - current
+          - deleted
+          - trashed
+        required: false
+        location: query
+        description: Filter the results to blog posts based on their status. By default, `current` is used.
+      - name: title
+        type: string
+        required: false
+        location: query
+        description: Filter the results to blog posts based on their title.
+      - name: body-format
+        type: string
+        enum:
+          - storage
+          - atlas_doc_format
+        required: false
+        location: query
+        description: The content format types to be returned in the `body` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `body` field.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of blog posts per result to return. If more results exist, use the
+          `Link` response header to retrieve a relative URL that will return the next set of
+          results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: get blog post
+    description: Get blog post by id
+    method: GET
+    url: https://{base_url}/wiki/api/v2/blogposts/{id}
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the blog post to be returned. If you don't know the blog post ID, use Get
+          blog posts and filter the results.
+      - name: body-format
+        type: string
+        enum:
+          - storage
+          - atlas_doc_format
+          - view
+          - export_view
+          - anonymous_export_view
+          - styled_view
+          - editor
+        required: false
+        location: query
+        description: The content format types to be returned in the `body` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `body` field.
+      - name: get-draft
+        type: boolean
+        required: false
+        location: query
+        description: Retrieve the draft version of this blog post.
+      - name: status
+        type: array
+        items_type: string
+        enum:
+          - current
+          - trashed
+          - deleted
+          - historical
+          - draft
+        required: false
+        location: query
+        description: Filter the blog post being retrieved by its status.
+      - name: version
+        type: integer
+        required: false
+        location: query
+        description: Allows you to retrieve a previously published version. Specify the previous version's
+          number to retrieve its details.
+      - name: include-labels
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes labels associated with this blog post in the response.
+          The number of results will be limited to 50 and sorted in the default sort order. 
+          A `meta` and `_links` property will be present to ind
+      - name: include-properties
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes content properties associated with this blog post in the response.
+          The number of results will be limited to 50 and sorted in the default sort order. 
+          A `meta` and `_links` property will be pr
+      - name: include-operations
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          Includes operations associated with this blog post in the response, as defined in the
+          `Operation` object.
+
+          The number of results will be limited to 50 and sorted in the default sort order. 
+
+          A `meta` an
+      - name: include-likes
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes likes associated with this blog post in the response.
+          The number of results will be limited to 50 and sorted in the default sort order. 
+          A `meta` and `_links` property will be present to indi
+      - name: include-versions
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes versions associated with this blog post in the response.
+          The number of results will be limited to 50 and sorted in the default sort order. 
+          A `meta` and `_links` property will be present to i
+      - name: include-version
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes the current version associated with this blog post in the response.
+          By default this is included and can be omitted by setting the value to `false`.
+      - name: include-favorited-by-current-user-status
+        type: boolean
+        required: false
+        location: query
+        description: Includes whether this blog post has been favorited by the current user.
+      - name: include-webresources
+        type: boolean
+        required: false
+        location: query
+        description: Includes web resources that can be used to render blog post content on a client.
+      - name: include-collaborators
+        type: boolean
+        required: false
+        location: query
+        description: Includes collaborators on the blog post.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list blog post footer comments
+    description: Get footer comments for blog post
+    method: GET
+    url: https://{base_url}/wiki/api/v2/blogposts/{id}/footer-comments
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the blog post for which footer comments should be returned.
+      - name: body-format
+        type: string
+        enum:
+          - storage
+          - atlas_doc_format
+        required: false
+        location: query
+        description: The content format type to be returned in the `body` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `body` field.
+      - name: status
+        type: array
+        items_type: string
+        enum:
+          - current
+          - deleted
+          - trashed
+          - historical
+          - draft
+        required: false
+        location: query
+        description: Filter the footer comment being retrieved by its status.
+      - name: sort
+        type: string
+        enum:
+          - created-date
+          - -created-date
+          - modified-date
+          - -modified-date
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of footer comments per result to return. If more results exist, use the
+          `Link` header to retrieve a relative URL that will return the next set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list blog post inline comments
+    description: Get inline comments for blog post
+    method: GET
+    url: https://{base_url}/wiki/api/v2/blogposts/{id}/inline-comments
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the blog post for which inline comments should be returned.
+      - name: body-format
+        type: string
+        enum:
+          - storage
+          - atlas_doc_format
+        required: false
+        location: query
+        description: The content format type to be returned in the `body` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `body` field.
+      - name: status
+        type: array
+        items_type: string
+        enum:
+          - current
+          - deleted
+          - trashed
+          - historical
+          - draft
+        required: false
+        location: query
+        description: Filter the inline comment being retrieved by its status.
+      - name: resolution-status
+        type: array
+        items_type: string
+        enum:
+          - resolved
+          - open
+          - dangling
+          - reopened
+        required: false
+        location: query
+        description: Filter the inline comment being retrieved by its resolution status.
+      - name: sort
+        type: string
+        enum:
+          - created-date
+          - -created-date
+          - modified-date
+          - -modified-date
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of inline comments per result to return. If more results exist, use the
+          `Link` header to retrieve a relative URL that will return the next set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list blog post labels
+    description: Get labels for blog post
+    method: GET
+    url: https://{base_url}/wiki/api/v2/blogposts/{id}/labels
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the blog post for which labels should be returned.
+      - name: prefix
+        type: string
+        enum:
+          - my
+          - team
+          - global
+          - system
+        required: false
+        location: query
+        description: Filter the results to labels based on their prefix.
+      - name: sort
+        type: string
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of labels per result to return. If more results exist, use the `Link`
+          header to retrieve a relative URL that will return the next set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list footer comments
+    description: Get footer comments
+    method: GET
+    url: https://{base_url}/wiki/api/v2/footer-comments
+    read_only: true
+    params:
+      - name: body-format
+        type: string
+        enum:
+          - storage
+          - atlas_doc_format
+        required: false
+        location: query
+        description: The content format type to be returned in the `body` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `body` field.
+      - name: sort
+        type: string
+        enum:
+          - created-date
+          - -created-date
+          - modified-date
+          - -modified-date
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of footer comments per result to return. If more results exist, use the
+          `Link` header to retrieve a relative URL that will return the next set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: get footer comment
+    description: Get footer comment by id
+    method: GET
+    url: https://{base_url}/wiki/api/v2/footer-comments/{comment-id}
+    read_only: true
+    params:
+      - name: comment-id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the comment to be retrieved.
+      - name: body-format
+        type: string
+        enum:
+          - storage
+          - atlas_doc_format
+          - view
+          - export_view
+          - anonymous_export_view
+          - styled_view
+          - editor
+        required: false
+        location: query
+        description: The content format type to be returned in the `body` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `body` field.
+      - name: version
+        type: integer
+        required: false
+        location: query
+        description: Allows you to retrieve a previously published version. Specify the previous version's
+          number to retrieve its details.
+      - name: include-properties
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes content properties associated with this footer comment in the response.
+          The number of results will be limited to 50 and sorted in the default sort order. 
+          A `meta` and `_links` property will 
+      - name: include-operations
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          Includes operations associated with this footer comment in the response, as defined in the
+          `Operation` object.
+
+          The number of results will be limited to 50 and sorted in the default sort order. 
+
+          A `met
+      - name: include-likes
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes likes associated with this footer comment in the response.
+          The number of results will be limited to 50 and sorted in the default sort order. 
+          A `meta` and `_links` property will be present to
+      - name: include-versions
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes versions associated with this footer comment in the response.
+          The number of results will be limited to 50 and sorted in the default sort order. 
+          A `meta` and `_links` property will be present
+      - name: include-version
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes the current version associated with this footer comment in the response.
+          By default this is included and can be omitted by setting the value to `false`.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list footer comment replies
+    description: Get children footer comments
+    method: GET
+    url: https://{base_url}/wiki/api/v2/footer-comments/{id}/children
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the parent comment for which footer comment children should be returned.
+      - name: body-format
+        type: string
+        enum:
+          - storage
+          - atlas_doc_format
+        required: false
+        location: query
+        description: The content format type to be returned in the `body` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `body` field.
+      - name: sort
+        type: string
+        enum:
+          - created-date
+          - -created-date
+          - modified-date
+          - -modified-date
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of footer comments per result to return. If more results exist, use the
+          `Link` header to retrieve a relative URL that will return the next set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list inline comments
+    description: Get inline comments
+    method: GET
+    url: https://{base_url}/wiki/api/v2/inline-comments
+    read_only: true
+    params:
+      - name: body-format
+        type: string
+        enum:
+          - storage
+          - atlas_doc_format
+        required: false
+        location: query
+        description: The content format type to be returned in the `body` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `body` field.
+      - name: sort
+        type: string
+        enum:
+          - created-date
+          - -created-date
+          - modified-date
+          - -modified-date
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of footer comments per result to return. If more results exist, use the
+          `Link` header to retrieve a relative URL that will return the next set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: get inline comment
+    description: Get inline comment by id
+    method: GET
+    url: https://{base_url}/wiki/api/v2/inline-comments/{comment-id}
+    read_only: true
+    params:
+      - name: comment-id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the comment to be retrieved.
+      - name: body-format
+        type: string
+        enum:
+          - storage
+          - atlas_doc_format
+          - view
+          - export_view
+          - anonymous_export_view
+          - styled_view
+          - editor
+        required: false
+        location: query
+        description: The content format type to be returned in the `body` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `body` field.
+      - name: version
+        type: integer
+        required: false
+        location: query
+        description: Allows you to retrieve a previously published version. Specify the previous version's
+          number to retrieve its details.
+      - name: include-properties
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes content properties associated with this inline comment in the response.
+          The number of results will be limited to 50 and sorted in the default sort order. 
+          A `meta` and `_links` property will 
+      - name: include-operations
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          Includes operations associated with this inline comment in the response, as defined in the
+          `Operation` object.
+
+          The number of results will be limited to 50 and sorted in the default sort order. 
+
+          A `met
+      - name: include-likes
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes likes associated with this inline comment in the response.
+          The number of results will be limited to 50 and sorted in the default sort order. 
+          A `meta` and `_links` property will be present to
+      - name: include-versions
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes versions associated with this inline comment in the response.
+          The number of results will be limited to 50 and sorted in the default sort order. 
+          A `meta` and `_links` property will be present
+      - name: include-version
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes the current version associated with this inline comment in the response.
+          By default this is included and can be omitted by setting the value to `false`.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list inline comment replies
+    description: Get children inline comments
+    method: GET
+    url: https://{base_url}/wiki/api/v2/inline-comments/{id}/children
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the parent comment for which inline comment children should be returned.
+      - name: body-format
+        type: string
+        enum:
+          - storage
+          - atlas_doc_format
+        required: false
+        location: query
+        description: The content format type to be returned in the `body` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `body` field.
+      - name: sort
+        type: string
+        enum:
+          - created-date
+          - -created-date
+          - modified-date
+          - -modified-date
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of footer comments per result to return. If more results exist, use the
+          `Link` header to retrieve a relative URL that will return the next set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list attachments
+    description: Get attachments
+    method: GET
+    url: https://{base_url}/wiki/api/v2/attachments
+    read_only: true
+    params:
+      - name: sort
+        type: string
+        enum:
+          - created-date
+          - -created-date
+          - modified-date
+          - -modified-date
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: status
+        type: array
+        items_type: string
+        enum:
+          - current
+          - archived
+          - trashed
+        required: false
+        location: query
+        description: Filter the results to attachments based on their status. By default, `current` and
+          `archived` are used.
+      - name: mediaType
+        type: string
+        required: false
+        location: query
+        description: Filters on the mediaType of attachments. Only one may be specified.
+      - name: filename
+        type: string
+        required: false
+        location: query
+        description: Filters on the file-name of attachments. Only one may be specified.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of attachments per result to return. If more results exist, use the
+          `Link` header to retrieve a relative URL that will return the next set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: get attachment
+    description: Get attachment by id
+    method: GET
+    url: https://{base_url}/wiki/api/v2/attachments/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID of the attachment to be returned. If you don't know the attachment's ID, use Get
+          attachments for page/blogpost/custom content.
+      - name: version
+        type: integer
+        required: false
+        location: query
+        description: Allows you to retrieve a previously published version. Specify the previous version's
+          number to retrieve its details.
+      - name: include-labels
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes labels associated with this attachment in the response.
+          The number of results will be limited to 50 and sorted in the default sort order. 
+          A `meta` and `_links` property will be present to in
+      - name: include-properties
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes content properties associated with this attachment in the response.
+          The number of results will be limited to 50 and sorted in the default sort order. 
+          A `meta` and `_links` property will be p
+      - name: include-operations
+        type: boolean
+        required: false
+        location: query
+        description: >-
+          Includes operations associated with this attachment in the response, as defined in the
+          `Operation` object.
+
+          The number of results will be limited to 50 and sorted in the default sort order. 
+
+          A `meta` a
+      - name: include-versions
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes versions associated with this attachment in the response.
+          The number of results will be limited to 50 and sorted in the default sort order. 
+          A `meta` and `_links` property will be present to 
+      - name: include-version
+        type: boolean
+        required: false
+        location: query
+        description: |-
+          Includes the current version associated with this attachment in the response.
+          By default this is included and can be omitted by setting the value to `false`.
+      - name: include-collaborators
+        type: boolean
+        required: false
+        location: query
+        description: Includes collaborators on the attachment.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list labels
+    description: Get labels
+    method: GET
+    url: https://{base_url}/wiki/api/v2/labels
+    read_only: true
+    params:
+      - name: label-id
+        type: array
+        items_type: integer
+        required: false
+        location: query
+        description: Filters on label ID. Multiple IDs can be specified as a comma-separated list.
+      - name: prefix
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Filters on label prefix. Multiple IDs can be specified as a comma-separated list.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: sort
+        type: string
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of labels per result to return. If more results exist, use the `Link`
+          header to retrieve a relative URL that will return the next set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list pages for label
+    description: Get pages for label
+    method: GET
+    url: https://{base_url}/wiki/api/v2/labels/{id}/pages
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the label for which pages should be returned.
+      - name: space-id
+        type: array
+        items_type: integer
+        required: false
+        location: query
+        description: Filter the results based on space ids. Multiple space ids can be specified as a
+          comma-separated list.
+      - name: body-format
+        type: string
+        enum:
+          - storage
+          - atlas_doc_format
+        required: false
+        location: query
+        description: The content format types to be returned in the `body` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `body` field.
+      - name: sort
+        type: string
+        enum:
+          - id
+          - -id
+          - created-date
+          - -created-date
+          - modified-date
+          - -modified-date
+          - title
+          - -title
+        required: false
+        location: query
+        description: Used to sort the result by a particular field.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of pages per result to return. If more results exist, use the `Link`
+          header to retrieve a relative URL that will return the next set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: list tasks
+    description: Get tasks
+    method: GET
+    url: https://{base_url}/wiki/api/v2/tasks
+    read_only: true
+    params:
+      - name: body-format
+        type: string
+        enum:
+          - storage
+          - atlas_doc_format
+        required: false
+        location: query
+        description: The content format types to be returned in the `body` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `body` field.
+      - name: include-blank-tasks
+        type: boolean
+        required: false
+        location: query
+        description: Specifies whether to include blank tasks in the response. Defaults to `true`.
+      - name: status
+        type: string
+        enum:
+          - complete
+          - incomplete
+        required: false
+        location: query
+        description: Filters on the status of the task.
+      - name: task-id
+        type: array
+        items_type: integer
+        required: false
+        location: query
+        description: Filters on task ID. Multiple IDs can be specified.
+      - name: space-id
+        type: array
+        items_type: integer
+        required: false
+        location: query
+        description: Filters on the space ID of the task. Multiple IDs can be specified.
+      - name: page-id
+        type: array
+        items_type: integer
+        required: false
+        location: query
+        description: Filters on the page ID of the task. Multiple IDs can be specified. Note - page and blog
+          post filters can be used in conjunction.
+      - name: blogpost-id
+        type: array
+        items_type: integer
+        required: false
+        location: query
+        description: Filters on the blog post ID of the task. Multiple IDs can be specified. Note - page and
+          blog post filters can be used in conjunction.
+      - name: created-by
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Filters on the Account ID of the user who created this task. Multiple IDs can be specified.
+      - name: assigned-to
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Filters on the Account ID of the user to whom this task is assigned. Multiple IDs can
+          be specified.
+      - name: completed-by
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Filters on the Account ID of the user who completed this task. Multiple IDs can be
+          specified.
+      - name: created-at-from
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: Filters on start of date-time range of task based on creation date (inclusive). Input
+          is epoch time in milliseconds.
+      - name: created-at-to
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: Filters on end of date-time range of task based on creation date (inclusive). Input is
+          epoch time in milliseconds.
+      - name: due-at-from
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: Filters on start of date-time range of task based on due date (inclusive). Input is
+          epoch time in milliseconds.
+      - name: due-at-to
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: Filters on end of date-time range of task based on due date (inclusive). Input is epoch
+          time in milliseconds.
+      - name: completed-at-from
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: Filters on start of date-time range of task based on completion date (inclusive). Input
+          is epoch time in milliseconds.
+      - name: completed-at-to
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: Filters on end of date-time range of task based on completion date (inclusive). Input
+          is epoch time in milliseconds.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Used for pagination, this opaque cursor will be returned in the `next` URL in the
+          `Link` response header. Use the relative URL in the `Link` header to retrieve the `next`
+          set of results.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of tasks per result to return. If more results exist, use the `Link`
+          header to retrieve a relative URL that will return the next set of results.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+  - name: get task
+    description: Get task by id
+    method: GET
+    url: https://{base_url}/wiki/api/v2/tasks/{id}
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        format: int64
+        required: true
+        location: path
+        description: The ID of the task to be returned. If you don't know the task ID, use Get tasks and
+          filter the results.
+      - name: body-format
+        type: string
+        enum:
+          - storage
+          - atlas_doc_format
+        required: false
+        location: query
+        description: The content format types to be returned in the `body` field of the response. If
+          available, the representation will be available under a response field of the same name
+          under the `body` field.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
   - name: search content
     description: Search pages with CQL.
     method: GET
     url: https://{base_url}/wiki/rest/api/content/search
     read_only: true
     params:
-      - { name: base_url, type: string, required: true, location: path, description: "Your site host, e.g. yourteam.atlassian.net" }
-      - { name: cql, type: string, required: true, location: query }
-      - { name: limit, type: integer, required: false, location: query }
-  - name: get page
-    description: Fetch one page by id.
-    method: GET
-    url: https://{base_url}/wiki/rest/api/content/{page_id}
-    read_only: true
-    params:
-      - { name: base_url, type: string, required: true, location: path, description: "Your site host, e.g. yourteam.atlassian.net" }
-      - { name: page_id, type: string, required: true, location: path }
-      - { name: expand, type: string, required: false, location: query }
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+      - name: cql
+        type: string
+        required: true
+        location: query
+        description: The CQL string that is used to find the requested content.
+      - name: cqlcontext
+        type: string
+        required: false
+        location: query
+        description: The space, content, and content status to execute the search against, as a JSON object
+          with optional spaceKey, contentId and contentStatuses properties.
+      - name: expand
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Content properties to expand, e.g. body.storage, space, version, history.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Pointer to a set of search results, returned as part of the next or prev URL from the
+          previous search call.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The maximum number of content objects to return per page (default 25).
   - name: create page
     description: Create a page (body is the Confluence content JSON object).
     method: POST
     url: https://{base_url}/wiki/rest/api/content
     read_only: false
     params:
-      - { name: base_url, type: string, required: true, location: path, description: "Your site host, e.g. yourteam.atlassian.net" }
-      - { name: content, type: json, required: true, location: body }
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your site host, e.g. yourteam.atlassian.net
+      - name: content
+        type: json
+        required: true
+        location: body

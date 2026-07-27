@@ -1,0 +1,148 @@
+# Regenerate catalog.yaml operations from Atlassian's official Confluence Cloud
+# REST API v2 OpenAPI description:
+#   pnpm --filter @kit/engine catalog:import confluence   (from runespacedev)
+#
+# `include` entries are the names listOperations() reports for this spec —
+# `summary || operationId || "METHOD /path"`. Every v2 operation carries a
+# summary and no two GET summaries collide, so each entry is the summary text
+# verbatim (case-sensitive). The explicit `"GET /path"` route form is always
+# accepted if that ever changes.
+#
+# Confluence Cloud is a per-site API: `base_url` templates the site host into
+# every URL (`https://yourteam.atlassian.net`), matching the convention the
+# catalog has used since the skill's first three hand-written operations, so
+# the existing email + API-token basic auth keeps working unchanged. The v2
+# spec's `servers` entry is `https://{your-domain}/wiki/api/v2`, which is why
+# `base_url:` below carries the `/wiki/api/v2` prefix the spec's paths omit.
+#
+# Coverage target: every read tool of Atlassian's official Remote MCP Server
+# that maps to a REST GET, plus the core read surface those tools imply
+# (versions, labels, attachments, blog posts, tasks). MCP read tools and their
+# endpoints:
+#   getConfluencePage                GET /pages/{id}
+#   getConfluencePageDescendants     GET /pages/{id}/descendants
+#   getConfluencePageFooterComments  GET /pages/{id}/footer-comments
+#   getConfluencePageInlineComments  GET /pages/{id}/inline-comments
+#   getConfluenceCommentChildren     GET /footer-comments/{id}/children
+#                                    GET /inline-comments/{id}/children
+#   getConfluenceSpaces              GET /spaces
+#   getPagesInConfluenceSpace        GET /spaces/{id}/pages
+#   searchConfluenceUsingCql         v1 only — see `keep` below
+#
+# Deliberate gaps:
+#   * Write tools (createConfluencePage, updateConfluencePage,
+#     createConfluenceFooterComment, createConfluenceInlineComment) are out of
+#     scope — the importer is GET-only. The skill's own `create page` predates
+#     the import and is preserved by `keep`.
+#   * CQL search has NO v2 endpoint. `searchConfluenceUsingCql` maps to the v1
+#     API (`/wiki/rest/api/content/search`), which lives in a different
+#     OpenAPI document; one import reads one spec, so `search content` stays
+#     hand-authored in catalog.yaml and is preserved verbatim by `keep`.
+#   * Confluence v2 exposes no user endpoints; `atlassianUserInfo` and
+#     `getAccessibleAtlassianResources` are cross-product OAuth/Rovo services
+#     outside this spec.
+#
+# `get page` moves from the v1 `/wiki/rest/api/content/{page_id}` route to the
+# v2 `/pages/{id}` route with this import — v2 is the API Atlassian's own MCP
+# server reads, and it swaps v1's `expand` for explicit `include-*` flags.
+
+spec: https://developer.atlassian.com/cloud/confluence/openapi-v2.v3.json
+base_url: https://{base_url}/wiki/api/v2
+parity_source: https://support.atlassian.com/atlassian-rovo-mcp-server/docs/supported-tools/
+
+include:
+  # --- pages -------------------------------------------------------------
+  - Get pages
+  - Get page by id
+  - Get all ancestors of page
+  - Get descendants of page
+  - Get direct children of a page
+  - Get page versions
+  - Get labels for page
+  - Get attachments for page
+  - Get footer comments for page
+  - Get inline comments for page
+  # --- spaces ------------------------------------------------------------
+  - Get spaces
+  - Get space by id
+  - Get pages in space
+  - Get blog posts in space
+  - Get labels for space
+  # --- blog posts --------------------------------------------------------
+  - Get blog posts
+  - Get blog post by id
+  - Get footer comments for blog post
+  - Get inline comments for blog post
+  - Get labels for blog post
+  # --- comments ----------------------------------------------------------
+  - Get footer comments
+  - Get footer comment by id
+  - Get children footer comments
+  - Get inline comments
+  - Get inline comment by id
+  - Get children inline comments
+  # --- attachments, labels, tasks ----------------------------------------
+  - Get attachments
+  - Get attachment by id
+  - Get labels
+  - Get pages for label
+  - Get tasks
+  - Get task by id
+
+rename:
+  Get pages: list pages
+  Get page by id: get page
+  Get all ancestors of page: list page ancestors
+  Get descendants of page: list page descendants
+  Get direct children of a page: list page children
+  Get page versions: list page versions
+  Get labels for page: list page labels
+  Get attachments for page: list page attachments
+  Get footer comments for page: list page footer comments
+  Get inline comments for page: list page inline comments
+
+  Get spaces: list spaces
+  Get space by id: get space
+  Get pages in space: list pages in space
+  Get blog posts in space: list blog posts in space
+  Get labels for space: list space labels
+
+  Get blog posts: list blog posts
+  Get blog post by id: get blog post
+  Get footer comments for blog post: list blog post footer comments
+  Get inline comments for blog post: list blog post inline comments
+  Get labels for blog post: list blog post labels
+
+  Get footer comments: list footer comments
+  Get footer comment by id: get footer comment
+  Get children footer comments: list footer comment replies
+  Get inline comments: list inline comments
+  Get inline comment by id: get inline comment
+  Get children inline comments: list inline comment replies
+
+  Get attachments: list attachments
+  Get attachment by id: get attachment
+  Get labels: list labels
+  Get pages for label: list pages for label
+  Get tasks: list tasks
+  Get task by id: get task
+
+# Operations carried over from catalog.yaml verbatim: the skill's only write
+# operation, and CQL search, which the v2 spec cannot describe. Both are
+# hand-authored in catalog.yaml and the importer copies them through untouched,
+# so their params survive every re-import.
+keep:
+  - search content
+  - create page
+
+# Curated corrections layered over the spec after import, keyed by the catalog
+# name (i.e. post-`rename`). `*` applies to every operation that has the param.
+overrides:
+  "*":
+    params:
+      # hand-authored: `base_url` is not a spec parameter — it is the site host
+      # the importer auto-declares from `base_url:` above, so the spec cannot
+      # describe it. The guidance is the same on all 32 operations and is the
+      # text the skill's original hand-written operations carried.
+      base_url:
+        description: Your site host, e.g. yourteam.atlassian.net
