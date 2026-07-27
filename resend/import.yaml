@@ -1,0 +1,185 @@
+# Regenerate catalog.yaml operations from Resend's own published OpenAPI
+# description (resend/resend-openapi):
+#   pnpm --filter @kit/engine catalog:import resend   (from the runespacedev repo)
+#
+# `include` entries are the names listOperations() reports for this spec —
+# `summary || operationId || "METHOD /path"`. Resend declares no `operationId`
+# anywhere but gives every operation a summary, and no two summaries collide
+# across the whole document (83 operations, 37 of them GET), so every entry is
+# the summary text verbatim. The explicit `"GET /path"` route form is always
+# accepted if that ever changes.
+#
+# Coverage target: the ENTIRE documented GET surface. Resend has no read MCP
+# server to measure parity against — the only official one, resend/mcp-send-email,
+# exposes a single write tool (send-email) — so `parity_source` is the API
+# reference itself and coverage is exhaustive rather than selective: all 37 GET
+# operations in the spec are imported, plus the four documented GETs the spec
+# omits (see `keep:`). Resend is small enough that "every read endpoint" is a
+# reachable target and a more honest contract than a curated subset.
+#
+# Deliberate gaps:
+#   * Every write endpoint — send email / send batch emails / update email /
+#     cancel email, create+update+delete on domains, api-keys, contacts,
+#     segments, topics, templates, broadcasts, contact-properties, events,
+#     automations, webhooks, and the verify/publish/duplicate/send actions.
+#     The importer is GET-only. The skill's own `send email` predates the import
+#     and is preserved by `keep`.
+#   * The OAuth endpoints (`GET /oauth/grants`, authorize, token, register,
+#     revoke) are documented but belong to the authorization-code + PKCE flow,
+#     not to the API-key bearer scheme this skill authenticates with. They are
+#     also absent from the spec.
+#
+# Naming note — Audiences vs Segments. Resend is migrating Audiences to
+# Segments (resend.com/docs/dashboard/segments/migrating-from-audiences-to-segments)
+# and the API reference no longer documents `/audiences`, but the spec still
+# declares both routes and this skill has shipped `list-audiences.sh` since its
+# first version. Both are imported: `list segments`/`get segment` are the
+# forward-looking pair, `list audiences`/`get audience` keep the legacy lookup
+# working.
+#
+# CHECK THE PAGINATION AFTER RE-IMPORTING. This document declares
+# `openapi: 3.1.2` and holds `limit`/`after`/`before` in components/parameters,
+# referenced by `$ref` from 15 of its GET operations. @readme/openapi-parser
+# allowlists exact OpenAPI versions and throws on 3.1.2; the importer's
+# dereference step catches that and falls back to the RAW spec, which drops
+# every `$ref`'d parameter — 45 of them here — and still exits 0. The engine
+# pins the version on its throwaway clone to keep them
+# (catalog-import.ts `pinToSupportedOpenApiVersion`). If a future import writes
+# `params: []` on `list emails`, `list contacts` or `list logs`, that guard is
+# what regressed — the spec is fine.
+
+spec: https://raw.githubusercontent.com/resend/resend-openapi/main/resend.json
+base_url: https://api.resend.com
+parity_source: https://resend.com/docs/api-reference/introduction
+
+include:
+  # --- sent email --------------------------------------------------------
+  - Retrieve a list of emails
+  - Retrieve a single email
+  - Retrieve a list of attachments for a sent email
+  - Retrieve a single attachment for a sent email
+  # --- received email ----------------------------------------------------
+  - Retrieve a list of received emails
+  - Retrieve a single received email
+  - Retrieve a list of attachments for a received email
+  - Retrieve a single attachment for a received email
+  # --- domains and keys --------------------------------------------------
+  - Retrieve a list of domains
+  - Retrieve a single domain
+  - Retrieve a list of API keys
+  - Retrieve a list of webhooks
+  - Retrieve a single webhook
+  # --- contacts ----------------------------------------------------------
+  - Retrieve a list of contacts
+  - Retrieve a single contact by ID or email
+  - Retrieve a list of segments for a contact
+  - Retrieve topics for a contact
+  - Retrieve a list of contact properties
+  - Retrieve a single contact property
+  # --- segments, audiences, topics ---------------------------------------
+  - Retrieve a list of segments
+  - Retrieve a single segment
+  - Retrieve a list of audiences
+  - Retrieve a single audience
+  - Retrieve a list of topics
+  - Retrieve a single topic
+  # --- broadcasts and templates ------------------------------------------
+  - Retrieve a list of broadcasts
+  - Retrieve a single broadcast
+  - Retrieve a list of templates
+  - Retrieve a single template
+  # --- automations and events --------------------------------------------
+  - Retrieve a list of automations
+  - Retrieve a single automation
+  - Retrieve a list of automation runs
+  - Retrieve a single automation run
+  - Retrieve a list of events
+  - Retrieve a single event
+  # --- request logs ------------------------------------------------------
+  - Retrieve a list of logs
+  - Retrieve a single log
+
+rename:
+  Retrieve a list of emails: list emails
+  Retrieve a single email: get email
+  Retrieve a list of attachments for a sent email: list email attachments
+  Retrieve a single attachment for a sent email: get email attachment
+
+  Retrieve a list of received emails: list received emails
+  Retrieve a single received email: get received email
+  Retrieve a list of attachments for a received email: list received email attachments
+  Retrieve a single attachment for a received email: get received email attachment
+
+  Retrieve a list of domains: list domains
+  Retrieve a single domain: get domain
+  Retrieve a list of API keys: list api keys
+  Retrieve a list of webhooks: list webhooks
+  Retrieve a single webhook: get webhook
+
+  Retrieve a list of contacts: list contacts
+  Retrieve a single contact by ID or email: get contact
+  Retrieve a list of segments for a contact: list contact segments
+  Retrieve topics for a contact: list contact topics
+  Retrieve a list of contact properties: list contact properties
+  Retrieve a single contact property: get contact property
+
+  Retrieve a list of segments: list segments
+  Retrieve a single segment: get segment
+  Retrieve a list of audiences: list audiences
+  Retrieve a single audience: get audience
+  Retrieve a list of topics: list topics
+  Retrieve a single topic: get topic
+
+  Retrieve a list of broadcasts: list broadcasts
+  Retrieve a single broadcast: get broadcast
+  Retrieve a list of templates: list templates
+  Retrieve a single template: get template
+
+  Retrieve a list of automations: list automations
+  Retrieve a single automation: get automation
+  Retrieve a list of automation runs: list automation runs
+  Retrieve a single automation run: get automation run
+  Retrieve a list of events: list events
+  Retrieve a single event: get event
+
+  Retrieve a list of logs: list logs
+  Retrieve a single log: get log
+
+# Operations carried over from catalog.yaml verbatim.
+#
+# HAND-AUTHORED — READ BEFORE EDITING. For these five operations catalog.yaml is
+# the source of truth, not this file and not a vendor spec: the importer copies
+# them through untouched (no description merge, no `overrides`), so edit them
+# there. Note that the importer reserialises catalog.yaml on every run and YAML
+# comments do NOT survive that, which is why this note lives here.
+#
+#   send email             the skill's only write operation; the import is
+#                          GET-only, so without `keep` the first re-import
+#                          deletes it.
+#   list suppressions      GET https://api.resend.com/suppressions
+#   get suppression        GET https://api.resend.com/suppressions/{suppression}
+#   list segment contacts  GET https://api.resend.com/segments/{segment_id}/contacts
+#   get domain claim       GET https://api.resend.com/domains/{domain_id}/claim
+#
+# The last four are documented at resend.com/docs/api-reference (suppressions/,
+# segments/list-segment-contacts, domains/get-domain-claim) but the word
+# "suppression" and the `/claim` and `/segments/{id}/contacts` routes appear
+# NOWHERE in resend.json — the published spec lags the API reference on these.
+# They are transcribed by hand from those doc pages (routes taken from each
+# page's own cURL example; pagination transcribed from the shared QueryParams
+# block). If Resend changes those contracts, nothing in this pipeline will
+# notice. Delete them from `keep` and add them to `include` as soon as the spec
+# catches up — the importer errors loudly if a name is both kept and imported.
+keep:
+  - send email
+  - list suppressions
+  - get suppression
+  - list segment contacts
+  - get domain claim
+
+# No `overrides:` block. Resend's spec is small, hand-maintained, and correct on
+# every parameter this import touches: the shared PaginationLimit/After/Before
+# components come through as integer + two string cursors, `after`/`before` on
+# the webhook routes keep `format: uuid`, and `list automations` keeps its
+# `status` enum. Recorded here so the absence reads as verified rather than
+# forgotten.

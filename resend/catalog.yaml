@@ -1,8 +1,8 @@
 slug: resend
-version: 1.0.0
+version: 1.1.0
 name: Resend
 category: comms-messaging
-one_liner: Send transactional email and check delivery via Resend.
+one_liner: Send transactional email and read delivery, domains, contacts, and broadcasts in Resend.
 api_domain: api.resend.com
 status: live
 credentials:
@@ -12,29 +12,774 @@ credentials:
 auth:
   scheme: bearer
   header: Authorization
-  env_vars: [RESEND_API_TOKEN]
-  value_template: "Bearer ${RESEND_API_TOKEN}"
+  env_vars:
+    - RESEND_API_TOKEN
+  value_template: Bearer ${RESEND_API_TOKEN}
 operations:
-  - name: send email
-    description: Send an email.
-    method: POST
+  - name: list emails
+    description: Retrieve a list of emails
+    method: GET
     url: https://api.resend.com/emails
-    read_only: false
+    read_only: true
     params:
-      - { name: from, type: string, required: true, location: body }
-      - { name: to, type: string, required: true, location: body }
-      - { name: subject, type: string, required: true, location: body }
-      - { name: html, type: string, required: true, location: body }
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Number of items to return.
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: Return items after this cursor.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: Return items before this cursor.
   - name: get email
     description: Fetch a sent email by id.
     method: GET
     url: https://api.resend.com/emails/{email_id}
     read_only: true
     params:
-      - { name: email_id, type: string, required: true, location: path }
+      - name: email_id
+        type: string
+        required: true
+        location: path
+        description: The ID of the email.
+  - name: list email attachments
+    description: Retrieve a list of attachments for a sent email
+    method: GET
+    url: https://api.resend.com/emails/{email_id}/attachments
+    read_only: true
+    params:
+      - name: email_id
+        type: string
+        format: uuid
+        required: true
+        location: path
+        description: The ID of the email.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Maximum number of attachments to return.
+      - name: after
+        type: string
+        format: uuid
+        required: false
+        location: query
+        description: Pagination cursor to fetch results after this attachment ID. Cannot be used with 'before'.
+      - name: before
+        type: string
+        format: uuid
+        required: false
+        location: query
+        description: Pagination cursor to fetch results before this attachment ID. Cannot be used with 'after'.
+  - name: get email attachment
+    description: Retrieve a single attachment for a sent email
+    method: GET
+    url: https://api.resend.com/emails/{email_id}/attachments/{attachment_id}
+    read_only: true
+    params:
+      - name: email_id
+        type: string
+        format: uuid
+        required: true
+        location: path
+        description: The ID of the email.
+      - name: attachment_id
+        type: string
+        format: uuid
+        required: true
+        location: path
+        description: The ID of the attachment.
+  - name: list received emails
+    description: Retrieve a list of received emails
+    method: GET
+    url: https://api.resend.com/emails/receiving
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Maximum number of received emails to return.
+      - name: after
+        type: string
+        format: uuid
+        required: false
+        location: query
+        description: Pagination cursor to fetch results after this email ID. Cannot be used with 'before'.
+      - name: before
+        type: string
+        format: uuid
+        required: false
+        location: query
+        description: Pagination cursor to fetch results before this email ID. Cannot be used with 'after'.
+  - name: get received email
+    description: Retrieve a single received email
+    method: GET
+    url: https://api.resend.com/emails/receiving/{email_id}
+    read_only: true
+    params:
+      - name: email_id
+        type: string
+        format: uuid
+        required: true
+        location: path
+        description: The ID of the received email.
+  - name: list received email attachments
+    description: Retrieve a list of attachments for a received email
+    method: GET
+    url: https://api.resend.com/emails/receiving/{email_id}/attachments
+    read_only: true
+    params:
+      - name: email_id
+        type: string
+        format: uuid
+        required: true
+        location: path
+        description: The ID of the received email.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Maximum number of attachments to return.
+      - name: after
+        type: string
+        format: uuid
+        required: false
+        location: query
+        description: Pagination cursor to fetch results after this attachment ID. Cannot be used with 'before'.
+      - name: before
+        type: string
+        format: uuid
+        required: false
+        location: query
+        description: Pagination cursor to fetch results before this attachment ID. Cannot be used with 'after'.
+  - name: get received email attachment
+    description: Retrieve a single attachment for a received email
+    method: GET
+    url: https://api.resend.com/emails/receiving/{email_id}/attachments/{attachment_id}
+    read_only: true
+    params:
+      - name: email_id
+        type: string
+        format: uuid
+        required: true
+        location: path
+        description: The ID of the received email.
+      - name: attachment_id
+        type: string
+        format: uuid
+        required: true
+        location: path
+        description: The ID of the attachment.
   - name: list domains
     description: List verified sending domains.
     method: GET
     url: https://api.resend.com/domains
     read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Number of items to return.
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: Return items after this cursor.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: Return items before this cursor.
+  - name: get domain
+    description: Retrieve a single domain
+    method: GET
+    url: https://api.resend.com/domains/{domain_id}
+    read_only: true
+    params:
+      - name: domain_id
+        type: string
+        required: true
+        location: path
+        description: The ID of the domain.
+  - name: list api keys
+    description: Retrieve a list of API keys
+    method: GET
+    url: https://api.resend.com/api-keys
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Number of items to return.
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: Return items after this cursor.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: Return items before this cursor.
+  - name: list webhooks
+    description: Retrieve a list of webhooks
+    method: GET
+    url: https://api.resend.com/webhooks
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Maximum number of webhooks to return.
+      - name: after
+        type: string
+        format: uuid
+        required: false
+        location: query
+        description: Pagination cursor to fetch results after this webhook ID. Cannot be used with 'before'.
+      - name: before
+        type: string
+        format: uuid
+        required: false
+        location: query
+        description: Pagination cursor to fetch results before this webhook ID. Cannot be used with 'after'.
+  - name: get webhook
+    description: Retrieve a single webhook
+    method: GET
+    url: https://api.resend.com/webhooks/{webhook_id}
+    read_only: true
+    params:
+      - name: webhook_id
+        type: string
+        format: uuid
+        required: true
+        location: path
+        description: The Webhook ID.
+  - name: list contacts
+    description: Retrieve a list of contacts
+    method: GET
+    url: https://api.resend.com/contacts
+    read_only: true
+    params:
+      - name: segment_id
+        type: string
+        required: false
+        location: query
+        description: Filter contacts by segment ID.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Number of items to return.
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: Return items after this cursor.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: Return items before this cursor.
+  - name: get contact
+    description: Retrieve a single contact by ID or email
+    method: GET
+    url: https://api.resend.com/contacts/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The Contact ID or email address.
+  - name: list contact segments
+    description: Retrieve a list of segments for a contact
+    method: GET
+    url: https://api.resend.com/contacts/{contact_id}/segments
+    read_only: true
+    params:
+      - name: contact_id
+        type: string
+        required: true
+        location: path
+        description: The Contact ID or email address.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Number of items to return.
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: Return items after this cursor.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: Return items before this cursor.
+  - name: list contact topics
+    description: Retrieve topics for a contact
+    method: GET
+    url: https://api.resend.com/contacts/{contact_id}/topics
+    read_only: true
+    params:
+      - name: contact_id
+        type: string
+        required: true
+        location: path
+        description: The Contact ID or email address.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Number of items to return.
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: Return items after this cursor.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: Return items before this cursor.
+  - name: list contact properties
+    description: Retrieve a list of contact properties
+    method: GET
+    url: https://api.resend.com/contact-properties
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Number of items to return.
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: Return items after this cursor.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: Return items before this cursor.
+  - name: get contact property
+    description: Retrieve a single contact property
+    method: GET
+    url: https://api.resend.com/contact-properties/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The Contact Property ID.
+  - name: list segments
+    description: Retrieve a list of segments
+    method: GET
+    url: https://api.resend.com/segments
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Number of items to return.
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: Return items after this cursor.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: Return items before this cursor.
+  - name: get segment
+    description: Retrieve a single segment
+    method: GET
+    url: https://api.resend.com/segments/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The Segment ID.
+  - name: list audiences
+    description: Retrieve a list of audiences
+    method: GET
+    url: https://api.resend.com/audiences
+    read_only: true
     params: []
+  - name: get audience
+    description: Retrieve a single audience
+    method: GET
+    url: https://api.resend.com/audiences/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The Audience ID.
+  - name: list topics
+    description: Retrieve a list of topics
+    method: GET
+    url: https://api.resend.com/topics
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Number of items to return.
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: Return items after this cursor.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: Return items before this cursor.
+  - name: get topic
+    description: Retrieve a single topic
+    method: GET
+    url: https://api.resend.com/topics/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The Topic ID.
+  - name: list broadcasts
+    description: Retrieve a list of broadcasts
+    method: GET
+    url: https://api.resend.com/broadcasts
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Number of items to return.
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: Return items after this cursor.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: Return items before this cursor.
+  - name: get broadcast
+    description: Retrieve a single broadcast
+    method: GET
+    url: https://api.resend.com/broadcasts/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The Broadcast ID.
+  - name: list templates
+    description: Retrieve a list of templates
+    method: GET
+    url: https://api.resend.com/templates
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Number of items to return.
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: Return items after this cursor.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: Return items before this cursor.
+  - name: get template
+    description: Retrieve a single template
+    method: GET
+    url: https://api.resend.com/templates/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The Template ID or alias.
+  - name: list automations
+    description: Retrieve a list of automations
+    method: GET
+    url: https://api.resend.com/automations
+    read_only: true
+    params:
+      - name: status
+        type: string
+        enum:
+          - enabled
+          - disabled
+        required: false
+        location: query
+        description: Filter automations by status.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Number of items to return.
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: Return items after this cursor.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: Return items before this cursor.
+  - name: get automation
+    description: Retrieve a single automation
+    method: GET
+    url: https://api.resend.com/automations/{automation_id}
+    read_only: true
+    params:
+      - name: automation_id
+        type: string
+        format: uuid
+        required: true
+        location: path
+        description: The ID of the automation.
+  - name: list automation runs
+    description: Retrieve a list of automation runs
+    method: GET
+    url: https://api.resend.com/automations/{automation_id}/runs
+    read_only: true
+    params:
+      - name: automation_id
+        type: string
+        format: uuid
+        required: true
+        location: path
+        description: The ID of the automation.
+      - name: status
+        type: string
+        required: false
+        location: query
+        description: "Filter runs by status. Comma-separated list of: running, completed, failed, cancelled."
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Number of items to return.
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: Return items after this cursor.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: Return items before this cursor.
+  - name: get automation run
+    description: Retrieve a single automation run
+    method: GET
+    url: https://api.resend.com/automations/{automation_id}/runs/{run_id}
+    read_only: true
+    params:
+      - name: automation_id
+        type: string
+        format: uuid
+        required: true
+        location: path
+        description: The ID of the automation.
+      - name: run_id
+        type: string
+        format: uuid
+        required: true
+        location: path
+        description: The ID of the automation run.
+  - name: list events
+    description: Retrieve a list of events
+    method: GET
+    url: https://api.resend.com/events
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Number of items to return.
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: Return items after this cursor.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: Return items before this cursor.
+  - name: get event
+    description: Retrieve a single event
+    method: GET
+    url: https://api.resend.com/events/{identifier}
+    read_only: true
+    params:
+      - name: identifier
+        type: string
+        required: true
+        location: path
+        description: The event ID (UUID) or event name.
+  - name: list logs
+    description: Retrieve a list of logs
+    method: GET
+    url: https://api.resend.com/logs
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Number of items to return.
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: Return items after this cursor.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: Return items before this cursor.
+  - name: get log
+    description: Retrieve a single log
+    method: GET
+    url: https://api.resend.com/logs/{log_id}
+    read_only: true
+    params:
+      - name: log_id
+        type: string
+        format: uuid
+        required: true
+        location: path
+        description: The ID of the log.
+  - name: send email
+    description: Send an email.
+    method: POST
+    url: https://api.resend.com/emails
+    read_only: false
+    params:
+      - name: from
+        type: string
+        required: true
+        location: body
+      - name: to
+        type: string
+        required: true
+        location: body
+      - name: subject
+        type: string
+        required: true
+        location: body
+      - name: html
+        type: string
+        required: true
+        location: body
+  - name: list suppressions
+    description: List suppressed recipient addresses.
+    method: GET
+    url: https://api.resend.com/suppressions
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Number of suppressions to retrieve (1-100). Omit to return all suppressions in a single
+          response.
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: The ID after which more suppressions are retrieved, for pagination. Not included in the
+          returned list. Cannot be used with `before`.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: The ID before which more suppressions are retrieved, for pagination. Not included in
+          the returned list. Cannot be used with `after`.
+  - name: get suppression
+    description: Fetch a single suppression by id or by suppressed email address.
+    method: GET
+    url: https://api.resend.com/suppressions/{suppression}
+    read_only: true
+    params:
+      - name: suppression
+        type: string
+        required: true
+        location: path
+        description: The suppression ID or the suppressed email address.
+  - name: list segment contacts
+    description: List the contacts in a segment.
+    method: GET
+    url: https://api.resend.com/segments/{segment_id}/contacts
+    read_only: true
+    params:
+      - name: segment_id
+        type: string
+        required: true
+        location: path
+        description: The Segment ID.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Number of contacts to retrieve (1-100). Omit to return all contacts in a single response.
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: The ID after which more contacts are retrieved, for pagination. Not included in the
+          returned list. Cannot be used with `before`.
+      - name: before
+        type: string
+        required: false
+        location: query
+        description: The ID before which more contacts are retrieved, for pagination. Not included in the
+          returned list. Cannot be used with `after`.
+  - name: get domain claim
+    description: Fetch the latest claim for a domain, to follow its verification status.
+    method: GET
+    url: https://api.resend.com/domains/{domain_id}/claim
+    read_only: true
+    params:
+      - name: domain_id
+        type: string
+        required: true
+        location: path
+        description: The placeholder Domain ID returned when the claim was created.
