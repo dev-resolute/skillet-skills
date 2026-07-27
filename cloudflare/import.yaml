@@ -1,0 +1,250 @@
+# Regenerate catalog.yaml operations from Cloudflare's official OpenAPI 3 spec:
+#   pnpm --filter @kit/engine catalog:import cloudflare   (from the runespacedev repo)
+#
+# Every `include` entry uses the explicit "METHOD /path" route form rather than
+# the operation summary. That is a deliberate departure from the other skills'
+# import manifests, and this spec is why:
+#
+#   * 98 GET summaries in this spec are shared by 2-3 operations each (209 GET
+#     operations affected), and the collisions land squarely on the endpoints
+#     wanted here — "List Workers" is both /workers/scripts and
+#     /workers/workers; "List Namespaces" is both KV and Durable Objects;
+#     "Show DNS Settings" is both the account and the zone route; "List
+#     Logpush jobs", "List Pools", "List Monitors", "List IP Access rules",
+#     "List Certificates" and "List Routes" all collide the same way. The
+#     importer refuses an ambiguous name, so those entries would need the route
+#     form regardless.
+#   * Several summaries carry no meaning on their own: `GET
+#     /zones/{zone_id}/dns_analytics/report` is summarised "Table" and
+#     `.../report/bytime` is "By Time".
+#
+# The route form is the same name space — listOperations already falls back to
+# "METHOD /path" for operations with no summary or operationId — so mixing
+# would work; using it uniformly keeps the list readable as a route map and
+# immune to Cloudflare re-wording a summary.
+#
+# Spec notes: 21.9 MB, `openapi: 3.0.3`, 2017 paths, 1594 GET operations,
+# `servers: [{url: https://api.cloudflare.com/client/v4}]` — matches base_url.
+# It dereferences in well under a second and ~120 MB of heap, but its
+# dereferenced form is CIRCULAR (13 distinct reference cycles), which is the
+# case the importer already pins a regression test for; none of the cycles is
+# reachable from the operations below.
+#
+# Coverage target: Cloudflare does not ship one MCP server with a typed read
+# surface for this API. It ships two things:
+#
+#   1. github.com/cloudflare/mcp — the API server (mcp.cloudflare.com), which
+#      exposes the whole REST API. In its default "code mode" that is three
+#      tools (`docs`, `search`, `execute`); with `?codemode=false` it registers
+#      one tool per endpoint straight from this same spec. This is what covers
+#      zones and DNS records.
+#   2. github.com/cloudflare/mcp-server-cloudflare — ~19 product-specific
+#      servers with ~180 curated typed tools, narrow by design.
+#
+# So parity here is the union of (2)'s read tools that map to a REST GET, plus
+# the core zone/DNS/account read surface that only (1) reaches. Read tools from
+# (2) and the operation each becomes:
+#
+#   zones_list, zone_details                 GET /zones, /zones/{zone_id}
+#   show_zone_dns_settings                   GET /zones/{id}/dns_settings
+#   show_account_dns_settings                GET /accounts/{id}/dns_settings
+#   dns_report                               GET /zones/{id}/dns_analytics/report
+#   workers_list                             GET /accounts/{id}/workers/scripts
+#   workers_get_worker_code                  GET .../workers/scripts/{script_name}
+#   kv_namespaces_list, kv_namespace_get     GET .../storage/kv/namespaces[/{id}]
+#   r2_buckets_list, r2_bucket_get           GET .../r2/buckets[/{bucket_name}]
+#   d1_databases_list, d1_database_get       GET .../d1/database[/{id}]
+#   hyperdrive_configs_list, ..._get         GET .../hyperdrive/configs[/{id}]
+#   auditlogs_by_account_id                  GET .../logs/audit
+#   logpush_jobs_by_account_id               GET .../logpush/jobs
+#   list_gateways, list_logs, get_log_details,
+#     get_log_request_body, get_log_response_body
+#                                            GET .../ai-gateway/gateways[...]
+#
+# Deliberate gaps:
+#   * Write tools (kv_namespace_create/update/delete, r2_bucket_create/delete,
+#     d1_database_create/query/delete, hyperdrive_config_edit/delete,
+#     dex_create_remote_pcap, create_url_scan, …) — the importer is GET-only.
+#     The skill's own `purge cache` predates the import and is preserved by
+#     `keep`.
+#   * `workers_get_worker` reads GET /accounts/{id}/workers/services/{name},
+#     an undocumented dashboard route that is NOT in this public spec.
+#     `download worker script` (the documented /workers/scripts/{name} route,
+#     i.e. `workers_get_worker_code`) covers the same ground.
+#   * The Observability server's three tools are POST
+#     (/workers/observability/telemetry/query|keys|values) — GET-only catalog.
+#   * The GraphQL server's tools sit on /graphql, which this spec does not
+#     describe at all.
+#   * Radar (66 tools), Browser Run, Container, DEX, Cloudflare One CASB,
+#     AutoRAG, Docs and Blog are separate products with their own onboarding;
+#     none belongs to a core zone/DNS/Workers read surface.
+
+spec: https://raw.githubusercontent.com/cloudflare/api-schemas/main/openapi.json
+base_url: https://api.cloudflare.com/client/v4
+parity_source: https://github.com/cloudflare/mcp-server-cloudflare
+
+include:
+  # --- identity and accounts ---------------------------------------------
+  - GET /user
+  - GET /user/tokens/verify
+  - GET /accounts
+  - GET /accounts/{account_id}
+  - GET /accounts/{account_id}/members
+  - GET /accounts/{account_id}/roles
+  - GET /accounts/{account_id}/tokens
+  # --- zones --------------------------------------------------------------
+  - GET /zones
+  - GET /zones/{zone_id}
+  - GET /zones/{zone_id}/settings
+  - GET /zones/{zone_id}/settings/{setting_id}
+  - GET /zones/{zone_id}/available_plans
+  # --- DNS ----------------------------------------------------------------
+  - GET /zones/{zone_id}/dns_records
+  - GET /zones/{zone_id}/dns_records/{dns_record_id}
+  - GET /zones/{zone_id}/dns_settings
+  - GET /accounts/{account_id}/dns_settings
+  - GET /zones/{zone_id}/dns_analytics/report
+  - GET /zones/{zone_id}/dns_analytics/report/bytime
+  # --- Workers ------------------------------------------------------------
+  - GET /accounts/{account_id}/workers/scripts
+  - GET /accounts/{account_id}/workers/scripts/{script_name}
+  - GET /accounts/{account_id}/workers/scripts/{script_name}/settings
+  - GET /accounts/{account_id}/workers/domains
+  - GET /accounts/{account_id}/workers/subdomain
+  - GET /zones/{zone_id}/workers/routes
+  - GET /zones/{zone_id}/workers/routes/{route_id}
+  # --- storage and data ---------------------------------------------------
+  - GET /accounts/{account_id}/storage/kv/namespaces
+  - GET /accounts/{account_id}/storage/kv/namespaces/{namespace_id}
+  - GET /accounts/{account_id}/storage/kv/namespaces/{namespace_id}/keys
+  - GET /accounts/{account_id}/r2/buckets
+  - GET /accounts/{account_id}/r2/buckets/{bucket_name}
+  - GET /accounts/{account_id}/d1/database
+  - GET /accounts/{account_id}/d1/database/{database_id}
+  - GET /accounts/{account_id}/hyperdrive/configs
+  - GET /accounts/{account_id}/hyperdrive/configs/{hyperdrive_id}
+  - GET /accounts/{account_id}/queues
+  - GET /accounts/{account_id}/queues/{queue_id}
+  # --- Pages --------------------------------------------------------------
+  - GET /accounts/{account_id}/pages/projects
+  - GET /accounts/{account_id}/pages/projects/{project_name}
+  - GET /accounts/{account_id}/pages/projects/{project_name}/deployments
+  - GET /accounts/{account_id}/pages/projects/{project_name}/deployments/{deployment_id}
+  # --- AI Gateway ---------------------------------------------------------
+  - GET /accounts/{account_id}/ai-gateway/gateways
+  - GET /accounts/{account_id}/ai-gateway/gateways/{gateway_id}/logs
+  - GET /accounts/{account_id}/ai-gateway/gateways/{gateway_id}/logs/{id}
+  - GET /accounts/{account_id}/ai-gateway/gateways/{gateway_id}/logs/{id}/request
+  - GET /accounts/{account_id}/ai-gateway/gateways/{gateway_id}/logs/{id}/response
+  # --- logs ---------------------------------------------------------------
+  - GET /accounts/{account_id}/logs/audit
+  - GET /accounts/{account_id}/logpush/jobs
+  - GET /zones/{zone_id}/logpush/jobs
+  # --- security and traffic ----------------------------------------------
+  - GET /zones/{zone_id}/rulesets
+  - GET /zones/{zone_id}/rulesets/{ruleset_id}
+  - GET /accounts/{account_id}/rulesets
+  - GET /zones/{zone_id}/firewall/access_rules/rules
+  - GET /zones/{zone_id}/pagerules
+  - GET /zones/{zone_id}/ssl/certificate_packs
+  - GET /zones/{zone_id}/custom_hostnames
+  - GET /zones/{zone_id}/argo/smart_routing
+  # --- load balancing -----------------------------------------------------
+  - GET /zones/{zone_id}/load_balancers
+  - GET /accounts/{account_id}/load_balancers/pools
+  - GET /accounts/{account_id}/load_balancers/monitors
+
+rename:
+  GET /user: get current user
+  GET /user/tokens/verify: verify api token
+  GET /accounts: list accounts
+  GET /accounts/{account_id}: get account
+  GET /accounts/{account_id}/members: list account members
+  GET /accounts/{account_id}/roles: list account roles
+  GET /accounts/{account_id}/tokens: list account api tokens
+
+  GET /zones: list zones
+  GET /zones/{zone_id}: get zone
+  GET /zones/{zone_id}/settings: list zone settings
+  GET /zones/{zone_id}/settings/{setting_id}: get zone setting
+  GET /zones/{zone_id}/available_plans: list zone plans
+
+  GET /zones/{zone_id}/dns_records: list dns records
+  GET /zones/{zone_id}/dns_records/{dns_record_id}: get dns record
+  GET /zones/{zone_id}/dns_settings: get zone dns settings
+  GET /accounts/{account_id}/dns_settings: get account dns settings
+  GET /zones/{zone_id}/dns_analytics/report: get dns analytics report
+  GET /zones/{zone_id}/dns_analytics/report/bytime: get dns analytics report by time
+
+  GET /accounts/{account_id}/workers/scripts: list workers
+  GET /accounts/{account_id}/workers/scripts/{script_name}: download worker script
+  GET /accounts/{account_id}/workers/scripts/{script_name}/settings: get worker settings
+  GET /accounts/{account_id}/workers/domains: list worker domains
+  GET /accounts/{account_id}/workers/subdomain: get workers subdomain
+  GET /zones/{zone_id}/workers/routes: list worker routes
+  GET /zones/{zone_id}/workers/routes/{route_id}: get worker route
+
+  GET /accounts/{account_id}/storage/kv/namespaces: list kv namespaces
+  GET /accounts/{account_id}/storage/kv/namespaces/{namespace_id}: get kv namespace
+  GET /accounts/{account_id}/storage/kv/namespaces/{namespace_id}/keys: list kv keys
+  GET /accounts/{account_id}/r2/buckets: list r2 buckets
+  GET /accounts/{account_id}/r2/buckets/{bucket_name}: get r2 bucket
+  GET /accounts/{account_id}/d1/database: list d1 databases
+  GET /accounts/{account_id}/d1/database/{database_id}: get d1 database
+  GET /accounts/{account_id}/hyperdrive/configs: list hyperdrive configs
+  GET /accounts/{account_id}/hyperdrive/configs/{hyperdrive_id}: get hyperdrive config
+  GET /accounts/{account_id}/queues: list queues
+  GET /accounts/{account_id}/queues/{queue_id}: get queue
+
+  GET /accounts/{account_id}/pages/projects: list pages projects
+  GET /accounts/{account_id}/pages/projects/{project_name}: get pages project
+  GET /accounts/{account_id}/pages/projects/{project_name}/deployments: list pages deployments
+  GET /accounts/{account_id}/pages/projects/{project_name}/deployments/{deployment_id}: get pages deployment
+
+  GET /accounts/{account_id}/ai-gateway/gateways: list ai gateways
+  GET /accounts/{account_id}/ai-gateway/gateways/{gateway_id}/logs: list ai gateway logs
+  GET /accounts/{account_id}/ai-gateway/gateways/{gateway_id}/logs/{id}: get ai gateway log
+  GET /accounts/{account_id}/ai-gateway/gateways/{gateway_id}/logs/{id}/request: get ai gateway log request
+  GET /accounts/{account_id}/ai-gateway/gateways/{gateway_id}/logs/{id}/response: get ai gateway log response
+
+  GET /accounts/{account_id}/logs/audit: list audit logs
+  GET /accounts/{account_id}/logpush/jobs: list account logpush jobs
+  GET /zones/{zone_id}/logpush/jobs: list zone logpush jobs
+
+  GET /zones/{zone_id}/rulesets: list zone rulesets
+  GET /zones/{zone_id}/rulesets/{ruleset_id}: get zone ruleset
+  GET /accounts/{account_id}/rulesets: list account rulesets
+  GET /zones/{zone_id}/firewall/access_rules/rules: list ip access rules
+  GET /zones/{zone_id}/pagerules: list page rules
+  GET /zones/{zone_id}/ssl/certificate_packs: list certificate packs
+  GET /zones/{zone_id}/custom_hostnames: list custom hostnames
+  GET /zones/{zone_id}/argo/smart_routing: get argo smart routing setting
+
+  GET /zones/{zone_id}/load_balancers: list load balancers
+  GET /accounts/{account_id}/load_balancers/pools: list load balancer pools
+  GET /accounts/{account_id}/load_balancers/monitors: list load balancer monitors
+
+# Operations carried over from catalog.yaml verbatim. The import is GET-only,
+# so without this the skill's only write operation would be deleted on the
+# first re-import.
+keep:
+  - purge cache
+
+# No `overrides` block: every parameter in the imported set already carries a
+# usable type, and this spec declares its enums, booleans and numeric bounds
+# correctly (`status` on /zones, the 21-value `type` on dns_records, `proxied`,
+# `page`/`per_page`). Recorded here so the absence reads as a finding, not an
+# omission.
+#
+# 22 operation DESCRIPTIONS are hand-written in catalog.yaml rather than taken
+# from the spec, because Cloudflare's summaries are written for a docs sidebar
+# where the product is implied by the surrounding page, and a catalog
+# description is an agent's tool description with no such context. The two
+# dns_analytics operations are summarised "Table" and "By Time"; four pairs are
+# summarised identically ("Show DNS Settings" for both the account and zone
+# route, "List Logpush jobs" for both); and "List Namespaces", "List Buckets",
+# "List Pools", "List Monitors", "Get Settings", "List Routes", "Get
+# Subdomain" name no product at all. `mergeOperations` keeps an existing
+# description over the spec summary, so those edits survive every re-import —
+# verified byte-identical. Edit them in catalog.yaml; a comment marking them
+# there would not survive, since the CLI reserialises that file.

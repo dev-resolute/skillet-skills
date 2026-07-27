@@ -1,8 +1,8 @@
 slug: cloudflare
-version: 1.0.0
+version: 1.1.0
 name: Cloudflare
 category: infra-cloud
-one_liner: Inspect zones and DNS records, and purge cache on Cloudflare.
+one_liner: Read zones, DNS, Workers, storage, and logs on Cloudflare, and purge cache.
 api_domain: api.cloudflare.com
 status: live
 credentials:
@@ -12,28 +12,1940 @@ credentials:
 auth:
   scheme: bearer
   header: Authorization
-  env_vars: [CLOUDFLARE_API_TOKEN]
-  value_template: "Bearer ${CLOUDFLARE_API_TOKEN}"
+  env_vars:
+    - CLOUDFLARE_API_TOKEN
+  value_template: Bearer ${CLOUDFLARE_API_TOKEN}
 operations:
+  - name: get current user
+    description: User Details
+    method: GET
+    url: https://api.cloudflare.com/client/v4/user
+    read_only: true
+    params: []
+  - name: verify api token
+    description: Verify Token
+    method: GET
+    url: https://api.cloudflare.com/client/v4/user/tokens/verify
+    read_only: true
+    params: []
+  - name: list accounts
+    description: List Accounts
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts
+    read_only: true
+    params:
+      - name: name
+        type: string
+        required: false
+        location: query
+      - name: page
+        type: number
+        required: false
+        location: query
+      - name: per_page
+        type: number
+        required: false
+        location: query
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+  - name: get account
+    description: Account Details
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+  - name: list account members
+    description: List Members
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/members
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+      - name: order
+        type: string
+        enum:
+          - user.first_name
+          - user.last_name
+          - user.email
+          - status
+        required: false
+        location: query
+      - name: status
+        type: string
+        enum:
+          - accepted
+          - pending
+          - rejected
+        required: false
+        location: query
+      - name: page
+        type: number
+        required: false
+        location: query
+      - name: per_page
+        type: number
+        required: false
+        location: query
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+  - name: list account roles
+    description: List Roles
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/roles
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+      - name: page
+        type: number
+        required: false
+        location: query
+      - name: per_page
+        type: number
+        required: false
+        location: query
+  - name: list account api tokens
+    description: List Tokens
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/tokens
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+      - name: page
+        type: number
+        required: false
+        location: query
+      - name: per_page
+        type: number
+        required: false
+        location: query
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+      - name: include_expired
+        type: boolean
+        required: false
+        location: query
+        description: When true, includes recently-expired tokens in the response.
   - name: list zones
     description: List zones on the account.
     method: GET
     url: https://api.cloudflare.com/client/v4/zones
     read_only: true
     params:
-      - { name: per_page, type: integer, required: false, location: query }
+      - name: name
+        type: string
+        required: false
+        location: query
+      - name: status
+        type: string
+        enum:
+          - initializing
+          - pending
+          - active
+          - moved
+        required: false
+        location: query
+      - name: type
+        type: array
+        items_type: string
+        enum:
+          - full
+          - partial
+          - secondary
+          - internal
+        required: false
+        location: query
+      - name: account.id
+        type: string
+        required: false
+        location: query
+      - name: account.name
+        type: string
+        required: false
+        location: query
+      - name: page
+        type: number
+        required: false
+        location: query
+      - name: per_page
+        type: number
+        required: false
+        location: query
+      - name: order
+        type: string
+        enum:
+          - name
+          - status
+          - account.id
+          - account.name
+          - plan.id
+        required: false
+        location: query
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+      - name: match
+        type: string
+        enum:
+          - any
+          - all
+        required: false
+        location: query
+  - name: get zone
+    description: Zone Details
+    method: GET
+    url: https://api.cloudflare.com/client/v4/zones/{zone_id}
+    read_only: true
+    params:
+      - name: zone_id
+        type: string
+        required: true
+        location: path
+  - name: list zone settings
+    description: Get all zone settings
+    method: GET
+    url: https://api.cloudflare.com/client/v4/zones/{zone_id}/settings
+    read_only: true
+    params:
+      - name: zone_id
+        type: string
+        required: true
+        location: path
+  - name: get zone setting
+    description: Get zone setting
+    method: GET
+    url: https://api.cloudflare.com/client/v4/zones/{zone_id}/settings/{setting_id}
+    read_only: true
+    params:
+      - name: zone_id
+        type: string
+        required: true
+        location: path
+      - name: setting_id
+        type: string
+        required: true
+        location: path
+  - name: list zone plans
+    description: List Available Plans
+    method: GET
+    url: https://api.cloudflare.com/client/v4/zones/{zone_id}/available_plans
+    read_only: true
+    params:
+      - name: zone_id
+        type: string
+        required: true
+        location: path
   - name: list dns records
     description: List DNS records for a zone.
     method: GET
     url: https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records
     read_only: true
     params:
-      - { name: zone_id, type: string, required: true, location: path }
+      - name: zone_id
+        type: string
+        required: true
+        location: path
+      - name: name
+        type: string
+        required: false
+        location: query
+      - name: name.exact
+        type: string
+        required: false
+        location: query
+      - name: name.contains
+        type: string
+        required: false
+        location: query
+      - name: name.startswith
+        type: string
+        required: false
+        location: query
+      - name: name.endswith
+        type: string
+        required: false
+        location: query
+      - name: type
+        type: string
+        enum:
+          - A
+          - AAAA
+          - CAA
+          - CERT
+          - CNAME
+          - DNSKEY
+          - DS
+          - HTTPS
+          - LOC
+          - MX
+          - NAPTR
+          - NS
+          - OPENPGPKEY
+          - PTR
+          - SMIMEA
+          - SRV
+          - SSHFP
+          - SVCB
+          - TLSA
+          - TXT
+          - URI
+        required: false
+        location: query
+      - name: content
+        type: string
+        required: false
+        location: query
+      - name: content.exact
+        type: string
+        required: false
+        location: query
+      - name: content.contains
+        type: string
+        required: false
+        location: query
+      - name: content.startswith
+        type: string
+        required: false
+        location: query
+      - name: content.endswith
+        type: string
+        required: false
+        location: query
+      - name: proxied
+        type: boolean
+        required: false
+        location: query
+      - name: match
+        type: string
+        enum:
+          - any
+          - all
+        required: false
+        location: query
+      - name: comment
+        type: string
+        required: false
+        location: query
+      - name: comment.present
+        type: string
+        required: false
+        location: query
+      - name: comment.absent
+        type: string
+        required: false
+        location: query
+      - name: comment.exact
+        type: string
+        required: false
+        location: query
+      - name: comment.contains
+        type: string
+        required: false
+        location: query
+      - name: comment.startswith
+        type: string
+        required: false
+        location: query
+      - name: comment.endswith
+        type: string
+        required: false
+        location: query
+      - name: tag
+        type: string
+        required: false
+        location: query
+      - name: tag.present
+        type: string
+        required: false
+        location: query
+      - name: tag.absent
+        type: string
+        required: false
+        location: query
+      - name: tag.exact
+        type: string
+        required: false
+        location: query
+      - name: tag.contains
+        type: string
+        required: false
+        location: query
+      - name: tag.startswith
+        type: string
+        required: false
+        location: query
+      - name: tag.endswith
+        type: string
+        required: false
+        location: query
+      - name: search
+        type: string
+        required: false
+        location: query
+      - name: tag_match
+        type: string
+        enum:
+          - any
+          - all
+        required: false
+        location: query
+      - name: page
+        type: number
+        required: false
+        location: query
+      - name: per_page
+        type: number
+        required: false
+        location: query
+      - name: order
+        type: string
+        enum:
+          - type
+          - name
+          - content
+          - ttl
+          - proxied
+        required: false
+        location: query
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+      - name: include_shadow_metadata
+        type: boolean
+        required: false
+        location: query
+      - name: shadowed_by_name
+        type: string
+        required: false
+        location: query
+      - name: shadowing_name
+        type: string
+        required: false
+        location: query
+  - name: get dns record
+    description: DNS Record Details
+    method: GET
+    url: https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records/{dns_record_id}
+    read_only: true
+    params:
+      - name: dns_record_id
+        type: string
+        required: true
+        location: path
+      - name: zone_id
+        type: string
+        required: true
+        location: path
+      - name: include_shadow_metadata
+        type: boolean
+        required: false
+        location: query
+  - name: get zone dns settings
+    description: Show the zone's DNS settings (nameservers, flattening, multi-provider).
+    method: GET
+    url: https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_settings
+    read_only: true
+    params:
+      - name: zone_id
+        type: string
+        required: true
+        location: path
+  - name: get account dns settings
+    description: Show the account's default DNS settings for new zones.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/dns_settings
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+  - name: get dns analytics report
+    description: DNS query analytics for a zone, aggregated over the period as a table.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_analytics/report
+    read_only: true
+    params:
+      - name: zone_id
+        type: string
+        required: true
+        location: path
+      - name: metrics
+        type: string
+        required: false
+        location: query
+      - name: dimensions
+        type: string
+        required: false
+        location: query
+      - name: since
+        type: string
+        format: date-time
+        required: false
+        location: query
+      - name: until
+        type: string
+        format: date-time
+        required: false
+        location: query
+      - name: limit
+        type: integer
+        required: false
+        location: query
+      - name: sort
+        type: string
+        required: false
+        location: query
+      - name: filters
+        type: string
+        required: false
+        location: query
+  - name: get dns analytics report by time
+    description: DNS query analytics for a zone, bucketed into a time series.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_analytics/report/bytime
+    read_only: true
+    params:
+      - name: zone_id
+        type: string
+        required: true
+        location: path
+      - name: metrics
+        type: string
+        required: false
+        location: query
+      - name: dimensions
+        type: string
+        required: false
+        location: query
+      - name: since
+        type: string
+        format: date-time
+        required: false
+        location: query
+      - name: until
+        type: string
+        format: date-time
+        required: false
+        location: query
+      - name: limit
+        type: integer
+        required: false
+        location: query
+      - name: sort
+        type: string
+        required: false
+        location: query
+      - name: filters
+        type: string
+        required: false
+        location: query
+      - name: time_delta
+        type: string
+        enum:
+          - all
+          - auto
+          - year
+          - quarter
+          - month
+          - week
+          - day
+          - hour
+          - dekaminute
+          - minute
+        required: false
+        location: query
+  - name: list workers
+    description: List Workers
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/workers/scripts
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+      - name: tags
+        type: string
+        required: false
+        location: query
+        description: "Filter scripts by tags. Format: comma-separated list of tag:allowed pairs where
+          allowed is 'yes' or 'no'."
+  - name: download worker script
+    description: Download Worker
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/workers/scripts/{script_name}
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+      - name: script_name
+        type: string
+        required: true
+        location: path
+  - name: get worker settings
+    description: Get a Worker script's settings — bindings, compatibility date, and tags.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/workers/scripts/{script_name}/settings
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+      - name: script_name
+        type: string
+        required: true
+        location: path
+  - name: list worker domains
+    description: List the custom domains attached to Workers on the account.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/workers/domains
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+      - name: zone_id
+        type: string
+        required: false
+        location: query
+      - name: zone_name
+        type: string
+        required: false
+        location: query
+      - name: service
+        type: string
+        required: false
+        location: query
+      - name: hostname
+        type: string
+        required: false
+        location: query
+      - name: environment
+        type: string
+        required: false
+        location: query
+  - name: get workers subdomain
+    description: Get the account's workers.dev subdomain.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/workers/subdomain
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+  - name: list worker routes
+    description: List the route patterns that map zone URLs to Worker scripts.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/zones/{zone_id}/workers/routes
+    read_only: true
+    params:
+      - name: zone_id
+        type: string
+        required: true
+        location: path
+  - name: get worker route
+    description: Get one route pattern that maps zone URLs to a Worker script.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/zones/{zone_id}/workers/routes/{route_id}
+    read_only: true
+    params:
+      - name: route_id
+        type: string
+        required: true
+        location: path
+      - name: zone_id
+        type: string
+        required: true
+        location: path
+  - name: list kv namespaces
+    description: List Workers KV namespaces on the account.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/storage/kv/namespaces
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+      - name: page
+        type: number
+        required: false
+        location: query
+      - name: per_page
+        type: number
+        required: false
+        location: query
+      - name: order
+        type: string
+        enum:
+          - id
+          - title
+        required: false
+        location: query
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+  - name: get kv namespace
+    description: Get one Workers KV namespace.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/storage/kv/namespaces/{namespace_id}
+    read_only: true
+    params:
+      - name: namespace_id
+        type: string
+        required: true
+        location: path
+      - name: account_id
+        type: string
+        required: true
+        location: path
+  - name: list kv keys
+    description: List the keys stored in a Workers KV namespace.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/storage/kv/namespaces/{namespace_id}/keys
+    read_only: true
+    params:
+      - name: namespace_id
+        type: string
+        required: true
+        location: path
+      - name: account_id
+        type: string
+        required: true
+        location: path
+      - name: limit
+        type: number
+        required: false
+        location: query
+      - name: prefix
+        type: string
+        required: false
+        location: query
+      - name: cursor
+        type: string
+        required: false
+        location: query
+  - name: list r2 buckets
+    description: List R2 object-storage buckets on the account.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/r2/buckets
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+      - name: name_contains
+        type: string
+        required: false
+        location: query
+      - name: start_after
+        type: string
+        required: false
+        location: query
+      - name: per_page
+        type: number
+        required: false
+        location: query
+      - name: order
+        type: string
+        enum:
+          - name
+        required: false
+        location: query
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+      - name: cursor
+        type: string
+        required: false
+        location: query
+      - name: cf-r2-jurisdiction
+        type: string
+        enum:
+          - default
+          - eu
+          - fedramp
+        required: false
+        location: header
+  - name: get r2 bucket
+    description: Get one R2 object-storage bucket.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/r2/buckets/{bucket_name}
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+      - name: bucket_name
+        type: string
+        required: true
+        location: path
+      - name: cf-r2-jurisdiction
+        type: string
+        enum:
+          - default
+          - eu
+          - fedramp
+        required: false
+        location: header
+  - name: list d1 databases
+    description: List D1 Databases
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/d1/database
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+      - name: name
+        type: string
+        required: false
+        location: query
+      - name: page
+        type: number
+        required: false
+        location: query
+      - name: per_page
+        type: number
+        required: false
+        location: query
+  - name: get d1 database
+    description: Get D1 Database
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/d1/database/{database_id}
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+      - name: database_id
+        type: string
+        required: true
+        location: path
+      - name: fields
+        type: array
+        items_type: string
+        enum:
+          - uuid
+          - name
+          - created_at
+          - version
+          - jurisdiction
+          - num_tables
+          - file_size
+          - running_in_region
+          - read_replication
+        required: false
+        location: query
+        description: |-
+          Comma-separated list of fields to include in the response. When omitted,
+          all fields are returned.
+  - name: list hyperdrive configs
+    description: List Hyperdrives
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/hyperdrive/configs
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+        description: The Cloudflare account ID.
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Page number of paginated results.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Maximum number of results per page.
+  - name: get hyperdrive config
+    description: Get Hyperdrive
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/hyperdrive/configs/{hyperdrive_id}
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+        description: The Cloudflare account ID.
+      - name: hyperdrive_id
+        type: string
+        required: true
+        location: path
+        description: The unique identifier of the Hyperdrive configuration.
+  - name: list queues
+    description: List Queues
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/queues
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+  - name: get queue
+    description: Get Queue
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/queues/{queue_id}
+    read_only: true
+    params:
+      - name: queue_id
+        type: string
+        required: true
+        location: path
+      - name: account_id
+        type: string
+        required: true
+        location: path
+  - name: list pages projects
+    description: List Cloudflare Pages projects on the account.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/pages/projects
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+      - name: page
+        type: integer
+        required: false
+        location: query
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+  - name: get pages project
+    description: Get one Cloudflare Pages project.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/pages/projects/{project_name}
+    read_only: true
+    params:
+      - name: project_name
+        type: string
+        required: true
+        location: path
+      - name: account_id
+        type: string
+        required: true
+        location: path
+  - name: list pages deployments
+    description: List the deployments of a Cloudflare Pages project.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/pages/projects/{project_name}/deployments
+    read_only: true
+    params:
+      - name: project_name
+        type: string
+        required: true
+        location: path
+      - name: account_id
+        type: string
+        required: true
+        location: path
+      - name: env
+        type: string
+        enum:
+          - production
+          - preview
+        required: false
+        location: query
+      - name: page
+        type: integer
+        required: false
+        location: query
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+  - name: get pages deployment
+    description: Get one deployment of a Cloudflare Pages project.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/pages/projects/{project_name}/deployments/{deployment_id}
+    read_only: true
+    params:
+      - name: deployment_id
+        type: string
+        required: true
+        location: path
+      - name: project_name
+        type: string
+        required: true
+        location: path
+      - name: account_id
+        type: string
+        required: true
+        location: path
+  - name: list ai gateways
+    description: List Gateways
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/ai-gateway/gateways
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+      - name: page
+        type: integer
+        required: false
+        location: query
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+      - name: search
+        type: string
+        required: false
+        location: query
+  - name: list ai gateway logs
+    description: List Gateway Logs
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/ai-gateway/gateways/{gateway_id}/logs
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+      - name: gateway_id
+        type: string
+        required: true
+        location: path
+      - name: search
+        type: string
+        required: false
+        location: query
+      - name: page
+        type: integer
+        required: false
+        location: query
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+      - name: order_by
+        type: string
+        enum:
+          - created_at
+          - provider
+          - model
+          - model_type
+          - success
+          - cached
+        required: false
+        location: query
+      - name: order_by_direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+      - name: filters
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: meta_info
+        type: boolean
+        required: false
+        location: query
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+      - name: start_date
+        type: string
+        format: date-time
+        required: false
+        location: query
+      - name: end_date
+        type: string
+        format: date-time
+        required: false
+        location: query
+      - name: min_cost
+        type: number
+        required: false
+        location: query
+      - name: max_cost
+        type: number
+        required: false
+        location: query
+      - name: min_tokens_in
+        type: number
+        required: false
+        location: query
+      - name: max_tokens_in
+        type: number
+        required: false
+        location: query
+      - name: min_tokens_out
+        type: number
+        required: false
+        location: query
+      - name: max_tokens_out
+        type: number
+        required: false
+        location: query
+      - name: min_total_tokens
+        type: number
+        required: false
+        location: query
+      - name: max_total_tokens
+        type: number
+        required: false
+        location: query
+      - name: min_duration
+        type: number
+        required: false
+        location: query
+      - name: max_duration
+        type: number
+        required: false
+        location: query
+      - name: feedback
+        type: string
+        required: false
+        location: query
+      - name: success
+        type: boolean
+        required: false
+        location: query
+      - name: cached
+        type: boolean
+        required: false
+        location: query
+      - name: model
+        type: string
+        required: false
+        location: query
+      - name: model_type
+        type: string
+        required: false
+        location: query
+      - name: provider
+        type: string
+        required: false
+        location: query
+      - name: request_content_type
+        type: string
+        required: false
+        location: query
+      - name: response_content_type
+        type: string
+        required: false
+        location: query
+  - name: get ai gateway log
+    description: Get Gateway Log Detail
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/ai-gateway/gateways/{gateway_id}/logs/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+      - name: gateway_id
+        type: string
+        required: true
+        location: path
+      - name: account_id
+        type: string
+        required: true
+        location: path
+  - name: get ai gateway log request
+    description: Get Gateway Log Request
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/ai-gateway/gateways/{gateway_id}/logs/{id}/request
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+      - name: gateway_id
+        type: string
+        required: true
+        location: path
+      - name: account_id
+        type: string
+        required: true
+        location: path
+  - name: get ai gateway log response
+    description: Get Gateway Log Response
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/ai-gateway/gateways/{gateway_id}/logs/{id}/response
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+      - name: gateway_id
+        type: string
+        required: true
+        location: path
+      - name: account_id
+        type: string
+        required: true
+        location: path
+  - name: list audit logs
+    description: Get account audit logs (Version 2)
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/logs/audit
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+      - name: account_name
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: action_result
+        type: array
+        items_type: string
+        enum:
+          - success
+          - failure
+        required: false
+        location: query
+      - name: action_type
+        type: array
+        items_type: string
+        enum:
+          - create
+          - delete
+          - view
+          - update
+        required: false
+        location: query
+      - name: actor_context
+        type: array
+        items_type: string
+        enum:
+          - api_key
+          - api_token
+          - dash
+          - oauth
+          - origin_ca_key
+        required: false
+        location: query
+      - name: actor_email
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: actor_id
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: actor_ip_address
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: actor_token_id
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: actor_token_name
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: actor_type
+        type: array
+        items_type: string
+        enum:
+          - account
+          - cloudflare_admin
+          - system
+          - user
+        required: false
+        location: query
+      - name: audit_log_id
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: id
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: raw_cf_ray_id
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: raw_method
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: raw_status_code
+        type: array
+        items_type: integer
+        required: false
+        location: query
+      - name: raw_uri
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: resource_id
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: resource_product
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: resource_type
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: resource_scope
+        type: array
+        items_type: string
+        enum:
+          - accounts
+          - user
+          - zones
+          - memberships
+        required: false
+        location: query
+      - name: product_category
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: zone_id
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: zone_name
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: account_name.not
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: action_result.not
+        type: array
+        items_type: string
+        enum:
+          - success
+          - failure
+        required: false
+        location: query
+      - name: action_type.not
+        type: array
+        items_type: string
+        enum:
+          - create
+          - delete
+          - view
+          - update
+        required: false
+        location: query
+      - name: actor_context.not
+        type: array
+        items_type: string
+        enum:
+          - api_key
+          - api_token
+          - dash
+          - oauth
+          - origin_ca_key
+        required: false
+        location: query
+      - name: actor_email.not
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: actor_id.not
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: actor_ip_address.not
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: actor_token_id.not
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: actor_token_name.not
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: actor_type.not
+        type: array
+        items_type: string
+        enum:
+          - account
+          - cloudflare_admin
+          - system
+          - user
+        required: false
+        location: query
+      - name: audit_log_id.not
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: id.not
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: raw_cf_ray_id.not
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: raw_method.not
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: raw_status_code.not
+        type: array
+        items_type: integer
+        required: false
+        location: query
+      - name: raw_uri.not
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: resource_id.not
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: resource_product.not
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: resource_type.not
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: resource_scope.not
+        type: array
+        items_type: string
+        enum:
+          - accounts
+          - user
+          - zones
+          - memberships
+        required: false
+        location: query
+      - name: zone_id.not
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: zone_name.not
+        type: array
+        items_type: string
+        required: false
+        location: query
+      - name: since
+        type: string
+        format: date
+        required: true
+        location: query
+        description: Limits the returned results to logs newer than the specified date. This can be a date
+          string 2019-04-30 (interpreted in UTC) or an absolute timestamp that conforms to RFC3339.
+      - name: before
+        type: string
+        format: date
+        required: true
+        location: query
+        description: Limits the returned results to logs older than the specified date. This can be a date
+          string 2019-04-30 (interpreted in UTC) or an absolute timestamp that conforms to RFC3339.
+      - name: direction
+        type: string
+        enum:
+          - desc
+          - asc
+        required: false
+        location: query
+      - name: limit
+        type: number
+        required: false
+        location: query
+      - name: cursor
+        type: string
+        required: false
+        location: query
+  - name: list account logpush jobs
+    description: List Logpush jobs configured on the account.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/logpush/jobs
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+  - name: list zone logpush jobs
+    description: List Logpush jobs configured on one zone.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/zones/{zone_id}/logpush/jobs
+    read_only: true
+    params:
+      - name: zone_id
+        type: string
+        required: true
+        location: path
+  - name: list zone rulesets
+    description: List zone rulesets
+    method: GET
+    url: https://api.cloudflare.com/client/v4/zones/{zone_id}/rulesets
+    read_only: true
+    params:
+      - name: zone_id
+        type: string
+        required: true
+        location: path
+      - name: cursor
+        type: string
+        required: false
+        location: query
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+  - name: get zone ruleset
+    description: Get a zone ruleset
+    method: GET
+    url: https://api.cloudflare.com/client/v4/zones/{zone_id}/rulesets/{ruleset_id}
+    read_only: true
+    params:
+      - name: ruleset_id
+        type: string
+        required: true
+        location: path
+      - name: zone_id
+        type: string
+        required: true
+        location: path
+  - name: list account rulesets
+    description: List account rulesets
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/rulesets
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+      - name: cursor
+        type: string
+        required: false
+        location: query
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+  - name: list ip access rules
+    description: List IP Access rules
+    method: GET
+    url: https://api.cloudflare.com/client/v4/zones/{zone_id}/firewall/access_rules/rules
+    read_only: true
+    params:
+      - name: zone_id
+        type: string
+        required: true
+        location: path
+      - name: mode
+        type: string
+        enum:
+          - block
+          - challenge
+          - whitelist
+          - js_challenge
+          - managed_challenge
+        required: false
+        location: query
+      - name: configuration.target
+        type: string
+        enum:
+          - ip
+          - ip_range
+          - asn
+          - country
+        required: false
+        location: query
+      - name: configuration.value
+        type: string
+        required: false
+        location: query
+      - name: notes
+        type: string
+        required: false
+        location: query
+      - name: match
+        type: string
+        enum:
+          - any
+          - all
+        required: false
+        location: query
+      - name: page
+        type: number
+        required: false
+        location: query
+      - name: per_page
+        type: number
+        required: false
+        location: query
+      - name: order
+        type: string
+        enum:
+          - configuration.target
+          - configuration.value
+          - mode
+        required: false
+        location: query
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+  - name: list page rules
+    description: List Page Rules
+    method: GET
+    url: https://api.cloudflare.com/client/v4/zones/{zone_id}/pagerules
+    read_only: true
+    params:
+      - name: zone_id
+        type: string
+        required: true
+        location: path
+      - name: order
+        type: string
+        enum:
+          - status
+          - priority
+        required: false
+        location: query
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+      - name: match
+        type: string
+        enum:
+          - any
+          - all
+        required: false
+        location: query
+      - name: status
+        type: string
+        enum:
+          - active
+          - disabled
+        required: false
+        location: query
+  - name: list certificate packs
+    description: List Certificate Packs
+    method: GET
+    url: https://api.cloudflare.com/client/v4/zones/{zone_id}/ssl/certificate_packs
+    read_only: true
+    params:
+      - name: zone_id
+        type: string
+        required: true
+        location: path
+      - name: page
+        type: number
+        required: false
+        location: query
+      - name: per_page
+        type: number
+        required: false
+        location: query
+      - name: status
+        type: string
+        enum:
+          - all
+        required: false
+        location: query
+      - name: deploy
+        type: string
+        enum:
+          - staging
+          - production
+        required: false
+        location: query
+  - name: list custom hostnames
+    description: List Custom Hostnames
+    method: GET
+    url: https://api.cloudflare.com/client/v4/zones/{zone_id}/custom_hostnames
+    read_only: true
+    params:
+      - name: zone_id
+        type: string
+        required: true
+        location: path
+      - name: hostname
+        type: string
+        required: false
+        location: query
+      - name: hostname.exact
+        type: string
+        required: false
+        location: query
+      - name: hostname.startsWith
+        type: string
+        required: false
+        location: query
+      - name: hostname.contain
+        type: string
+        required: false
+        location: query
+      - name: id
+        type: string
+        required: false
+        location: query
+      - name: page
+        type: number
+        required: false
+        location: query
+      - name: per_page
+        type: number
+        required: false
+        location: query
+      - name: order
+        type: string
+        enum:
+          - ssl
+          - ssl_status
+        required: false
+        location: query
+      - name: direction
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+      - name: ssl_status
+        type: string
+        enum:
+          - initializing
+          - pending_validation
+          - deleted
+          - pending_issuance
+          - pending_deployment
+          - pending_deletion
+          - pending_expiration
+          - expired
+          - active
+          - initializing_timed_out
+          - validation_timed_out
+          - issuance_timed_out
+          - deployment_timed_out
+          - deletion_timed_out
+          - pending_cleanup
+          - staging_deployment
+          - staging_active
+          - deactivating
+          - inactive
+          - backup_issued
+          - holding_deployment
+        required: false
+        location: query
+      - name: hostname_status
+        type: string
+        enum:
+          - active
+          - pending
+          - active_redeploying
+          - moved
+          - pending_deletion
+          - deleted
+          - pending_blocked
+          - pending_migration
+          - pending_provisioned
+          - test_pending
+          - test_active
+          - test_active_apex
+          - test_blocked
+          - test_failed
+          - provisioned
+          - blocked
+        required: false
+        location: query
+      - name: certificate_authority
+        type: string
+        enum:
+          - google
+          - lets_encrypt
+          - ssl_com
+        required: false
+        location: query
+      - name: wildcard
+        type: boolean
+        required: false
+        location: query
+      - name: custom_origin_server
+        type: string
+        required: false
+        location: query
+      - name: ssl
+        type: integer
+        enum:
+          - "0"
+          - "1"
+        required: false
+        location: query
+  - name: get argo smart routing setting
+    description: Get Argo Smart Routing setting
+    method: GET
+    url: https://api.cloudflare.com/client/v4/zones/{zone_id}/argo/smart_routing
+    read_only: true
+    params:
+      - name: zone_id
+        type: string
+        required: true
+        location: path
+  - name: list load balancers
+    description: List Load Balancers
+    method: GET
+    url: https://api.cloudflare.com/client/v4/zones/{zone_id}/load_balancers
+    read_only: true
+    params:
+      - name: zone_id
+        type: string
+        required: true
+        location: path
+  - name: list load balancer pools
+    description: List load balancer origin pools on the account.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/load_balancers/pools
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
+      - name: monitor
+        type: string
+        required: false
+        location: query
+  - name: list load balancer monitors
+    description: List load balancer health monitors on the account.
+    method: GET
+    url: https://api.cloudflare.com/client/v4/accounts/{account_id}/load_balancers/monitors
+    read_only: true
+    params:
+      - name: account_id
+        type: string
+        required: true
+        location: path
   - name: purge cache
     description: Purge the entire cache for a zone.
     method: POST
     url: https://api.cloudflare.com/client/v4/zones/{zone_id}/purge_cache
     read_only: false
     params:
-      - { name: zone_id, type: string, required: true, location: path }
-      - { name: purge_everything, type: boolean, required: true, location: body }
+      - name: zone_id
+        type: string
+        required: true
+        location: path
+      - name: purge_everything
+        type: boolean
+        required: true
+        location: body
