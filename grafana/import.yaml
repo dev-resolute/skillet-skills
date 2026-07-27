@@ -1,0 +1,239 @@
+# Regenerate catalog.yaml operations from Grafana's own generated OpenAPI 3
+# description (`public/openapi3.json` in grafana/grafana, built from the Go
+# handlers' swagger annotations):
+#   pnpm --filter @kit/engine catalog:import grafana   (from the runespacedev repo)
+#
+# `include` entries are the names listOperations() reports for this spec —
+# `summary || operationId || "METHOD /path"`. Most Grafana operations carry a
+# summary, so most entries are the summary text verbatim (case-sensitive,
+# trailing period included — and note the DOUBLE space inside "Get a single
+# data source by Name.  This function will be removed in the future."). Three
+# selected routes have no summary at all, so their entry is the operationId:
+# `search` (GET /search), `getHomeDashboard`, `getSignedInUser`. No selected
+# name collides with another operation of any method, so no entry needs the
+# explicit "GET /path" route form.
+#
+# Grafana is a per-instance API: `base_url` templates the instance host into
+# every URL (`yourorg.grafana.net`), matching the convention this skill's first
+# three hand-written operations used, so the existing service-account bearer
+# token keeps working unchanged. The spec's `servers` entry is the relative
+# `/api`, which is why `base_url:` below carries the `/api` prefix the spec's
+# paths omit: `https://{base_url}` + `/api` + `/search`.
+#
+# Coverage target: every read tool of Grafana's official MCP server that maps to
+# a GET on the core Grafana HTTP API, plus the read core those tools imply
+# (folders, dashboard versions/permissions, teams, org/user reads). MCP read
+# tools and the endpoints behind them:
+#   search_dashboards            GET /search
+#   get_dashboard_by_uid         GET /dashboards/uid/{uid}
+#   get_dashboard_summary        same route — summarised client-side
+#   get_dashboard_property       same route — JSONPath applied client-side
+#   get_dashboard_panel_queries  same route — panels parsed client-side
+#   list_datasources             GET /datasources
+#   get_datasource               GET /datasources/uid/{uid}, /datasources/name/{name}
+#   alerting_manage_rules (read) GET /v1/provisioning/alert-rules[/{UID}],
+#                                GET /v1/provisioning/folder/{f}/rule-groups/{g}
+#   alerting_manage_routing      GET /v1/provisioning/policies, contact-points,
+#                                mute-timings, templates
+#   get_annotations              GET /annotations
+#   get_annotation_tags          GET /annotations/tags
+#   list_snapshots               GET /dashboard/snapshots
+#   get_snapshot                 GET /snapshots/{key}
+#   list_teams                   GET /teams/search
+#   list_users_by_org            GET /org/users
+#   list_all_roles               GET /access-control/roles
+#   get_role_details             GET /access-control/roles/{roleUID}
+#   get_role_assignments         GET /access-control/roles/{roleUID}/assignments
+#   list_user_roles              GET /access-control/users/{userId}/roles
+#   list_team_roles              GET /access-control/teams/{teamId}/roles
+#   get_resource_permissions     GET /access-control/{resource}/{resourceID}
+#   get_resource_description     GET /access-control/{resource}/description
+#
+# Deliberate gaps:
+#   * Write tools (update_dashboard, patch_dashboard, create_annotation,
+#     update_annotation, create_snapshot, delete_snapshot, and the create /
+#     update / delete modes of alerting_manage_rules) are out of scope — the
+#     importer is GET-only. This skill has no write operation of its own, so
+#     unlike jira/confluence there is no `keep:` block below.
+#   * Every datasource *query* tool — query_prometheus and its metadata/label/
+#     histogram siblings, query_loki*, query_influxdb, query_clickhouse,
+#     query_cloudwatch, query_athena, query_snowflake, query_elasticsearch,
+#     query_quickwit, query_pyroscope*, run_panel_query, get_query_examples —
+#     goes through POST /ds/query or the datasource proxy. POST, and the payload
+#     is a datasource-specific query DSL rather than GET parameters.
+#   * Grafana Incident (list_incidents, get_incident) is a plugin RPC:
+#     POST /plugins/grafana-incident-app/resources/api/v1/IncidentsService.*.
+#     POST, and outside this document.
+#   * Grafana OnCall (list_oncall_schedules, get_oncall_shift,
+#     get_current_oncall_users, list_oncall_teams, list_oncall_users,
+#     list_alert_groups, get_alert_group) lives behind the OnCall plugin's own
+#     API under /plugins/grafana-oncall-app/resources/, which this spec does not
+#     describe. Same for Sift (list_sift_investigations, get_sift_investigation,
+#     get_sift_analysis, find_error_pattern_logs, find_slow_requests) via
+#     grafana-ml-app, and get_assertions via the Asserts plugin.
+#   * list_provisioning_repositories and validate_provisioning_file read the
+#     app-platform API (/apis/provisioning.grafana.app/...), a separate
+#     Kubernetes-style surface with no path in this document.
+#   * get_panel_image renders a PNG through /render/... — binary, useless to a
+#     chat agent. generate_deeplink builds a URL locally and issues no request.
+#   * /users/*, /orgs/* and /admin/* need Grafana **server admin**, which a
+#     service-account token cannot hold. Grafana's own MCP server reads
+#     /org/users for the user list, and so does this catalog.
+#   * The deprecated GET /datasources/id/{name} (numeric datasource id by name)
+#     is excluded; the UID routes replace it. Its sibling
+#     GET /datasources/name/{name} IS imported, because `get_datasource` accepts
+#     a name and an agent reading a dashboard panel has the name, not the UID.
+#
+# On `deprecated:` — 29 of this spec's 143 GET operations are flagged
+# deprecated, including the whole dashboards / folders / provisioning surface,
+# because Grafana is migrating those resources to the app-platform APIs. They
+# are still the routes Grafana's own MCP server calls and the only ones this
+# document describes, so they are what the catalog imports.
+
+spec: https://raw.githubusercontent.com/grafana/grafana/main/public/openapi3.json
+base_url: https://{base_url}/api
+parity_source: https://github.com/grafana/mcp-grafana
+
+include:
+  # --- search and dashboards ---------------------------------------------
+  - search
+  - List search sorting options.
+  - Get dashboard by uid.
+  - Get all dashboards tags of an organization.
+  - getHomeDashboard
+  - Gets all existing versions for the dashboard using UID.
+  - Get a specific dashboard version using UID.
+  - Gets all existing permissions for the given dashboard.
+  # --- folders -----------------------------------------------------------
+  - Get all folders.
+  - Get folder by uid.
+  - Gets the count of each descendant of a folder by kind. The folder is identified by UID.
+  - "Gets all existing permissions for the folder with the given `uid`."
+  # --- datasources -------------------------------------------------------
+  - Get all data sources.
+  - Get a single data source by UID.
+  - "Get a single data source by Name.  This function will be removed in the future."
+  # --- alerting ----------------------------------------------------------
+  - Get all the alert rules.
+  - Get a specific alert rule by UID.
+  - Get a rule group.
+  - Get all the contact points.
+  - Get the notification policy tree.
+  - Get all the mute timings.
+  - Get a mute timing.
+  - Get all notification template groups.
+  - Get a notification template group.
+  # --- annotations -------------------------------------------------------
+  - Find Annotations.
+  - Get Annotation by ID.
+  - Find Annotations Tags.
+  # --- snapshots ---------------------------------------------------------
+  - List snapshots.
+  - Get Snapshot by Key.
+  # --- teams -------------------------------------------------------------
+  - Team Search With Paging.
+  - Get Team By ID.
+  - Get Team Members.
+  - Get Team Preferences.
+  # --- organization and signed-in user -----------------------------------
+  - Get current Organization.
+  - Get Current Org Prefs.
+  - Get all users within the current organization.
+  - Get all users within the current organization (lookup)
+  - getSignedInUser
+  - Organizations of the actual User.
+  - Teams that the actual User is member of.
+  - Get user preferences.
+  # --- access control ----------------------------------------------------
+  - Get all roles.
+  - Get a role.
+  - Get role assignments.
+  - List roles assigned to a user.
+  - Get team roles.
+  - Get permissions for a resource.
+  - Get a description of a resource's access control properties.
+
+rename:
+  search: search dashboards
+  List search sorting options.: list search sort options
+  Get dashboard by uid.: get dashboard
+  Get all dashboards tags of an organization.: list dashboard tags
+  getHomeDashboard: get home dashboard
+  Gets all existing versions for the dashboard using UID.: list dashboard versions
+  Get a specific dashboard version using UID.: get dashboard version
+  Gets all existing permissions for the given dashboard.: list dashboard permissions
+
+  Get all folders.: list folders
+  Get folder by uid.: get folder
+  Gets the count of each descendant of a folder by kind. The folder is identified by UID.: get folder descendant counts
+  "Gets all existing permissions for the folder with the given `uid`.": list folder permissions
+
+  Get all data sources.: list datasources
+  Get a single data source by UID.: get datasource
+  "Get a single data source by Name.  This function will be removed in the future.": get datasource by name
+
+  Get all the alert rules.: list alert rules
+  Get a specific alert rule by UID.: get alert rule
+  Get a rule group.: get alert rule group
+  Get all the contact points.: list contact points
+  Get the notification policy tree.: get notification policy tree
+  Get all the mute timings.: list mute timings
+  Get a mute timing.: get mute timing
+  Get all notification template groups.: list notification templates
+  Get a notification template group.: get notification template
+
+  Find Annotations.: list annotations
+  Get Annotation by ID.: get annotation
+  Find Annotations Tags.: list annotation tags
+
+  List snapshots.: list dashboard snapshots
+  Get Snapshot by Key.: get dashboard snapshot
+
+  Team Search With Paging.: list teams
+  Get Team By ID.: get team
+  Get Team Members.: list team members
+  Get Team Preferences.: get team preferences
+
+  Get current Organization.: get current org
+  Get Current Org Prefs.: get org preferences
+  Get all users within the current organization.: list org users
+  Get all users within the current organization (lookup): lookup org users
+  getSignedInUser: get current user
+  Organizations of the actual User.: list my orgs
+  Teams that the actual User is member of.: list my teams
+  Get user preferences.: get my preferences
+
+  Get all roles.: list roles
+  Get a role.: get role
+  Get role assignments.: get role assignments
+  List roles assigned to a user.: list user roles
+  Get team roles.: list team roles
+  Get permissions for a resource.: list resource permissions
+  Get a description of a resource's access control properties.: get resource description
+
+# Curated corrections layered over the spec after import, keyed by the catalog
+# name (i.e. post-`rename`). `*` applies to every operation that has the param.
+# They live here rather than in catalog.yaml because a re-import rewrites every
+# field but `description` and reserialises the YAML, which would drop both the
+# edit and any comment explaining it.
+overrides:
+  "*":
+    params:
+      # hand-authored: `base_url` is not a spec parameter — it is the instance
+      # host the importer auto-declares from `base_url:` above, so the spec
+      # cannot describe it. The guidance is the same on all 48 operations and
+      # is the text this skill's original hand-written operations carried.
+      base_url:
+        description: Your Grafana host, e.g. yourorg.grafana.net
+
+  list annotation tags:
+    params:
+      # hand-authored: the spec types this `string`, which is a documentation
+      # bug in Grafana's own swagger annotation, not the real contract.
+      # pkg/api/annotations.go declares `GetAnnotationTagsParams.Limit string`
+      # (the struct the spec is generated from) while the handler five lines up
+      # reads it with `c.QueryInt64("limit")` and defaults it to 100 — and the
+      # sibling `GetAnnotationsParams.Limit` on GET /annotations is `int64`,
+      # which is why `list annotations` gets this right and only this operation
+      # does not.
+      limit: { type: integer, format: int64 }

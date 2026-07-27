@@ -1,8 +1,8 @@
 slug: grafana
-version: 1.0.0
+version: 1.1.0
 name: Grafana
 category: incident-observability
-one_liner: Search dashboards and read alert rules in your Grafana instance.
+one_liner: Search dashboards and read datasources, folders, alerting, and annotations in Grafana.
 api_domain: grafana.com
 status: live
 credentials:
@@ -12,30 +12,966 @@ credentials:
 auth:
   scheme: bearer
   header: Authorization
-  env_vars: [GRAFANA_SERVICE_ACCOUNT_TOKEN]
-  value_template: "Bearer ${GRAFANA_SERVICE_ACCOUNT_TOKEN}"
+  env_vars:
+    - GRAFANA_SERVICE_ACCOUNT_TOKEN
+  value_template: Bearer ${GRAFANA_SERVICE_ACCOUNT_TOKEN}
 operations:
   - name: search dashboards
-    description: Search dashboards and folders.
     method: GET
     url: https://{base_url}/api/search
     read_only: true
     params:
-      - { name: base_url, type: string, required: true, location: path, description: "Your Grafana host, e.g. yourorg.grafana.net" }
-      - { name: query, type: string, required: false, location: query }
-      - { name: limit, type: integer, required: false, location: query }
+      - name: query
+        type: string
+        required: false
+        location: query
+        description: Search Query
+      - name: tag
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: List of tags to search for
+      - name: type
+        type: string
+        enum:
+          - dash-folder
+          - dash-db
+        required: false
+        location: query
+        description: Type to search for, dash-folder or dash-db
+      - name: dashboardIds
+        type: array
+        items_type: integer
+        required: false
+        location: query
+        description: |-
+          List of dashboard id’s to search for
+          This is deprecated: users should use the `dashboardUIDs` query parameter instead
+      - name: dashboardUIDs
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: List of dashboard uid’s to search for
+      - name: folderIds
+        type: array
+        items_type: integer
+        required: false
+        location: query
+        description: |-
+          List of folder id’s to search in for dashboards
+          If it's `0` then it will query for the top level folders
+          This is deprecated: users should use the `folderUIDs` query parameter instead
+      - name: folderUIDs
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: |-
+          List of folder UID’s to search in for dashboards
+          If it's an empty string then it will query for the top level folders
+      - name: starred
+        type: boolean
+        required: false
+        location: query
+        description: Flag indicating if only starred Dashboards should be returned
+      - name: limit
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: Limit the number of returned results (max 5000)
+      - name: page
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: Use this parameter to access hits beyond limit. Numbering starts at 1. limit param acts
+          as page size. Only available in Grafana v6.2+.
+      - name: permission
+        type: string
+        enum:
+          - Edit
+          - View
+        required: false
+        location: query
+        description: Set to `Edit` to return dashboards/folders that the user can edit
+      - name: sort
+        type: string
+        enum:
+          - alpha-asc
+          - alpha-desc
+        required: false
+        location: query
+        description: Sort method; for listing all the possible sort methods use the search sorting endpoint.
+      - name: deleted
+        type: boolean
+        required: false
+        location: query
+        description: Flag indicating if only soft deleted Dashboards should be returned
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+    description: Search dashboards and folders.
+  - name: list search sort options
+    description: List search sorting options.
+    method: GET
+    url: https://{base_url}/api/search/sorting
+    read_only: true
+    params:
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
   - name: get dashboard
     description: Fetch one dashboard by uid.
     method: GET
     url: https://{base_url}/api/dashboards/uid/{uid}
     read_only: true
     params:
-      - { name: base_url, type: string, required: true, location: path, description: "Your Grafana host, e.g. yourorg.grafana.net" }
-      - { name: uid, type: string, required: true, location: path }
+      - name: uid
+        type: string
+        required: true
+        location: path
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: list dashboard tags
+    description: Get all dashboards tags of an organization.
+    method: GET
+    url: https://{base_url}/api/dashboards/tags
+    read_only: true
+    params:
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get home dashboard
+    description: "NOTE: the home dashboard is configured in preferences.  This API will be removed in G13"
+    method: GET
+    url: https://{base_url}/api/dashboards/home
+    read_only: true
+    params:
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: list dashboard versions
+    description: Gets all existing versions for the dashboard using UID.
+    method: GET
+    url: https://{base_url}/api/dashboards/uid/{uid}/versions
+    read_only: true
+    params:
+      - name: uid
+        type: string
+        required: true
+        location: path
+      - name: limit
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: Maximum number of results to return
+      - name: start
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: Version to start from when returning queries
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get dashboard version
+    description: Get a specific dashboard version using UID.
+    method: GET
+    url: https://{base_url}/api/dashboards/uid/{uid}/versions/{DashboardVersionID}
+    read_only: true
+    params:
+      - name: DashboardVersionID
+        type: integer
+        format: int64
+        required: true
+        location: path
+      - name: uid
+        type: string
+        required: true
+        location: path
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: list dashboard permissions
+    description: Gets all existing permissions for the given dashboard.
+    method: GET
+    url: https://{base_url}/api/dashboards/uid/{uid}/permissions
+    read_only: true
+    params:
+      - name: uid
+        type: string
+        required: true
+        location: path
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: list folders
+    description: Get all folders.
+    method: GET
+    url: https://{base_url}/api/folders
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: Limit the maximum number of folders to return
+      - name: page
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: Page index for starting fetching folders
+      - name: parentUid
+        type: string
+        required: false
+        location: query
+        description: The parent folder UID
+      - name: permission
+        type: string
+        enum:
+          - Edit
+          - View
+        required: false
+        location: query
+        description: Set to `Edit` to return folders that the user can edit
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get folder
+    description: Get folder by uid.
+    method: GET
+    url: https://{base_url}/api/folders/{folder_uid}
+    read_only: true
+    params:
+      - name: folder_uid
+        type: string
+        required: true
+        location: path
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get folder descendant counts
+    description: Gets the count of each descendant of a folder by kind. The folder is identified by UID.
+    method: GET
+    url: https://{base_url}/api/folders/{folder_uid}/counts
+    read_only: true
+    params:
+      - name: folder_uid
+        type: string
+        required: true
+        location: path
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: list folder permissions
+    description: Gets all existing permissions for the folder with the given `uid`.
+    method: GET
+    url: https://{base_url}/api/folders/{folder_uid}/permissions
+    read_only: true
+    params:
+      - name: folder_uid
+        type: string
+        required: true
+        location: path
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: list datasources
+    description: Get all data sources.
+    method: GET
+    url: https://{base_url}/api/datasources
+    read_only: true
+    params:
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get datasource
+    description: Get a single data source by UID.
+    method: GET
+    url: https://{base_url}/api/datasources/uid/{uid}
+    read_only: true
+    params:
+      - name: uid
+        type: string
+        required: true
+        location: path
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get datasource by name
+    description: Get a single data source by Name.  This function will be removed in the future.
+    method: GET
+    url: https://{base_url}/api/datasources/name/{name}
+    read_only: true
+    params:
+      - name: name
+        type: string
+        required: true
+        location: path
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
   - name: list alert rules
     description: List provisioned alert rules.
     method: GET
     url: https://{base_url}/api/v1/provisioning/alert-rules
     read_only: true
     params:
-      - { name: base_url, type: string, required: true, location: path, description: "Your Grafana host, e.g. yourorg.grafana.net" }
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get alert rule
+    description: Get a specific alert rule by UID.
+    method: GET
+    url: https://{base_url}/api/v1/provisioning/alert-rules/{UID}
+    read_only: true
+    params:
+      - name: UID
+        type: string
+        required: true
+        location: path
+        description: Alert rule UID
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get alert rule group
+    description: Get a rule group.
+    method: GET
+    url: https://{base_url}/api/v1/provisioning/folder/{FolderUID}/rule-groups/{Group}
+    read_only: true
+    params:
+      - name: FolderUID
+        type: string
+        required: true
+        location: path
+      - name: Group
+        type: string
+        required: true
+        location: path
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: list contact points
+    description: Get all the contact points.
+    method: GET
+    url: https://{base_url}/api/v1/provisioning/contact-points
+    read_only: true
+    params:
+      - name: name
+        type: string
+        required: false
+        location: query
+        description: Filter by name
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get notification policy tree
+    description: Get the notification policy tree.
+    method: GET
+    url: https://{base_url}/api/v1/provisioning/policies
+    read_only: true
+    params:
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: list mute timings
+    description: Get all the mute timings.
+    method: GET
+    url: https://{base_url}/api/v1/provisioning/mute-timings
+    read_only: true
+    params:
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get mute timing
+    description: Get a mute timing.
+    method: GET
+    url: https://{base_url}/api/v1/provisioning/mute-timings/{name}
+    read_only: true
+    params:
+      - name: name
+        type: string
+        required: true
+        location: path
+        description: Mute timing name
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: list notification templates
+    description: Get all notification template groups.
+    method: GET
+    url: https://{base_url}/api/v1/provisioning/templates
+    read_only: true
+    params:
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get notification template
+    description: Get a notification template group.
+    method: GET
+    url: https://{base_url}/api/v1/provisioning/templates/{name}
+    read_only: true
+    params:
+      - name: name
+        type: string
+        required: true
+        location: path
+        description: Template group name
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: list annotations
+    description: Find Annotations.
+    method: GET
+    url: https://{base_url}/api/annotations
+    read_only: true
+    params:
+      - name: from
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: Find annotations created after specific epoch datetime in milliseconds.
+      - name: to
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: Find annotations created before specific epoch datetime in milliseconds.
+      - name: userId
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: Limit response to annotations created by specific user.
+      - name: userUID
+        type: string
+        required: false
+        location: query
+        description: Limit response to annotations created by a specific user, identified by UID.
+      - name: alertId
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: >-
+          Find annotations for a specified alert rule by its ID.
+
+          deprecated: AlertID is deprecated and will be removed in future versions. Please use
+          AlertUID instead.
+      - name: alertUID
+        type: string
+        required: false
+        location: query
+        description: Find annotations for a specified alert rule by its UID.
+      - name: dashboardId
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: Find annotations that are scoped to a specific dashboard
+      - name: dashboardUID
+        type: string
+        required: false
+        location: query
+        description: Find annotations that are scoped to a specific dashboard
+      - name: panelId
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: Find annotations that are scoped to a specific panel
+      - name: limit
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: Max limit for results returned.
+      - name: tags
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Use this to filter organization annotations. Organization annotations are annotations
+          from an annotation data source that are not connected specifically to a dashboard or
+          panel. You can filter by mult
+      - name: type
+        type: string
+        enum:
+          - alert
+          - annotation
+        required: false
+        location: query
+        description: Return alerts or user created annotations
+      - name: matchAny
+        type: boolean
+        required: false
+        location: query
+        description: Match any or all tags
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get annotation
+    description: Get Annotation by ID.
+    method: GET
+    url: https://{base_url}/api/annotations/{annotation_id}
+    read_only: true
+    params:
+      - name: annotation_id
+        type: string
+        required: true
+        location: path
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: list annotation tags
+    description: Find Annotations Tags.
+    method: GET
+    url: https://{base_url}/api/annotations/tags
+    read_only: true
+    params:
+      - name: tag
+        type: string
+        required: false
+        location: query
+        description: Tag is a string that you can use to filter tags.
+      - name: limit
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: Max limit for results returned.
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: list dashboard snapshots
+    description: List snapshots.
+    method: GET
+    url: https://{base_url}/api/dashboard/snapshots
+    read_only: true
+    params:
+      - name: query
+        type: string
+        required: false
+        location: query
+        description: Search Query
+      - name: limit
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: Limit the number of returned results
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get dashboard snapshot
+    description: Get Snapshot by Key.
+    method: GET
+    url: https://{base_url}/api/snapshots/{key}
+    read_only: true
+    params:
+      - name: key
+        type: string
+        required: true
+        location: path
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: list teams
+    description: Team Search With Paging.
+    method: GET
+    url: https://{base_url}/api/teams/search
+    read_only: true
+    params:
+      - name: page
+        type: integer
+        format: int64
+        required: false
+        location: query
+      - name: perpage
+        type: integer
+        format: int64
+        required: false
+        location: query
+        description: >-
+          Number of items per page
+
+          The totalCount field in the response can be used for pagination list E.g. if totalCount is
+          equal to 100 teams and the perpage parameter is set to 10 then there are 10 pages of
+      - name: name
+        type: string
+        required: false
+        location: query
+      - name: query
+        type: string
+        required: false
+        location: query
+        description: If set it will return results where the query value is contained in the name field.
+          Query values with spaces need to be URL encoded.
+      - name: accesscontrol
+        type: boolean
+        required: false
+        location: query
+      - name: sort
+        type: string
+        required: false
+        location: query
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get team
+    description: Get Team By ID.
+    method: GET
+    url: https://{base_url}/api/teams/{team_id}
+    read_only: true
+    params:
+      - name: team_id
+        type: string
+        required: true
+        location: path
+      - name: accesscontrol
+        type: boolean
+        required: false
+        location: query
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: list team members
+    description: Get Team Members.
+    method: GET
+    url: https://{base_url}/api/teams/{team_id}/members
+    read_only: true
+    params:
+      - name: team_id
+        type: string
+        required: true
+        location: path
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get team preferences
+    description: Get Team Preferences.
+    method: GET
+    url: https://{base_url}/api/teams/{team_id}/preferences
+    read_only: true
+    params:
+      - name: team_id
+        type: string
+        required: true
+        location: path
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get current org
+    description: Get current Organization.
+    method: GET
+    url: https://{base_url}/api/org
+    read_only: true
+    params:
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get org preferences
+    description: Get Current Org Prefs.
+    method: GET
+    url: https://{base_url}/api/org/preferences
+    read_only: true
+    params:
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: list org users
+    description: Get all users within the current organization.
+    method: GET
+    url: https://{base_url}/api/org/users
+    read_only: true
+    params:
+      - name: query
+        type: string
+        required: false
+        location: query
+      - name: limit
+        type: integer
+        format: int64
+        required: false
+        location: query
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: lookup org users
+    description: Get all users within the current organization (lookup)
+    method: GET
+    url: https://{base_url}/api/org/users/lookup
+    read_only: true
+    params:
+      - name: query
+        type: string
+        required: false
+        location: query
+      - name: limit
+        type: integer
+        format: int64
+        required: false
+        location: query
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get current user
+    description: Get (current authenticated user)
+    method: GET
+    url: https://{base_url}/api/user
+    read_only: true
+    params:
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: list my orgs
+    description: Organizations of the actual User.
+    method: GET
+    url: https://{base_url}/api/user/orgs
+    read_only: true
+    params:
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: list my teams
+    description: Teams that the actual User is member of.
+    method: GET
+    url: https://{base_url}/api/user/teams
+    read_only: true
+    params:
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get my preferences
+    description: Get user preferences.
+    method: GET
+    url: https://{base_url}/api/user/preferences
+    read_only: true
+    params:
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: list roles
+    description: Get all roles.
+    method: GET
+    url: https://{base_url}/api/access-control/roles
+    read_only: true
+    params:
+      - name: delegatable
+        type: boolean
+        required: false
+        location: query
+      - name: includeHidden
+        type: boolean
+        required: false
+        location: query
+      - name: targetOrgId
+        type: integer
+        format: int64
+        required: false
+        location: query
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get role
+    description: Get a role.
+    method: GET
+    url: https://{base_url}/api/access-control/roles/{roleUID}
+    read_only: true
+    params:
+      - name: roleUID
+        type: string
+        required: true
+        location: path
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get role assignments
+    description: Get role assignments.
+    method: GET
+    url: https://{base_url}/api/access-control/roles/{roleUID}/assignments
+    read_only: true
+    params:
+      - name: roleUID
+        type: string
+        required: true
+        location: path
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: list user roles
+    description: List roles assigned to a user.
+    method: GET
+    url: https://{base_url}/api/access-control/users/{userId}/roles
+    read_only: true
+    params:
+      - name: userId
+        type: integer
+        format: int64
+        required: true
+        location: path
+      - name: includeHidden
+        type: boolean
+        required: false
+        location: query
+      - name: targetOrgId
+        type: integer
+        format: int64
+        required: false
+        location: query
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: list team roles
+    description: Get team roles.
+    method: GET
+    url: https://{base_url}/api/access-control/teams/{teamId}/roles
+    read_only: true
+    params:
+      - name: teamId
+        type: integer
+        format: int64
+        required: true
+        location: path
+      - name: targetOrgId
+        type: integer
+        format: int64
+        required: false
+        location: query
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: list resource permissions
+    description: Get permissions for a resource.
+    method: GET
+    url: https://{base_url}/api/access-control/{resource}/{resourceID}
+    read_only: true
+    params:
+      - name: resource
+        type: string
+        required: true
+        location: path
+      - name: resourceID
+        type: string
+        required: true
+        location: path
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
+  - name: get resource description
+    description: Get a description of a resource's access control properties.
+    method: GET
+    url: https://{base_url}/api/access-control/{resource}/description
+    read_only: true
+    params:
+      - name: resource
+        type: string
+        required: true
+        location: path
+      - name: base_url
+        type: string
+        required: true
+        location: path
+        description: Your Grafana host, e.g. yourorg.grafana.net
