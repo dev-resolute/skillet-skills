@@ -842,7 +842,7 @@ operations:
         location: path
         description: Your Grafana host, e.g. yourorg.grafana.net
   - name: list roles
-    description: Get all roles.
+    description: Get all roles. Grafana Enterprise/Cloud only — returns 403/404 on OSS.
     method: GET
     url: https://{base_url}/api/access-control/roles
     read_only: true
@@ -866,7 +866,7 @@ operations:
         location: path
         description: Your Grafana host, e.g. yourorg.grafana.net
   - name: get role
-    description: Get a role.
+    description: Get a role. Grafana Enterprise/Cloud only — returns 403/404 on OSS.
     method: GET
     url: https://{base_url}/api/access-control/roles/{roleUID}
     read_only: true
@@ -881,7 +881,7 @@ operations:
         location: path
         description: Your Grafana host, e.g. yourorg.grafana.net
   - name: get role assignments
-    description: Get role assignments.
+    description: Get role assignments. Grafana Enterprise/Cloud only — returns 403/404 on OSS.
     method: GET
     url: https://{base_url}/api/access-control/roles/{roleUID}/assignments
     read_only: true
@@ -896,7 +896,7 @@ operations:
         location: path
         description: Your Grafana host, e.g. yourorg.grafana.net
   - name: list user roles
-    description: List roles assigned to a user.
+    description: List roles assigned to a user. Grafana Enterprise/Cloud only — returns 403/404 on OSS.
     method: GET
     url: https://{base_url}/api/access-control/users/{userId}/roles
     read_only: true
@@ -921,7 +921,7 @@ operations:
         location: path
         description: Your Grafana host, e.g. yourorg.grafana.net
   - name: list team roles
-    description: Get team roles.
+    description: Get team roles. Grafana Enterprise/Cloud only — returns 403/404 on OSS.
     method: GET
     url: https://{base_url}/api/access-control/teams/{teamId}/roles
     read_only: true

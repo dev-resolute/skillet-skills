@@ -719,8 +719,18 @@ operations:
         type: integer
         required: false
         location: query
-        description: Number of suppressions to retrieve (1-100). Omit to return all suppressions in a single
-          response.
+        description: Number of suppressions to retrieve (1-100). Defaults to 20, so omitting it returns a
+          truncated list rather than every suppression.
+      - name: origin
+        type: string
+        enum:
+          - bounce
+          - complaint
+          - manual
+        required: false
+        location: query
+        description: "Filter suppressions by origin: `bounce` (suppressed automatically after a bounce),
+          `complaint` (suppressed after a user complaint), or `manual` (suppressed by your team)."
       - name: after
         type: string
         required: false

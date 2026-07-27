@@ -108,7 +108,7 @@ List operations page with `limit` plus an `after` or `before` cursor.
 
 ### Suppressions and logs
 
-- `list suppressions`
+- `list suppressions` — filter by `origin` (`bounce` / `complaint` / `manual`); `limit` defaults to 20
 - `get suppression` — by ID or suppressed email address
 - `list logs`
 - `get log`

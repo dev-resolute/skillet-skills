@@ -226,6 +226,28 @@ overrides:
       base_url:
         description: Your Grafana host, e.g. yourorg.grafana.net
 
+  # hand-authored: these five operations — and ONLY these five of the 48 — are
+  # tagged `enterprise` in the spec, because Grafana RBAC ships in Enterprise
+  # and Grafana Cloud but not in OSS. On an OSS instance they return 403/404
+  # rather than degrading, and nothing in the spec's own summary says so: the
+  # `enterprise` tag is dropped by the import, so without this the fact is
+  # unrecoverable from the catalog. It goes in `description` because that is
+  # the text mounted with the agent tool — an agent that reads it can pick
+  # another route instead of spending a call to discover the edition.
+  # `description` is a full replacement, not an append, so each spec summary is
+  # restated here verbatim before the added sentence.
+  list roles:
+    description: Get all roles. Grafana Enterprise/Cloud only — returns 403/404 on OSS.
+  get role:
+    description: Get a role. Grafana Enterprise/Cloud only — returns 403/404 on OSS.
+  get role assignments:
+    description: Get role assignments. Grafana Enterprise/Cloud only — returns 403/404 on OSS.
+  list user roles:
+    description: >-
+      List roles assigned to a user. Grafana Enterprise/Cloud only — returns 403/404 on OSS.
+  list team roles:
+    description: Get team roles. Grafana Enterprise/Cloud only — returns 403/404 on OSS.
+
   list annotation tags:
     params:
       # hand-authored: the spec types this `string`, which is a documentation
