@@ -24,18 +24,28 @@
 # get-any-user targets; there is no separate current-user operation.
 #
 # Deliberate gaps:
-#   * Typeahead (`GET /workspaces/{workspace_gid}/typeahead`) is excluded.
-#     Its one REQUIRED filter, `resource_type`, plus its `type`, `query` and
-#     `count` filters, are declared on the spec's PATH ITEM (sibling to `get`,
-#     shared with other methods on that path) rather than on the GET
-#     operation itself. The importer's param extraction only reads the GET
-#     operation's own `parameters`, so importing this op as-is would produce
-#     a tool that is missing its only required input — every call would 400.
-#     Skipped per the task brief's guidance to skip typeahead when its param
-#     types fight validation.
+#   * Excluded as non-functional — same root cause, same treatment:
+#       - Typeahead (`GET /workspaces/{workspace_gid}/typeahead`): its one
+#         REQUIRED filter, `resource_type`, plus its `type`, `query` and
+#         `count` filters, are declared on the spec's PATH ITEM (sibling to
+#         `get`, shared with other methods on that path) rather than on the
+#         GET operation itself. The importer's param extraction only reads
+#         the GET operation's own `parameters`, so importing this op as-is
+#         would produce a tool missing its only required input — every call
+#         would 400. Skipped per the task brief's guidance to skip typeahead
+#         when its param types fight validation.
+#       - "Get teams for a user" (`GET /users/{user_gid}/teams`): its one
+#         REQUIRED filter, `organization` ("The workspace or organization to
+#         filter teams on."), is likewise declared only on the spec's PATH
+#         ITEM, never on the GET operation. There is no way to supply it
+#         through the shipped op — every real call would 400. Found in
+#         fix-round-1 review; excluded rather than shipped as a broken tool.
+#         (`list workspace teams`, `GET /workspaces/{workspace_gid}/teams`,
+#         is unaffected — its team listing is scoped by the `workspace_gid`
+#         path param, not by a path-item-only query filter, so it stays.)
 #   * The same path-item-vs-operation structural split silently drops two
 #     more things the importer cannot see, on EVERY operation below, not just
-#     typeahead:
+#     the two excluded above:
 #       - `opt_pretty` (a JSON-formatting flag, "pretty" in the spec) is
 #         declared only on path items, never on a GET operation directly, so
 #         it never reaches any imported operation. No loss to a JSON-
@@ -53,20 +63,20 @@
 #     on some list endpoints — most declare them on the GET operation itself
 #     and import fine (`list projects`, `list tasks`, `list project sections`,
 #     `list subtasks`, `list task stories`, `list tags`, `list portfolios`),
-#     but eleven do not and lose pagination entirely on import: `list users`,
-#     `list workspaces`, `list workspace teams`, `list user teams`,
-#     `list project tasks`, `list section tasks`, `list task dependencies`,
-#     `list task tags`, `list workspace custom fields`,
-#     `list portfolio items`, `list status updates`. These still work — they
-#     return Asana's default page with no way to request a different page
-#     size or continue via `offset` through this tool — `overrides` cannot
-#     add a param the spec-level extraction never captured (`applyOverrides`
-#     only patches params already present post-import), so this cannot be
-#     fixed from import.yaml. The real fix is teaching the importer to merge
-#     OpenAPI path-item-level `parameters` into each operation the way a
-#     spec-compliant client would; that is a shared-engine change
-#     (packages/engine/src/catalog-import.ts) out of scope for a single
-#     app's manifest task.
+#     but ten do not and lose pagination entirely on import: `list users`,
+#     `list workspaces`, `list workspace teams`, `list project tasks`,
+#     `list section tasks`, `list task dependencies`, `list task tags`,
+#     `list workspace custom fields`, `list portfolio items`,
+#     `list status updates`. Unlike the two excluded ops above, these still
+#     work — they return Asana's default page with no way to request a
+#     different page size or continue via `offset` through this tool —
+#     `overrides` cannot add a param the spec-level extraction never
+#     captured (`applyOverrides` only patches params already present
+#     post-import), so this cannot be fixed from import.yaml. The real fix
+#     is teaching the importer to merge OpenAPI path-item-level `parameters`
+#     into each operation the way a spec-compliant client would; that is a
+#     shared-engine change (packages/engine/src/catalog-import.ts) out of
+#     scope for a single app's manifest task.
 
 spec: https://raw.githubusercontent.com/Asana/openapi/master/defs/asana_oas.yaml
 base_url: https://app.asana.com/api/1.0
@@ -80,7 +90,6 @@ include:
   - Get a workspace
   - Get a team
   - Get teams in a workspace
-  - Get teams for a user
   # --- projects and sections ----------------------------------------------
   - Get multiple projects
   - Get a project
@@ -114,7 +123,6 @@ rename:
   Get a workspace: get workspace
   Get a team: get team
   Get teams in a workspace: list workspace teams
-  Get teams for a user: list user teams
 
   Get multiple projects: list projects
   Get a project: get project
