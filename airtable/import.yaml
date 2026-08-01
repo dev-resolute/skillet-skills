@@ -1,0 +1,15 @@
+# Airtable has no official OpenAPI spec — operations are hand-authored in
+# catalog.yaml from https://airtable.com/developers/web/api and protected
+# below with keep:. Deliberate gaps: create/update records, base/table
+# management writes (write-heavy; revisit if chat demand shows up).
+spec: https://airtable.com/developers/web/api
+base_url: https://api.airtable.com
+parity_source: https://airtable.com/developers/web/api
+include: []
+keep:
+  - List bases
+  - Get base schema
+  - List records
+  - Get record
+  - List comments
+  - List webhooks

@@ -1,0 +1,83 @@
+slug: airtable
+version: 1.0.0
+name: Airtable
+category: work-project
+one_liner: List bases, table schemas, and records across your Airtable workspaces.
+api_domain: api.airtable.com
+status: live
+credentials:
+  - env_var: AIRTABLE_API_TOKEN
+    label: Airtable personal access token (scopes data.records:read, schema.bases:read)
+    help_url: https://airtable.com/create/tokens
+auth:
+  scheme: bearer
+  header: Authorization
+  env_vars: [AIRTABLE_API_TOKEN]
+  value_template: Bearer ${AIRTABLE_API_TOKEN}
+operations:
+  - name: List bases
+    description: List the bases the token can access.
+    method: GET
+    url: https://api.airtable.com/v0/meta/bases
+    read_only: true
+    params: []
+  - name: Get base schema
+    description: List a base's tables, fields, and views.
+    method: GET
+    url: https://api.airtable.com/v0/meta/bases/{baseId}/tables
+    read_only: true
+    params:
+      - { name: baseId, type: string, required: true, location: path,
+          description: ID of the base (starts with "app"). Get it from List bases. }
+  - name: List records
+    description: List records in a table.
+    method: GET
+    url: https://api.airtable.com/v0/{baseId}/{tableIdOrName}
+    read_only: true
+    params:
+      - { name: baseId, type: string, required: true, location: path,
+          description: ID of the base (starts with "app"). Get it from List bases. }
+      - { name: tableIdOrName, type: string, required: true, location: path,
+          description: Table ID (starts with "tbl") or table name. Get it from Get base schema. }
+      - { name: maxRecords, type: integer, required: false, location: query,
+          description: Maximum total number of records to return across all pages. }
+      - { name: view, type: string, required: false, location: query,
+          description: Name or ID of a view; records are returned in that view's order and filters. }
+      - { name: filterByFormula, type: string, required: false, location: query,
+          description: Airtable formula; only records where the formula evaluates to truthy are returned. }
+      - { name: pageSize, type: integer, required: false, location: query,
+          description: Number of records to return per page (up to 100). }
+      - { name: offset, type: string, required: false, location: query,
+          description: Pagination cursor from a previous response's offset field. }
+  - name: Get record
+    description: Retrieve a single record by ID.
+    method: GET
+    url: https://api.airtable.com/v0/{baseId}/{tableIdOrName}/{recordId}
+    read_only: true
+    params:
+      - { name: baseId, type: string, required: true, location: path,
+          description: ID of the base (starts with "app"). Get it from List bases. }
+      - { name: tableIdOrName, type: string, required: true, location: path,
+          description: Table ID (starts with "tbl") or table name. Get it from Get base schema. }
+      - { name: recordId, type: string, required: true, location: path,
+          description: ID of the record (starts with "rec"). Get it from List records. }
+  - name: List comments
+    description: List comments on a record.
+    method: GET
+    url: https://api.airtable.com/v0/{baseId}/{tableIdOrName}/{recordId}/comments
+    read_only: true
+    params:
+      - { name: baseId, type: string, required: true, location: path,
+          description: ID of the base (starts with "app"). Get it from List bases. }
+      - { name: tableIdOrName, type: string, required: true, location: path,
+          description: Table ID (starts with "tbl") or table name. Get it from Get base schema. }
+      - { name: recordId, type: string, required: true, location: path,
+          description: ID of the record (starts with "rec"). Get it from List records. }
+  - name: List webhooks
+    description: List webhooks registered on a base.
+    method: GET
+    url: https://api.airtable.com/v0/bases/{baseId}/webhooks
+    read_only: true
+    params:
+      - { name: baseId, type: string, required: true, location: path,
+          description: ID of the base (starts with "app"). Get it from List bases. }
