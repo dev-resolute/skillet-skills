@@ -1,0 +1,136 @@
+slug: notion
+version: 1.0.0
+name: Notion
+category: work-project
+one_liner: Read pages, databases, blocks, and users from your Notion workspace.
+api_domain: api.notion.com
+status: live
+credentials:
+  - env_var: NOTION_API_TOKEN
+    label: Notion internal integration token
+    help_url: https://www.notion.so/my-integrations
+auth:
+  scheme: bearer
+  header: Authorization
+  env_vars: [NOTION_API_TOKEN]
+  value_template: Bearer ${NOTION_API_TOKEN}
+operations:
+  - name: List users
+    description: List all users in the workspace.
+    method: GET
+    url: https://api.notion.com/v1/users
+    read_only: true
+    params:
+      - { name: Notion-Version, type: string, required: true, location: header,
+          example: "2022-06-28",
+          description: Notion API version date. Keep the example value. }
+      - { name: page_size, type: integer, required: false, location: query,
+          description: Max results per page (up to 100). }
+      - { name: start_cursor, type: string, required: false, location: query,
+          description: Cursor from a previous response for pagination. }
+  - name: Get user
+    description: Retrieve a user by ID.
+    method: GET
+    url: https://api.notion.com/v1/users/{user_id}
+    read_only: true
+    params:
+      - { name: user_id, type: string, required: true, location: path,
+          description: UUID of the user. }
+      - { name: Notion-Version, type: string, required: true, location: header,
+          example: "2022-06-28", description: Notion API version date. }
+  - name: Get bot user
+    description: Retrieve the bot user for this integration token.
+    method: GET
+    url: https://api.notion.com/v1/users/me
+    read_only: true
+    params:
+      - { name: Notion-Version, type: string, required: true, location: header,
+          example: "2022-06-28", description: Notion API version date. }
+  - name: Get database
+    description: Retrieve a database's structure and properties.
+    method: GET
+    url: https://api.notion.com/v1/databases/{database_id}
+    read_only: true
+    params:
+      - { name: database_id, type: string, required: true, location: path,
+          description: UUID of the database. }
+      - { name: Notion-Version, type: string, required: true, location: header,
+          example: "2022-06-28", description: Notion API version date. }
+  - name: Get page
+    description: Retrieve a page's properties.
+    method: GET
+    url: https://api.notion.com/v1/pages/{page_id}
+    read_only: true
+    params:
+      - { name: page_id, type: string, required: true, location: path,
+          description: UUID of the page. }
+      - { name: Notion-Version, type: string, required: true, location: header,
+          example: "2022-06-28", description: Notion API version date. }
+  - name: Get page property
+    description: Retrieve a single property item of a page.
+    method: GET
+    url: https://api.notion.com/v1/pages/{page_id}/properties/{property_id}
+    read_only: true
+    params:
+      - { name: page_id, type: string, required: true, location: path,
+          description: UUID of the page. }
+      - { name: property_id, type: string, required: true, location: path,
+          description: Property ID from the page object. }
+      - { name: Notion-Version, type: string, required: true, location: header,
+          example: "2022-06-28", description: Notion API version date. }
+  - name: Get block
+    description: Retrieve a block by ID.
+    method: GET
+    url: https://api.notion.com/v1/blocks/{block_id}
+    read_only: true
+    params:
+      - { name: block_id, type: string, required: true, location: path,
+          description: UUID of the block. }
+      - { name: Notion-Version, type: string, required: true, location: header,
+          example: "2022-06-28", description: Notion API version date. }
+  - name: List block children
+    description: List a block's (or page's) child blocks — the page content.
+    method: GET
+    url: https://api.notion.com/v1/blocks/{block_id}/children
+    read_only: true
+    params:
+      - { name: block_id, type: string, required: true, location: path,
+          description: UUID of the block or page. }
+      - { name: page_size, type: integer, required: false, location: query,
+          description: Max results per page (up to 100). }
+      - { name: start_cursor, type: string, required: false, location: query,
+          description: Cursor from a previous response. }
+      - { name: Notion-Version, type: string, required: true, location: header,
+          example: "2022-06-28", description: Notion API version date. }
+  - name: List comments
+    description: List open comments on a page or block.
+    method: GET
+    url: https://api.notion.com/v1/comments
+    read_only: true
+    params:
+      - { name: block_id, type: string, required: true, location: query,
+          description: UUID of the page or block whose comments to list. }
+      - { name: Notion-Version, type: string, required: true, location: header,
+          example: "2022-06-28", description: Notion API version date. }
+  - name: Search
+    description: Search pages and databases shared with the integration. POST — runs only when writes are allowed.
+    method: POST
+    url: https://api.notion.com/v1/search
+    read_only: false
+    params:
+      - { name: query, type: string, required: false, location: body,
+          description: Text to search page and database titles for. }
+      - { name: Notion-Version, type: string, required: true, location: header,
+          example: "2022-06-28", description: Notion API version date. }
+  - name: Query database
+    description: Query a database's rows. POST — runs only when writes are allowed.
+    method: POST
+    url: https://api.notion.com/v1/databases/{database_id}/query
+    read_only: false
+    params:
+      - { name: database_id, type: string, required: true, location: path,
+          description: UUID of the database. }
+      - { name: page_size, type: integer, required: false, location: query,
+          description: Max results per page (up to 100). }
+      - { name: Notion-Version, type: string, required: true, location: header,
+          example: "2022-06-28", description: Notion API version date. }

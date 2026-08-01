@@ -1,0 +1,20 @@
+# Notion has no official OpenAPI spec — operations are hand-authored in
+# catalog.yaml from https://developers.notion.com/reference and protected
+# below with keep:. Deliberate gaps: create/update page, append blocks,
+# comment writes (write-heavy; revisit if chat demand shows up).
+spec: https://developers.notion.com/reference
+base_url: https://api.notion.com
+parity_source: https://developers.notion.com/reference
+include: []
+keep:
+  - List users
+  - Get user
+  - Get bot user
+  - Get database
+  - Get page
+  - Get page property
+  - Get block
+  - List block children
+  - List comments
+  - Search
+  - Query database
