@@ -923,11 +923,10 @@ operations:
         items_type: string
         required: true
         location: query
-        description: >-
-          The fields, functions, or equations to request for the query. At most 20 fields can be
-          selected per request. Each field can be one of the following types:
-
-          - A built-in key field. See possible fields i
+        description: Repeatable query param — pass multiple times to select up to 20 fields. Accepts
+          built-in fields (title, transaction, project, timestamp), aggregate functions (count(),
+          count_if(transaction.duration,greater,300), p95(transaction.duration)), tag[name,type], or
+          an equation prefixed with equation| (e.g. equation|count_if(...) / count() * 100).
       - name: dataset
         type: string
         enum:
@@ -939,12 +938,9 @@ operations:
           - uptime_results
         required: true
         location: query
-        description: |-
-          Which dataset to query. The chosen dataset determines which fields are queryable.
-          - `errors` - Error events.
-          - `logs` - Structured log events.
-          - `profile_functions` - Function-level Profiling data.
-          - 
+        description: "Dataset to query: errors (error events), logs (structured logs), profile_functions
+          (function-level profiling), spans (distributed tracing spans), tracemetrics (application
+          metrics), uptime_results (uptime check results)."
       - name: end
         type: string
         format: date-time

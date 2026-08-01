@@ -136,3 +136,23 @@ overrides:
       # the task brief with a line that tells the agent where to find it.
       cursor:
         description: Pagination cursor from the previous response's Link header.
+
+  # hand-authored: the importer truncates every imported description to 200
+  # chars (a universal limit, not Sentry-specific — see manifest.ts). On
+  # `query events` that cut `field`'s spec text off mid built-in-field list,
+  # before it ever reached the tag[], function-call, or equation syntax —
+  # the parts an agent actually needs to build a working query. Op-scoped
+  # (not "*"): `field` and `dataset` exist only on this operation.
+  query events:
+    params:
+      field:
+        description: Repeatable query param — pass multiple times to select up
+          to 20 fields. Accepts built-in fields (title, transaction, project,
+          timestamp), aggregate functions (count(), count_if(transaction.duration,greater,300),
+          p95(transaction.duration)), tag[name,type], or an equation prefixed
+          with equation| (e.g. equation|count_if(...) / count() * 100).
+      dataset:
+        description: "Dataset to query: errors (error events), logs (structured
+          logs), profile_functions (function-level profiling), spans
+          (distributed tracing spans), tracemetrics (application metrics),
+          uptime_results (uptime check results)."
