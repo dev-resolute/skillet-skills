@@ -1,0 +1,187 @@
+# Regenerate catalog.yaml operations from Asana's official OpenAPI spec:
+#   pnpm --filter @kit/engine catalog:import asana   (from the runespacedev repo)
+#
+# `include` entries are the names listOperations() reports for this spec —
+# `summary || operationId || "METHOD /path"`. Every Asana GET operation carries
+# a summary and no two GET summaries collide anywhere in the spec (checked
+# against all 119 GET operations, not just the 28 below), so each entry is the
+# summary text verbatim (case-sensitive).
+#
+# Source: https://raw.githubusercontent.com/Asana/openapi/master/defs/asana_oas.yaml
+# (~3 MB as of this import — under the 5 MB vendoring threshold, so it is
+# fetched live rather than checked in per SAP-2(a)).
+#
+# Coverage target: current user, users, workspaces, teams, projects (list/get
+# + tasks-in-project), sections, tasks (list/get/subtasks/stories/
+# dependencies/tags), tags, custom fields (read), portfolios (list/get/
+# items), and status updates (read).
+#
+# No `GET /users/me` route exists in the spec — Asana's REST API treats
+# `user_gid` as a magic-string path parameter: pass the literal string "me"
+# to `getUser` to reach `/users/me` server-side (documented on the spec's own
+# `user_path_gid` parameter, carried through below via the `user_gid`
+# override). "get user" therefore covers both the current-user and
+# get-any-user targets; there is no separate current-user operation.
+#
+# Deliberate gaps:
+#   * Typeahead (`GET /workspaces/{workspace_gid}/typeahead`) is excluded.
+#     Its one REQUIRED filter, `resource_type`, plus its `type`, `query` and
+#     `count` filters, are declared on the spec's PATH ITEM (sibling to `get`,
+#     shared with other methods on that path) rather than on the GET
+#     operation itself. The importer's param extraction only reads the GET
+#     operation's own `parameters`, so importing this op as-is would produce
+#     a tool that is missing its only required input — every call would 400.
+#     Skipped per the task brief's guidance to skip typeahead when its param
+#     types fight validation.
+#   * The same path-item-vs-operation structural split silently drops two
+#     more things the importer cannot see, on EVERY operation below, not just
+#     typeahead:
+#       - `opt_pretty` (a JSON-formatting flag, "pretty" in the spec) is
+#         declared only on path items, never on a GET operation directly, so
+#         it never reaches any imported operation. No loss to a JSON-
+#         consuming agent — nothing to override or restore.
+#       - Every `{..._gid}` path parameter (user_gid, workspace_gid, etc.) is
+#         likewise declared only at the path-item level, so extraction never
+#         sees it either; each is still present in the catalog because
+#         `buildManifestOperation` auto-declares any `{placeholder}` found in
+#         the URL template that no operation-level param claims — but with a
+#         generic `type: string, required: true` and NO description. The
+#         `overrides: "*"` block below restores Asana's own parameter prose
+#         for every one of these keyed by name (mirrors the `user_gid` "me"
+#         alias note, which is otherwise unrecoverable from the catalog).
+#   * The same path-item declaration also holds `limit`/`offset` (pagination)
+#     on some list endpoints — most declare them on the GET operation itself
+#     and import fine (`list projects`, `list tasks`, `list project sections`,
+#     `list subtasks`, `list task stories`, `list tags`, `list portfolios`),
+#     but eleven do not and lose pagination entirely on import: `list users`,
+#     `list workspaces`, `list workspace teams`, `list user teams`,
+#     `list project tasks`, `list section tasks`, `list task dependencies`,
+#     `list task tags`, `list workspace custom fields`,
+#     `list portfolio items`, `list status updates`. These still work — they
+#     return Asana's default page with no way to request a different page
+#     size or continue via `offset` through this tool — `overrides` cannot
+#     add a param the spec-level extraction never captured (`applyOverrides`
+#     only patches params already present post-import), so this cannot be
+#     fixed from import.yaml. The real fix is teaching the importer to merge
+#     OpenAPI path-item-level `parameters` into each operation the way a
+#     spec-compliant client would; that is a shared-engine change
+#     (packages/engine/src/catalog-import.ts) out of scope for a single
+#     app's manifest task.
+
+spec: https://raw.githubusercontent.com/Asana/openapi/master/defs/asana_oas.yaml
+base_url: https://app.asana.com/api/1.0
+parity_source: https://developers.asana.com/reference
+
+include:
+  # --- current user, users, workspaces, teams -----------------------------
+  - Get a user
+  - Get multiple users
+  - Get multiple workspaces
+  - Get a workspace
+  - Get a team
+  - Get teams in a workspace
+  - Get teams for a user
+  # --- projects and sections ----------------------------------------------
+  - Get multiple projects
+  - Get a project
+  - Get tasks from a project
+  - Get sections in a project
+  - Get a section
+  - Get tasks from a section
+  # --- tasks -----------------------------------------------------------
+  - Get multiple tasks
+  - Get a task
+  - Get subtasks from a task
+  - Get stories from a task
+  - Get dependencies from a task
+  - Get a task's tags
+  # --- tags and custom fields ---------------------------------------------
+  - Get multiple tags
+  - Get a tag
+  - Get a custom field
+  - Get a workspace's custom fields
+  # --- portfolios and status updates ---------------------------------------
+  - Get multiple portfolios
+  - Get a portfolio
+  - Get portfolio items
+  - Get status updates from an object
+  - Get a status update
+
+rename:
+  Get a user: get user
+  Get multiple users: list users
+  Get multiple workspaces: list workspaces
+  Get a workspace: get workspace
+  Get a team: get team
+  Get teams in a workspace: list workspace teams
+  Get teams for a user: list user teams
+
+  Get multiple projects: list projects
+  Get a project: get project
+  Get tasks from a project: list project tasks
+  Get sections in a project: list project sections
+  Get a section: get section
+  Get tasks from a section: list section tasks
+
+  Get multiple tasks: list tasks
+  Get a task: get task
+  Get subtasks from a task: list subtasks
+  Get stories from a task: list task stories
+  Get dependencies from a task: list task dependencies
+  Get a task's tags: list task tags
+
+  Get multiple tags: list tags
+  Get a tag: get tag
+  Get a custom field: get custom field
+  Get a workspace's custom fields: list workspace custom fields
+
+  Get multiple portfolios: list portfolios
+  Get a portfolio: get portfolio
+  Get portfolio items: list portfolio items
+  Get status updates from an object: list status updates
+  Get a status update: get status update
+
+# Curated corrections layered over the spec after import, keyed by the catalog
+# name (i.e. post-`rename`). `*` applies to every operation that has the
+# named param. They live here rather than in catalog.yaml because a
+# re-import rewrites every field but `description` and reserialises the YAML,
+# which would drop both the edit and any comment explaining it.
+overrides:
+  "*":
+    params:
+      # hand-authored: Asana's own per-operation `opt_fields` description is a
+      # multi-sentence essay repeated near-verbatim on all 28 operations ("This
+      # endpoint returns a resource which excludes some properties by
+      # default..."). The per-operation `enum` (the exact field paths valid for
+      # that resource) is genuinely useful and is left untouched — only the
+      # boilerplate description is replaced with one crisp line, per the task
+      # brief.
+      opt_fields:
+        description: Comma-separated list of extra fields to include beyond the compact default response.
+      # hand-authored: every `{..._gid}` path parameter is declared on the
+      # spec's PATH ITEM, not the GET operation, so the importer's own
+      # extraction never sees it — see the header comment above. Each
+      # operation still gets the param (buildManifestOperation auto-declares
+      # any unclaimed `{placeholder}` in the URL), just with no description.
+      # These restore Asana's own parameter text from
+      # components/parameters/*_path_gid, verbatim.
+      user_gid:
+        description: A string identifying a user. This can either be the string "me", an email, or the gid of a user.
+      workspace_gid:
+        description: Globally unique identifier for the workspace or organization.
+      team_gid:
+        description: Globally unique identifier for the team.
+      project_gid:
+        description: Globally unique identifier for the project.
+      section_gid:
+        description: The globally unique identifier for the section.
+      task_gid:
+        description: The task to operate on.
+      tag_gid:
+        description: Globally unique identifier for the tag.
+      custom_field_gid:
+        description: Globally unique identifier for the custom field.
+      portfolio_gid:
+        description: Globally unique identifier for the portfolio.
+      status_update_gid:
+        description: The status update to get.
