@@ -1,0 +1,138 @@
+# Regenerate catalog.yaml operations from a vendored, pruned Sentry spec:
+#   pnpm --filter @kit/engine catalog:import sentry   (from the runespacedev repo)
+#
+# `include` entries are the names listOperations() reports for this spec —
+# summary || operationId || "METHOD /path". Checked directly: none of
+# Sentry's 120 GET operations (the full spec, not just the 25 below) share a
+# summary, so every entry below is the summary text verbatim (case-sensitive).
+#
+# --- Spec sourcing (SAP-2(b), vendored + pruned) ----------------------------
+# Source: https://raw.githubusercontent.com/getsentry/sentry-api-schema/main/openapi-derefed.json
+# (fully dereferenced already — zero `$ref` in the file — 3.87 MB, 137 paths,
+# well past the vendoring threshold). Pruned to `sentry/openapi.json`:
+#   1. Kept only the 25 paths this skill imports from, GET only (every other
+#      path, and every non-GET method on a kept path, dropped).
+#   2. Stripped each kept operation's `responses` object and replaced it with
+#      a minimal `{"200": {"description": "OK"}}` stub. buildManifestOperation
+#      (packages/engine/src/manifest.ts) never reads `responses` — only
+#      `summary`, `description`, `parameters`, and `requestBody` — and
+#      `responses` was 78% of the pruned-by-path file's size (real Sentry
+#      response schemas are large and deeply nested). Kept `parameters`,
+#      `summary`, `description`, `operationId`, `tags`, and `security`
+#      untouched on every kept operation — the last three are cheap and
+#      documented what auth scope each op expects.
+#   3. `servers` replaced with the flat `https://sentry.io` from this task
+#      (matching `base_url` below) — the upstream spec templates
+#      `https://{region}.sentry.io` with `region` defaulting to `us`; not
+#      used by the importer either way (it takes `base_url` from this file),
+#      kept only for a human skimming the vendored file.
+# Net: 3.87 MB / 137 paths → 63 KB / 25 paths.
+#
+# --- Known engine gap (path-item-level `parameters`) ------------------------
+# The importer only reads a GET operation's own `parameters` array, not
+# `parameters` declared as a sibling of `get` on the path item (see Asana's
+# import.yaml for the mechanism and its cost there). Checked directly against
+# the FULL upstream spec (all 137 paths) before pruning: zero paths declare
+# any path-item-level `parameters` anywhere in this spec — every parameter on
+# every Sentry GET operation, required or optional, lives on the operation
+# itself. No op below is missing pagination/filter params from this cause,
+# and no op needed excluding as non-functional.
+#
+# --- Coverage target ---------------------------------------------------------
+# Organizations (list/get), org projects/teams/members (+ member detail),
+# team (get/members/projects), project (get/teams/issues/stats/keys/
+# environments), issue (get/events/event-by-id — "latest event" is the same
+# "get issue event" op, called with event_id=latest per Sentry's own
+# `latest|oldest|recommended` enum, so there is no separate op for it),
+# releases (list/get/files/commits/deploys), org tags, and the Discover
+# events-in-table-format query (GET-only "discover" surface).
+#
+# `Retrieve an Organization's Release`'s `project` query param has no `type`
+# in the spec (`anyOf: [integer, string]`, no bare `type` key) — extractParams
+# (manifest.ts's mapType) falls back to `string` for any schema without a
+# recognised type, which is correct here (a project ID or slug both serialize
+# fine as a query string). No override needed.
+
+spec: ./openapi.json
+base_url: https://sentry.io
+parity_source: https://docs.sentry.io/api/
+
+include:
+  # --- organizations -------------------------------------------------------
+  - List Your Organizations
+  - Retrieve an Organization
+  - List an Organization's Projects
+  - List an Organization's Teams
+  - List an Organization's Members
+  - Retrieve an Organization Member
+  # --- teams -----------------------------------------------------------
+  - Retrieve a Team
+  - List a Team's Members
+  - List a Team's Projects
+  # --- projects --------------------------------------------------------
+  - Retrieve a Project
+  - List a Project's Teams
+  - List a Project's Client Keys
+  - List a Project's Environments
+  # --- issues and events -------------------------------------------------
+  - List a Project's Issues
+  - Retrieve an Issue
+  - List an Issue's Events
+  - Retrieve an Issue Event
+  # --- releases ----------------------------------------------------------
+  - List an Organization's Releases
+  - Retrieve an Organization's Release
+  - List an Organization's Release Files
+  - List an Organization Release's Commits
+  - List a Release's Deploys
+  # --- stats, tags, discover ----------------------------------------------
+  - Retrieve Event Counts for a Project
+  - List an Organization's Tags
+  - Query Explore Events in Table Format
+
+rename:
+  List Your Organizations: list organizations
+  Retrieve an Organization: get organization
+  List an Organization's Projects: list organization projects
+  List an Organization's Teams: list organization teams
+  List an Organization's Members: list organization members
+  Retrieve an Organization Member: get organization member
+
+  Retrieve a Team: get team
+  List a Team's Members: list team members
+  List a Team's Projects: list team projects
+
+  Retrieve a Project: get project
+  List a Project's Teams: list project teams
+  List a Project's Client Keys: list project keys
+  List a Project's Environments: list project environments
+
+  List a Project's Issues: list project issues
+  Retrieve an Issue: get issue
+  List an Issue's Events: list issue events
+  Retrieve an Issue Event: get issue event
+
+  List an Organization's Releases: list releases
+  Retrieve an Organization's Release: get release
+  List an Organization's Release Files: list release files
+  List an Organization Release's Commits: list release commits
+  List a Release's Deploys: list release deploys
+
+  Retrieve Event Counts for a Project: get project stats
+  List an Organization's Tags: list organization tags
+  Query Explore Events in Table Format: query events
+
+# Curated corrections layered over the spec after import, keyed by the catalog
+# name (i.e. post-`rename`). They live here rather than in catalog.yaml
+# because a re-import rewrites every field but `description` and reserialises
+# the YAML, which would drop both the edit and any comment explaining it.
+overrides:
+  "*":
+    params:
+      # hand-authored: Sentry's own `cursor` description ("A pointer to the
+      # last object fetched and its sort order; used to retrieve the next or
+      # previous results.") is repeated verbatim on every paginated op below
+      # and never names where the value actually comes from. Replaced per
+      # the task brief with a line that tells the agent where to find it.
+      cursor:
+        description: Pagination cursor from the previous response's Link header.

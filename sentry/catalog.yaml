@@ -1,0 +1,1026 @@
+slug: sentry
+version: 1.0.0
+name: Sentry
+category: dev-code
+one_liner: Inspect issues, events, releases, and projects across your Sentry organization.
+api_domain: sentry.io
+status: live
+credentials:
+  - env_var: SENTRY_API_TOKEN
+    label: Sentry organization auth token (org:read, project:read, event:read)
+    help_url: https://docs.sentry.io/api/guides/create-auth-token/
+auth:
+  scheme: bearer
+  header: Authorization
+  env_vars:
+    - SENTRY_API_TOKEN
+  value_template: Bearer ${SENTRY_API_TOKEN}
+operations:
+  - name: list organizations
+    description: List Your Organizations
+    method: GET
+    url: https://sentry.io/api/0/organizations/
+    read_only: true
+    params:
+      - name: owner
+        type: boolean
+        required: false
+        location: query
+        description: Specify `true` to restrict results to organizations in which you are an owner.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Pagination cursor from the previous response's Link header.
+      - name: query
+        type: string
+        required: false
+        location: query
+        description: |-
+          Filters results by using [query syntax](/product/sentry-basics/search/).
+
+          Valid query fields include:
+          - `id`: The organization ID
+          - `slug`: The organization slug
+          - `status`: The organization's current
+      - name: sortBy
+        type: string
+        required: false
+        location: query
+        description: >-
+          The field to sort results by, in descending order. If not specified the results are sorted
+          by the date they were created.
+
+
+          Valid fields include:
+
+          - `members`: By number of members
+
+          - `events`: By number
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Limit the number of rows to return in the result. Default and maximum allowed is 100.
+  - name: get organization
+    description: Retrieve an Organization
+    method: GET
+    url: https://sentry.io/api/0/organizations/{organization_id_or_slug}/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: detailed
+        type: string
+        required: false
+        location: query
+        description: Specify `"0"` to return organization details that do not include projects or teams.
+  - name: list organization projects
+    description: List an Organization's Projects
+    method: GET
+    url: https://sentry.io/api/0/organizations/{organization_id_or_slug}/projects/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Pagination cursor from the previous response's Link header.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Limit the number of rows to return in the result. Default and maximum allowed is 100.
+      - name: query
+        type: string
+        required: false
+        location: query
+        description: Filter projects by name or slug.
+  - name: list organization teams
+    description: List an Organization's Teams
+    method: GET
+    url: https://sentry.io/api/0/organizations/{organization_id_or_slug}/teams/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: detailed
+        type: string
+        required: false
+        location: query
+        description: Specify `"0"` to return team details that do not include projects.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Pagination cursor from the previous response's Link header.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Limit the number of rows to return in the result. Default and maximum allowed is 100.
+      - name: query
+        type: string
+        required: false
+        location: query
+        description: Filter teams by name or slug.
+  - name: list organization members
+    description: List an Organization's Members
+    method: GET
+    url: https://sentry.io/api/0/organizations/{organization_id_or_slug}/members/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Pagination cursor from the previous response's Link header.
+  - name: get organization member
+    description: Retrieve an Organization Member
+    method: GET
+    url: https://sentry.io/api/0/organizations/{organization_id_or_slug}/members/{member_id}/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: member_id
+        type: string
+        required: true
+        location: path
+        description: The ID of the organization member.
+  - name: get team
+    description: Retrieve a Team
+    method: GET
+    url: https://sentry.io/api/0/teams/{organization_id_or_slug}/{team_id_or_slug}/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: team_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the team the resource belongs to.
+      - name: expand
+        type: string
+        required: false
+        location: query
+        description: List of strings to opt in to additional data. Supports `projects`, `externalTeams`.
+      - name: collapse
+        type: string
+        required: false
+        location: query
+        description: List of strings to opt out of certain pieces of data. Supports `organization`.
+  - name: list team members
+    description: List a Team's Members
+    method: GET
+    url: https://sentry.io/api/0/teams/{organization_id_or_slug}/{team_id_or_slug}/members/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: team_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the team the resource belongs to.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Pagination cursor from the previous response's Link header.
+  - name: list team projects
+    description: List a Team's Projects
+    method: GET
+    url: https://sentry.io/api/0/teams/{organization_id_or_slug}/{team_id_or_slug}/projects/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: team_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the team the resource belongs to.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Pagination cursor from the previous response's Link header.
+  - name: get project
+    description: Retrieve a Project
+    method: GET
+    url: https://sentry.io/api/0/projects/{organization_id_or_slug}/{project_id_or_slug}/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: project_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the project the resource belongs to. Project slugs are unique within
+          each organization.
+  - name: list project teams
+    description: List a Project's Teams
+    method: GET
+    url: https://sentry.io/api/0/projects/{organization_id_or_slug}/{project_id_or_slug}/teams/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: project_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the project the resource belongs to. Project slugs are unique within
+          each organization.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Pagination cursor from the previous response's Link header.
+  - name: list project keys
+    description: List a Project's Client Keys
+    method: GET
+    url: https://sentry.io/api/0/projects/{organization_id_or_slug}/{project_id_or_slug}/keys/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: project_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the project the resource belongs to. Project slugs are unique within
+          each organization.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Pagination cursor from the previous response's Link header.
+      - name: status
+        type: string
+        required: false
+        location: query
+        description: |-
+          Filter client keys by `active` or `inactive`. Defaults to returning all
+          keys if not specified.
+  - name: list project environments
+    description: List a Project's Environments
+    method: GET
+    url: https://sentry.io/api/0/projects/{organization_id_or_slug}/{project_id_or_slug}/environments/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: project_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the project the resource belongs to. Project slugs are unique within
+          each organization.
+      - name: visibility
+        type: string
+        enum:
+          - all
+          - hidden
+          - visible
+        required: false
+        location: query
+        description: The visibility of the environments to filter by. Defaults to `visible`.
+  - name: list project issues
+    description: >-
+      **Deprecated**: This endpoint has been replaced with the [Organization Issues
+      endpoint](/api/events/list-an-organizations-issues/) which
+
+      supports filtering on project and additional functionality.
+
+
+      Re
+    method: GET
+    url: https://sentry.io/api/0/projects/{organization_id_or_slug}/{project_id_or_slug}/issues/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the issues belong to.
+      - name: project_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the project the issues belong to.
+      - name: statsPeriod
+        type: string
+        required: false
+        location: query
+        description: An optional stat period (can be one of `"24h"`, `"14d"`, and `""`), defaults to "24h"
+          if not provided.
+      - name: shortIdLookup
+        type: boolean
+        required: false
+        location: query
+        description: If this is set to true then short IDs are looked up by this function as well. This can
+          cause the return value of the function to return an event issue of a different project
+          which is why this is an op
+      - name: query
+        type: string
+        required: false
+        location: query
+        description: An optional Sentry structured search query. If not provided an implied
+          `"is:unresolved"` is assumed.
+      - name: hashes
+        type: string
+        required: false
+        location: query
+        description: A list of hashes of groups to return. Is not compatible with 'query' parameter. The
+          maximum number of hashes that can be sent is 100. If more are sent, only the first 100
+          will be used.
+      - name: sort
+        type: string
+        enum:
+          - date
+          - new
+          - trends
+          - freq
+          - user
+          - inbox
+        required: false
+        location: query
+        description: The sort order of the issues. Options include 'Last Seen' (`date`), 'First Seen'
+          (`new`), 'Trends' (`trends`), 'Events' (`freq`), 'Users' (`user`), and 'Date Added'
+          (`inbox`).
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The maximum number of issues to return. The maximum is 100.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Pagination cursor from the previous response's Link header.
+  - name: get issue
+    description: Retrieve an Issue
+    method: GET
+    url: https://sentry.io/api/0/organizations/{organization_id_or_slug}/issues/{issue_id}/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: issue_id
+        type: string
+        required: true
+        location: path
+        description: The ID of the issue you'd like to query.
+      - name: environment
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: The name of environments to filter by.
+      - name: expand
+        type: array
+        items_type: string
+        enum:
+          - forecast
+          - inbox
+          - integrationIssues
+          - latestEventHasAttachments
+          - owners
+          - sentryAppIssues
+        required: false
+        location: query
+        description: Additional data to include in the response.
+      - name: collapse
+        type: array
+        items_type: string
+        enum:
+          - release
+          - stats
+          - tags
+        required: false
+        location: query
+        description: Fields to remove from the response to improve query performance.
+  - name: list issue events
+    description: List an Issue's Events
+    method: GET
+    url: https://sentry.io/api/0/organizations/{organization_id_or_slug}/issues/{issue_id}/events/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: issue_id
+        type: string
+        required: true
+        location: path
+        description: The ID of the issue you'd like to query.
+      - name: start
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The start of the period of time for the query, expected in ISO-8601 format. For
+          example, `2001-12-14T12:34:56.7890`.
+      - name: end
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The end of the period of time for the query, expected in ISO-8601 format. For example,
+          `2001-12-14T12:34:56.7890`.
+      - name: statsPeriod
+        type: string
+        required: false
+        location: query
+        description: >-
+          The period of time for the query, will override the start & end parameters, a number
+          followed by one of:
+
+          - `d` for days
+
+          - `h` for hours
+
+          - `m` for minutes
+
+          - `s` for seconds
+
+          - `w` for weeks
+
+
+          For example
+      - name: environment
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: The name of environments to filter by.
+      - name: full
+        type: boolean
+        required: false
+        location: query
+        description: Specify true to include the full event body, including the stacktrace, in the event
+          payload.
+      - name: sample
+        type: boolean
+        required: false
+        location: query
+        description: Return events in pseudo-random order. This is deterministic so an identical query will
+          always return the same events in the same order.
+      - name: query
+        type: string
+        required: false
+        location: query
+        description: An optional search query for filtering events. See [search
+          syntax](https://docs.sentry.io/concepts/search/) and queryable event properties at [Sentry
+          Search Documentation](https://docs.sentry.io/conce
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Limit the number of rows to return in the result. Default and maximum allowed is 100.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Pagination cursor from the previous response's Link header.
+  - name: get issue event
+    description: Retrieve an Issue Event
+    method: GET
+    url: https://sentry.io/api/0/organizations/{organization_id_or_slug}/issues/{issue_id}/events/{event_id}/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: issue_id
+        type: string
+        required: true
+        location: path
+        description: The ID of the issue you'd like to query.
+      - name: event_id
+        type: string
+        enum:
+          - latest
+          - oldest
+          - recommended
+        required: true
+        location: path
+        description: The ID of the event to retrieve, or 'latest', 'oldest', or 'recommended'.
+      - name: environment
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: The name of environments to filter by.
+  - name: list releases
+    description: List an Organization's Releases
+    method: GET
+    url: https://sentry.io/api/0/organizations/{organization_id_or_slug}/releases/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: project
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: The IDs or slugs of projects to filter by. Project slugs are unique within each
+          organization. Omit this parameter to include all accessible projects. `-1` is also
+          accepted to include all accessible pr
+      - name: environment
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: The name of environments to filter by.
+      - name: query
+        type: string
+        required: false
+        location: query
+        description: Case-insensitive substring match against the release version.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Limit the number of rows to return in the result. Default and maximum allowed is 100.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Pagination cursor from the previous response's Link header.
+  - name: get release
+    description: Retrieve an Organization's Release
+    method: GET
+    url: https://sentry.io/api/0/organizations/{organization_id_or_slug}/releases/{version}/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: version
+        type: string
+        required: true
+        location: path
+        description: The version identifier of the release
+      - name: project_id
+        type: string
+        required: false
+        location: query
+        description: Deprecated. Use project instead.
+      - name: project
+        type: string
+        required: false
+        location: query
+        description: The project ID or slug to filter by. Overrides project_id when both are sent.
+      - name: health
+        type: boolean
+        required: false
+        location: query
+        description: Whether or not to include health data with the release. By default, this is false.
+      - name: adoptionStages
+        type: boolean
+        required: false
+        location: query
+        description: Whether or not to include adoption stages with the release. By default, this is false.
+      - name: summaryStatsPeriod
+        type: string
+        enum:
+          - 14d
+          - 1d
+          - 1h
+          - 24h
+          - 2d
+          - 30d
+          - 48h
+          - 7d
+          - 90d
+        required: false
+        location: query
+        description: The period of time used to query summary stats for the release. By default, this is 14d.
+      - name: healthStatsPeriod
+        type: string
+        enum:
+          - 14d
+          - 1d
+          - 1h
+          - 24h
+          - 2d
+          - 30d
+          - 48h
+          - 7d
+          - 90d
+        required: false
+        location: query
+        description: The period of time used to query health stats for the release. By default, this is 24h
+          if health is enabled.
+      - name: sort
+        type: string
+        enum:
+          - crash_free_sessions
+          - crash_free_users
+          - date
+          - sessions
+          - users
+        required: false
+        location: query
+        description: The field used to sort results by. By default, this is `date`.
+      - name: status
+        type: string
+        enum:
+          - archived
+          - open
+        required: false
+        location: query
+        description: Release statuses that you can filter by.
+      - name: query
+        type: string
+        required: false
+        location: query
+        description: >-
+          Filters results by using [query syntax](/product/sentry-basics/search/).
+
+
+          Example: `query=(transaction:foo AND release:abc) OR (transaction:[bar,baz] AND
+          release:def)`
+  - name: list release files
+    description: List an Organization's Release Files
+    method: GET
+    url: https://sentry.io/api/0/organizations/{organization_id_or_slug}/releases/{version}/files/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: version
+        type: string
+        required: true
+        location: path
+        description: The version identifier of the release
+      - name: query
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: If set, only files with these partial names will be returned.
+      - name: checksum
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: If set, only files with these exact checksums will be returned.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Pagination cursor from the previous response's Link header.
+  - name: list release commits
+    description: List an Organization Release's Commits
+    method: GET
+    url: https://sentry.io/api/0/organizations/{organization_id_or_slug}/releases/{version}/commits/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: version
+        type: string
+        required: true
+        location: path
+        description: The version identifier of the release
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Pagination cursor from the previous response's Link header.
+  - name: list release deploys
+    description: List a Release's Deploys
+    method: GET
+    url: https://sentry.io/api/0/organizations/{organization_id_or_slug}/releases/{version}/deploys/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: version
+        type: string
+        required: true
+        location: path
+        description: The version identifier of the release
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Pagination cursor from the previous response's Link header.
+  - name: get project stats
+    description: Retrieve Event Counts for a Project
+    method: GET
+    url: https://sentry.io/api/0/projects/{organization_id_or_slug}/{project_id_or_slug}/stats/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: project_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the project the resource belongs to. Project slugs are unique within
+          each organization.
+      - name: stat
+        type: string
+        enum:
+          - blacklisted
+          - generated
+          - received
+          - rejected
+        required: false
+        location: query
+        description: The name of the stat to query. Defaults to `received`.
+      - name: since
+        type: number
+        format: double
+        required: false
+        location: query
+        description: A UNIX timestamp (in seconds) that sets the start of the query range.
+      - name: until
+        type: number
+        format: double
+        required: false
+        location: query
+        description: A UNIX timestamp (in seconds) that sets the end of the query range.
+      - name: resolution
+        type: string
+        enum:
+          - 10s
+          - 1d
+          - 1h
+        required: false
+        location: query
+        description: An explicit time series resolution.
+  - name: list organization tags
+    description: List an Organization's Tags
+    method: GET
+    url: https://sentry.io/api/0/organizations/{organization_id_or_slug}/tags/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: project
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: The IDs or slugs of projects to filter by. Project slugs are unique within each
+          organization. Omit this parameter to include all accessible projects. `-1` is also
+          accepted to include all accessible pr
+      - name: environment
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: The name of environments to filter by.
+      - name: statsPeriod
+        type: string
+        required: false
+        location: query
+        description: >-
+          The period of time for the query, will override the start & end parameters, a number
+          followed by one of:
+
+          - `d` for days
+
+          - `h` for hours
+
+          - `m` for minutes
+
+          - `s` for seconds
+
+          - `w` for weeks
+
+
+          For example
+      - name: start
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The start of the period of time for the query, expected in ISO-8601 format. For
+          example, `2001-12-14T12:34:56.7890`.
+      - name: end
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The end of the period of time for the query, expected in ISO-8601 format. For example,
+          `2001-12-14T12:34:56.7890`.
+      - name: dataset
+        type: string
+        enum:
+          - discover
+          - events
+          - replays
+          - search_issues
+        required: false
+        location: query
+        description: The dataset to query. Defaults to `discover`.
+      - name: use_cache
+        type: string
+        enum:
+          - "0"
+          - "1"
+        required: false
+        location: query
+        description: Set to `"1"` to enable caching for the tag key query.
+      - name: useFlagsBackend
+        type: string
+        enum:
+          - "0"
+          - "1"
+        required: false
+        location: query
+        description: Set to `"1"` to query feature flags instead of tags.
+  - name: query events
+    description: Query Explore Events in Table Format
+    method: GET
+    url: https://sentry.io/api/0/organizations/{organization_id_or_slug}/events/
+    read_only: true
+    params:
+      - name: organization_id_or_slug
+        type: string
+        required: true
+        location: path
+        description: The ID or slug of the organization the resource belongs to.
+      - name: field
+        type: array
+        items_type: string
+        required: true
+        location: query
+        description: >-
+          The fields, functions, or equations to request for the query. At most 20 fields can be
+          selected per request. Each field can be one of the following types:
+
+          - A built-in key field. See possible fields i
+      - name: dataset
+        type: string
+        enum:
+          - errors
+          - logs
+          - profile_functions
+          - spans
+          - tracemetrics
+          - uptime_results
+        required: true
+        location: query
+        description: |-
+          Which dataset to query. The chosen dataset determines which fields are queryable.
+          - `errors` - Error events.
+          - `logs` - Structured log events.
+          - `profile_functions` - Function-level Profiling data.
+          - 
+      - name: end
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The end of the period of time for the query, expected in ISO-8601 format. For example,
+          `2001-12-14T12:34:56.7890`.
+      - name: environment
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: The name of environments to filter by.
+      - name: project
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: The IDs or slugs of projects to filter by. Project slugs are unique within each
+          organization. Omit this parameter to include all accessible projects. `-1` is also
+          accepted to include all accessible pr
+      - name: start
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: The start of the period of time for the query, expected in ISO-8601 format. For
+          example, `2001-12-14T12:34:56.7890`.
+      - name: statsPeriod
+        type: string
+        required: false
+        location: query
+        description: >-
+          The period of time for the query, will override the start & end parameters, a number
+          followed by one of:
+
+          - `d` for days
+
+          - `h` for hours
+
+          - `m` for minutes
+
+          - `s` for seconds
+
+          - `w` for weeks
+
+
+          For example
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Limit the number of rows to return in the result. Default and maximum allowed is 100.
+      - name: query
+        type: string
+        required: false
+        location: query
+        description: >-
+          Filters results by using [query syntax](/product/sentry-basics/search/).
+
+
+          Example: `query=(transaction:foo AND release:abc) OR (transaction:[bar,baz] AND
+          release:def)`
+      - name: sort
+        type: string
+        required: false
+        location: query
+        description: What to order the results of the query by. Must be something in the `field` list,
+          excluding equations.
+      - name: allowAggregateConditions
+        type: boolean
+        required: false
+        location: query
+        description: If false, aggregate conditions in the query string are disallowed. Defaults to true.
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Pagination cursor from the previous response's Link header.
