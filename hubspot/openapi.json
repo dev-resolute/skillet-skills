@@ -1,0 +1,1624 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "HubSpot CRM API (vendored subset for RuneSpace catalog)",
+    "version": "v3",
+    "description": "Pruned, hand-merged subset of HubSpot's official per-object OpenAPI specs \u2014 GET operations only, covering the objects/owners/pipelines/properties/associations areas this skill imports. Not the full HubSpot API."
+  },
+  "servers": [
+    {
+      "url": "https://api.hubapi.com"
+    }
+  ],
+  "paths": {
+    "/crm/v3/objects/contacts": {
+      "get": {
+        "summary": "Retrieve contacts",
+        "description": "Retrieve all contacts, using query parameters to specify the information that gets returned.",
+        "operationId": "get-/crm/v3/objects/contacts_getPage",
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "description": "The paging cursor token of the last successfully read resource will be returned as the `paging.next.after` JSON property of a paged response containing more results.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Whether to return only results that have been archived.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean",
+              "example": null,
+              "default": false
+            }
+          },
+          {
+            "name": "associations",
+            "in": "query",
+            "description": "A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The maximum number of results to display per page.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "example": null,
+              "default": 10
+            }
+          },
+          {
+            "name": "properties",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "propertiesWithHistory",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored. Usage of this parameter will reduce the maximum number of contacts that can be read by a single request.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          }
+        }
+      }
+    },
+    "/crm/v3/objects/contacts/{contactId}": {
+      "get": {
+        "summary": "Retrieve a contact",
+        "description": "Retrieve a contact by its ID (`contactId`) or by a unique property (`idProperty`). You can specify what is returned using the `properties` query parameter.",
+        "operationId": "get-/crm/v3/objects/contacts/{contactId}_getById",
+        "parameters": [
+          {
+            "name": "contactId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": ".+",
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Whether to return only results that have been archived.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean",
+              "example": null,
+              "default": false
+            }
+          },
+          {
+            "name": "associations",
+            "in": "query",
+            "description": "A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "idProperty",
+            "in": "query",
+            "description": "The name of a property whose values are unique for this object type",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "properties",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "propertiesWithHistory",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          }
+        }
+      }
+    },
+    "/crm/v3/objects/companies": {
+      "get": {
+        "summary": "Retrieve companies",
+        "description": "Retrieve all companies, using query parameters to control the information that gets returned.",
+        "operationId": "get-/crm/v3/objects/companies_getPage",
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "description": "The paging cursor token of the last successfully read resource will be returned as the `paging.next.after` JSON property of a paged response containing more results.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Whether to return only results that have been archived.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean",
+              "example": null,
+              "default": false
+            }
+          },
+          {
+            "name": "associations",
+            "in": "query",
+            "description": "A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The maximum number of results to display per page.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "example": null,
+              "default": 10
+            }
+          },
+          {
+            "name": "properties",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "propertiesWithHistory",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored. Usage of this parameter will reduce the maximum number of companies that can be read by a single request.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          }
+        }
+      }
+    },
+    "/crm/v3/objects/companies/{companyId}": {
+      "get": {
+        "summary": "Retrieve a company",
+        "description": "Retrieve a company by its ID (`companyId`) or by a unique property (`idProperty`). You can specify what is returned using the `properties` query parameter.",
+        "operationId": "get-/crm/v3/objects/companies/{companyId}_getById",
+        "parameters": [
+          {
+            "name": "companyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": ".+",
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Whether to return only results that have been archived.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean",
+              "example": null,
+              "default": false
+            }
+          },
+          {
+            "name": "associations",
+            "in": "query",
+            "description": "A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "idProperty",
+            "in": "query",
+            "description": "The name of a property whose values are unique for this object type",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "properties",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "propertiesWithHistory",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          }
+        }
+      }
+    },
+    "/crm/v3/objects/deals": {
+      "get": {
+        "summary": "List",
+        "description": "Read a page of deals. Control what is returned via the `properties` query param.",
+        "operationId": "get-/crm/v3/objects/0-3_getPage",
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "description": "The paging cursor token of the last successfully read resource will be returned as the `paging.next.after` JSON property of a paged response containing more results.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Whether to return only results that have been archived.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean",
+              "example": null,
+              "default": false
+            }
+          },
+          {
+            "name": "associations",
+            "in": "query",
+            "description": "A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The maximum number of results to display per page.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "example": null,
+              "default": 10
+            }
+          },
+          {
+            "name": "properties",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "propertiesWithHistory",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored. Usage of this parameter will reduce the maximum number of objects that can be read by a single request.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          }
+        }
+      }
+    },
+    "/crm/v3/objects/deals/{dealId}": {
+      "get": {
+        "summary": "Read",
+        "description": "Read an Object identified by `{dealId}`. `{dealId}` refers to the internal object ID by default, or optionally any unique property value as specified by the `idProperty` query param.  Control what is returned via the `properties` query param.",
+        "operationId": "get-/crm/v3/objects/0-3/{dealId}_getById",
+        "parameters": [
+          {
+            "name": "dealId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": ".+",
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Whether to return only results that have been archived.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean",
+              "example": null,
+              "default": false
+            }
+          },
+          {
+            "name": "associations",
+            "in": "query",
+            "description": "A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "idProperty",
+            "in": "query",
+            "description": "The name of a property whose values are unique for this object type",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "properties",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "propertiesWithHistory",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          }
+        }
+      }
+    },
+    "/crm/v3/objects/tickets": {
+      "get": {
+        "summary": "List",
+        "description": "Read a page of tickets. Control what is returned via the `properties` query param.",
+        "operationId": "get-/crm/v3/objects/tickets_getPage",
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "description": "The paging cursor token of the last successfully read resource will be returned as the `paging.next.after` JSON property of a paged response containing more results.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Whether to return only results that have been archived.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean",
+              "example": null,
+              "default": false
+            }
+          },
+          {
+            "name": "associations",
+            "in": "query",
+            "description": "A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The maximum number of results to display per page.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "example": null,
+              "default": 10
+            }
+          },
+          {
+            "name": "properties",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "propertiesWithHistory",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored. Usage of this parameter will reduce the maximum number of objects that can be read by a single request.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          }
+        }
+      }
+    },
+    "/crm/v3/objects/tickets/{ticketId}": {
+      "get": {
+        "summary": "Read",
+        "description": "Read an Object identified by `{ticketId}`. `{ticketId}` refers to the internal object ID by default, or optionally any unique property value as specified by the `idProperty` query param.  Control what is returned via the `properties` query param.",
+        "operationId": "get-/crm/v3/objects/tickets/{ticketId}_getById",
+        "parameters": [
+          {
+            "name": "ticketId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": ".+",
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Whether to return only results that have been archived.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean",
+              "example": null,
+              "default": false
+            }
+          },
+          {
+            "name": "associations",
+            "in": "query",
+            "description": "A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "idProperty",
+            "in": "query",
+            "description": "The name of a property whose values are unique for this object type",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "properties",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "propertiesWithHistory",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          }
+        }
+      }
+    },
+    "/crm/v3/objects/products": {
+      "get": {
+        "summary": "List",
+        "description": "Read a page of products. Control what is returned via the `properties` query param.",
+        "operationId": "get-/crm/v3/objects/products_getPage",
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "description": "The paging cursor token of the last successfully read resource will be returned as the `paging.next.after` JSON property of a paged response containing more results.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Whether to return only results that have been archived.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean",
+              "example": null,
+              "default": false
+            }
+          },
+          {
+            "name": "associations",
+            "in": "query",
+            "description": "A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The maximum number of results to display per page.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "example": null,
+              "default": 10
+            }
+          },
+          {
+            "name": "properties",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "propertiesWithHistory",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored. Usage of this parameter will reduce the maximum number of products that can be read by a single request.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          }
+        }
+      }
+    },
+    "/crm/v3/objects/products/{productId}": {
+      "get": {
+        "summary": "Read",
+        "description": "Read an Object identified by `{productId}`. `{productId}` refers to the internal object ID by default, or optionally any unique property value as specified by the `idProperty` query param.  Control what is returned via the `properties` query param.",
+        "operationId": "get-/crm/v3/objects/products/{productId}_getById",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": ".+",
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Whether to return only results that have been archived.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean",
+              "example": null,
+              "default": false
+            }
+          },
+          {
+            "name": "associations",
+            "in": "query",
+            "description": "A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "idProperty",
+            "in": "query",
+            "description": "The name of a property whose values are unique for this object type",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "properties",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "propertiesWithHistory",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          }
+        }
+      }
+    },
+    "/crm/v3/objects/line_items": {
+      "get": {
+        "summary": "List",
+        "description": "Read a page of line items. Control what is returned via the `properties` query param.",
+        "operationId": "get-/crm/v3/objects/line_items_getPage",
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "description": "The paging cursor token of the last successfully read resource will be returned as the `paging.next.after` JSON property of a paged response containing more results.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Whether to return only results that have been archived.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean",
+              "example": null,
+              "default": false
+            }
+          },
+          {
+            "name": "associations",
+            "in": "query",
+            "description": "A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The maximum number of results to display per page.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "example": null,
+              "default": 10
+            }
+          },
+          {
+            "name": "properties",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "propertiesWithHistory",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored. Usage of this parameter will reduce the maximum number of line items that can be read by a single request.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          }
+        }
+      }
+    },
+    "/crm/v3/objects/line_items/{lineItemId}": {
+      "get": {
+        "summary": "Read",
+        "description": "Read an Object identified by `{lineItemId}`. `{lineItemId}` refers to the internal object ID by default, or optionally any unique property value as specified by the `idProperty` query param.  Control what is returned via the `properties` query param.",
+        "operationId": "get-/crm/v3/objects/line_items/{lineItemId}_getById",
+        "parameters": [
+          {
+            "name": "lineItemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": ".+",
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Whether to return only results that have been archived.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean",
+              "example": null,
+              "default": false
+            }
+          },
+          {
+            "name": "associations",
+            "in": "query",
+            "description": "A comma separated list of object types to retrieve associated IDs for. If any of the specified associations do not exist, they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "idProperty",
+            "in": "query",
+            "description": "The name of a property whose values are unique for this object type",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "properties",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned in the response. If any of the specified properties are not present on the requested object(s), they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          },
+          {
+            "name": "propertiesWithHistory",
+            "in": "query",
+            "description": "A comma separated list of the properties to be returned along with their history of previous values. If any of the specified properties are not present on the requested object(s), they will be ignored.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "example": null,
+              "items": {
+                "type": "string",
+                "example": null
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          }
+        }
+      }
+    },
+    "/crm/v3/owners": {
+      "get": {
+        "operationId": "get-/crm/v3/owners_/crm/v3/owners",
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean",
+              "example": null,
+              "default": false
+            }
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "example": null,
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          }
+        }
+      }
+    },
+    "/crm/v3/owners/{ownerId}": {
+      "get": {
+        "summary": "Retrieve a specific owner by ID",
+        "description": "Retrieve details of a specific owner using either their 'id' or 'userId'.",
+        "operationId": "get-/crm/v3/owners/{ownerId}_getById",
+        "parameters": [
+          {
+            "name": "ownerId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "example": null
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Whether to return only results that have been archived.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean",
+              "example": null,
+              "default": false
+            }
+          },
+          {
+            "name": "idProperty",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "example": null,
+              "default": "id",
+              "enum": [
+                "id",
+                "userId"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          }
+        }
+      }
+    },
+    "/crm/v3/pipelines/{objectType}": {
+      "get": {
+        "summary": "Retrieve all pipelines",
+        "description": "Return all pipelines for the object type specified by `{objectType}`.",
+        "operationId": "get-/crm/v3/pipelines/{objectType}_getAll",
+        "parameters": [
+          {
+            "name": "objectType",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          }
+        }
+      }
+    },
+    "/crm/v3/pipelines/{objectType}/{pipelineId}": {
+      "get": {
+        "summary": "Return a pipeline by ID",
+        "description": "Return a single pipeline object identified by its unique `{pipelineId}`.",
+        "operationId": "get-/crm/v3/pipelines/{objectType}/{pipelineId}_getById",
+        "parameters": [
+          {
+            "name": "objectType",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "pipelineId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          }
+        }
+      }
+    },
+    "/crm/v3/pipelines/{objectType}/{pipelineId}/stages": {
+      "get": {
+        "summary": "Return all stages of a pipeline",
+        "description": "Return all the stages associated with the pipeline identified by `{pipelineId}`.",
+        "operationId": "get-/crm/v3/pipelines/{objectType}/{pipelineId}/stages_getAll",
+        "parameters": [
+          {
+            "name": "objectType",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "pipelineId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          }
+        }
+      }
+    },
+    "/crm/v3/pipelines/{objectType}/{pipelineId}/stages/{stageId}": {
+      "get": {
+        "summary": "Return a pipeline stage by ID",
+        "operationId": "get-/crm/v3/pipelines/{objectType}/{pipelineId}/stages/{stageId}_getById",
+        "parameters": [
+          {
+            "name": "objectType",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "pipelineId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "stageId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          }
+        }
+      }
+    },
+    "/crm/v3/properties/{objectType}": {
+      "get": {
+        "summary": "Read all properties",
+        "description": "Read all existing properties for the specified object type and HubSpot account.",
+        "operationId": "get-/crm/v3/properties/{objectType}_getAll",
+        "parameters": [
+          {
+            "name": "objectType",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Whether to return only results that have been archived.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean",
+              "example": null,
+              "default": false
+            }
+          },
+          {
+            "name": "dataSensitivity",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "example": null,
+              "default": "non_sensitive",
+              "enum": [
+                "highly_sensitive",
+                "non_sensitive",
+                "sensitive"
+              ]
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "properties",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          }
+        }
+      }
+    },
+    "/crm/v4/objects/{objectType}/{objectId}/associations/{toObjectType}": {
+      "get": {
+        "summary": "Retrieve all associations by object type",
+        "description": "Retrieve all associations between a specific record and an object type. Limit 500 per call.",
+        "operationId": "get-/crm/v4/objects/{objectType}/{objectId}/associations/{toObjectType}_getPage",
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "objectType",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "toObjectType",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "description": "The paging cursor token of the last successfully read resource will be returned as the `paging.next.after` JSON property of a paged response containing more results.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "example": null
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The maximum number of results to display per page.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "example": null,
+              "default": 500
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful"
+          }
+        }
+      }
+    }
+  }
+}

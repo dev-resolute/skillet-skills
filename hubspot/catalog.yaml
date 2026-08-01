@@ -1,0 +1,728 @@
+slug: hubspot
+version: 1.0.0
+name: HubSpot
+category: business-support
+one_liner: Read contacts, companies, deals, and tickets from your HubSpot CRM.
+api_domain: api.hubapi.com
+status: live
+credentials:
+  - env_var: HUBSPOT_ACCESS_TOKEN
+    label: HubSpot private app access token (crm.objects.*.read scopes)
+    help_url: https://developers.hubspot.com/docs/api/private-apps
+auth:
+  scheme: bearer
+  header: Authorization
+  env_vars:
+    - HUBSPOT_ACCESS_TOKEN
+  value_template: Bearer ${HUBSPOT_ACCESS_TOKEN}
+operations:
+  - name: list contacts
+    description: Retrieve contacts
+    method: GET
+    url: https://api.hubapi.com/crm/v3/objects/contacts
+    read_only: true
+    params:
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: The paging cursor token of the last successfully read resource will be returned as the
+          `paging.next.after` JSON property of a paged response containing more results.
+      - name: archived
+        type: boolean
+        required: false
+        location: query
+        description: Whether to return only results that have been archived.
+      - name: associations
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of object types to retrieve associated IDs for. If any of the
+          specified associations do not exist, they will be ignored.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: The maximum number of results to display per page.
+      - name: properties
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Comma-separated property names to return.
+      - name: propertiesWithHistory
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of the properties to be returned along with their history of
+          previous values. If any of the specified properties are not present on the requested
+          object(s), they will be ignored
+  - name: get contact
+    description: Retrieve a contact
+    method: GET
+    url: https://api.hubapi.com/crm/v3/objects/contacts/{contactId}
+    read_only: true
+    params:
+      - name: contactId
+        type: string
+        required: true
+        location: path
+        description: HubSpot contact ID.
+      - name: archived
+        type: boolean
+        required: false
+        location: query
+        description: Whether to return only results that have been archived.
+      - name: associations
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of object types to retrieve associated IDs for. If any of the
+          specified associations do not exist, they will be ignored.
+      - name: idProperty
+        type: string
+        required: false
+        location: query
+        description: The name of a property whose values are unique for this object type
+      - name: properties
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of the properties to be returned in the response. If any of the
+          specified properties are not present on the requested object(s), they will be ignored.
+      - name: propertiesWithHistory
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of the properties to be returned along with their history of
+          previous values. If any of the specified properties are not present on the requested
+          object(s), they will be ignored
+  - name: list companies
+    description: Retrieve companies
+    method: GET
+    url: https://api.hubapi.com/crm/v3/objects/companies
+    read_only: true
+    params:
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: The paging cursor token of the last successfully read resource will be returned as the
+          `paging.next.after` JSON property of a paged response containing more results.
+      - name: archived
+        type: boolean
+        required: false
+        location: query
+        description: Whether to return only results that have been archived.
+      - name: associations
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of object types to retrieve associated IDs for. If any of the
+          specified associations do not exist, they will be ignored.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: The maximum number of results to display per page.
+      - name: properties
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Comma-separated property names to return.
+      - name: propertiesWithHistory
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of the properties to be returned along with their history of
+          previous values. If any of the specified properties are not present on the requested
+          object(s), they will be ignored
+  - name: get company
+    description: Retrieve a company
+    method: GET
+    url: https://api.hubapi.com/crm/v3/objects/companies/{companyId}
+    read_only: true
+    params:
+      - name: companyId
+        type: string
+        required: true
+        location: path
+        description: HubSpot company ID.
+      - name: archived
+        type: boolean
+        required: false
+        location: query
+        description: Whether to return only results that have been archived.
+      - name: associations
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of object types to retrieve associated IDs for. If any of the
+          specified associations do not exist, they will be ignored.
+      - name: idProperty
+        type: string
+        required: false
+        location: query
+        description: The name of a property whose values are unique for this object type
+      - name: properties
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of the properties to be returned in the response. If any of the
+          specified properties are not present on the requested object(s), they will be ignored.
+      - name: propertiesWithHistory
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of the properties to be returned along with their history of
+          previous values. If any of the specified properties are not present on the requested
+          object(s), they will be ignored
+  - name: list deals
+    description: Read a page of deals. Control what is returned via the `properties` query param.
+    method: GET
+    url: https://api.hubapi.com/crm/v3/objects/deals
+    read_only: true
+    params:
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: The paging cursor token of the last successfully read resource will be returned as the
+          `paging.next.after` JSON property of a paged response containing more results.
+      - name: archived
+        type: boolean
+        required: false
+        location: query
+        description: Whether to return only results that have been archived.
+      - name: associations
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of object types to retrieve associated IDs for. If any of the
+          specified associations do not exist, they will be ignored.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: The maximum number of results to display per page.
+      - name: properties
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Comma-separated property names to return.
+      - name: propertiesWithHistory
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of the properties to be returned along with their history of
+          previous values. If any of the specified properties are not present on the requested
+          object(s), they will be ignored
+  - name: get deal
+    description: Read a deal by its ID (`dealId`) or a unique property specified by `idProperty`.
+      Control what is returned via the `properties` query param.
+    method: GET
+    url: https://api.hubapi.com/crm/v3/objects/deals/{dealId}
+    read_only: true
+    params:
+      - name: dealId
+        type: string
+        required: true
+        location: path
+        description: HubSpot deal ID.
+      - name: archived
+        type: boolean
+        required: false
+        location: query
+        description: Whether to return only results that have been archived.
+      - name: associations
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of object types to retrieve associated IDs for. If any of the
+          specified associations do not exist, they will be ignored.
+      - name: idProperty
+        type: string
+        required: false
+        location: query
+        description: The name of a property whose values are unique for this object type
+      - name: properties
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of the properties to be returned in the response. If any of the
+          specified properties are not present on the requested object(s), they will be ignored.
+      - name: propertiesWithHistory
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of the properties to be returned along with their history of
+          previous values. If any of the specified properties are not present on the requested
+          object(s), they will be ignored
+  - name: list tickets
+    description: Read a page of tickets. Control what is returned via the `properties` query param.
+    method: GET
+    url: https://api.hubapi.com/crm/v3/objects/tickets
+    read_only: true
+    params:
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: The paging cursor token of the last successfully read resource will be returned as the
+          `paging.next.after` JSON property of a paged response containing more results.
+      - name: archived
+        type: boolean
+        required: false
+        location: query
+        description: Whether to return only results that have been archived.
+      - name: associations
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of object types to retrieve associated IDs for. If any of the
+          specified associations do not exist, they will be ignored.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: The maximum number of results to display per page.
+      - name: properties
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Comma-separated property names to return.
+      - name: propertiesWithHistory
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of the properties to be returned along with their history of
+          previous values. If any of the specified properties are not present on the requested
+          object(s), they will be ignored
+  - name: get ticket
+    description: Read a ticket by its ID (`ticketId`) or a unique property specified by `idProperty`.
+      Control what is returned via the `properties` query param.
+    method: GET
+    url: https://api.hubapi.com/crm/v3/objects/tickets/{ticketId}
+    read_only: true
+    params:
+      - name: ticketId
+        type: string
+        required: true
+        location: path
+        description: HubSpot ticket ID.
+      - name: archived
+        type: boolean
+        required: false
+        location: query
+        description: Whether to return only results that have been archived.
+      - name: associations
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of object types to retrieve associated IDs for. If any of the
+          specified associations do not exist, they will be ignored.
+      - name: idProperty
+        type: string
+        required: false
+        location: query
+        description: The name of a property whose values are unique for this object type
+      - name: properties
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of the properties to be returned in the response. If any of the
+          specified properties are not present on the requested object(s), they will be ignored.
+      - name: propertiesWithHistory
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of the properties to be returned along with their history of
+          previous values. If any of the specified properties are not present on the requested
+          object(s), they will be ignored
+  - name: list products
+    description: Read a page of products. Control what is returned via the `properties` query param.
+    method: GET
+    url: https://api.hubapi.com/crm/v3/objects/products
+    read_only: true
+    params:
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: The paging cursor token of the last successfully read resource will be returned as the
+          `paging.next.after` JSON property of a paged response containing more results.
+      - name: archived
+        type: boolean
+        required: false
+        location: query
+        description: Whether to return only results that have been archived.
+      - name: associations
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of object types to retrieve associated IDs for. If any of the
+          specified associations do not exist, they will be ignored.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: The maximum number of results to display per page.
+      - name: properties
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Comma-separated property names to return.
+      - name: propertiesWithHistory
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of the properties to be returned along with their history of
+          previous values. If any of the specified properties are not present on the requested
+          object(s), they will be ignored
+  - name: get product
+    description: Read a product by its ID (`productId`) or a unique property specified by `idProperty`.
+      Control what is returned via the `properties` query param.
+    method: GET
+    url: https://api.hubapi.com/crm/v3/objects/products/{productId}
+    read_only: true
+    params:
+      - name: productId
+        type: string
+        required: true
+        location: path
+        description: HubSpot product ID.
+      - name: archived
+        type: boolean
+        required: false
+        location: query
+        description: Whether to return only results that have been archived.
+      - name: associations
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of object types to retrieve associated IDs for. If any of the
+          specified associations do not exist, they will be ignored.
+      - name: idProperty
+        type: string
+        required: false
+        location: query
+        description: The name of a property whose values are unique for this object type
+      - name: properties
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of the properties to be returned in the response. If any of the
+          specified properties are not present on the requested object(s), they will be ignored.
+      - name: propertiesWithHistory
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of the properties to be returned along with their history of
+          previous values. If any of the specified properties are not present on the requested
+          object(s), they will be ignored
+  - name: list line items
+    description: Read a page of line items. Control what is returned via the `properties` query param.
+    method: GET
+    url: https://api.hubapi.com/crm/v3/objects/line_items
+    read_only: true
+    params:
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: The paging cursor token of the last successfully read resource will be returned as the
+          `paging.next.after` JSON property of a paged response containing more results.
+      - name: archived
+        type: boolean
+        required: false
+        location: query
+        description: Whether to return only results that have been archived.
+      - name: associations
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of object types to retrieve associated IDs for. If any of the
+          specified associations do not exist, they will be ignored.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: The maximum number of results to display per page.
+      - name: properties
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Comma-separated property names to return.
+      - name: propertiesWithHistory
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of the properties to be returned along with their history of
+          previous values. If any of the specified properties are not present on the requested
+          object(s), they will be ignored
+  - name: get line item
+    description: Read a line item by its ID (`lineItemId`) or a unique property specified by
+      `idProperty`. Control what is returned via the `properties` query param.
+    method: GET
+    url: https://api.hubapi.com/crm/v3/objects/line_items/{lineItemId}
+    read_only: true
+    params:
+      - name: lineItemId
+        type: string
+        required: true
+        location: path
+        description: HubSpot line item ID.
+      - name: archived
+        type: boolean
+        required: false
+        location: query
+        description: Whether to return only results that have been archived.
+      - name: associations
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of object types to retrieve associated IDs for. If any of the
+          specified associations do not exist, they will be ignored.
+      - name: idProperty
+        type: string
+        required: false
+        location: query
+        description: The name of a property whose values are unique for this object type
+      - name: properties
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of the properties to be returned in the response. If any of the
+          specified properties are not present on the requested object(s), they will be ignored.
+      - name: propertiesWithHistory
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: A comma separated list of the properties to be returned along with their history of
+          previous values. If any of the specified properties are not present on the requested
+          object(s), they will be ignored
+  - name: list owners
+    method: GET
+    url: https://api.hubapi.com/crm/v3/owners
+    read_only: true
+    params:
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: Paging cursor from a previous response's paging.next.after.
+      - name: archived
+        type: boolean
+        required: false
+        location: query
+        description: Whether to return only results that have been archived.
+      - name: email
+        type: string
+        required: false
+        location: query
+        description: Filter to the owner with this email address.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: Maximum number of results per page.
+    description: List all owners (HubSpot users who can be assigned records) in the account.
+  - name: get owner
+    description: Retrieve a specific owner by ID
+    method: GET
+    url: https://api.hubapi.com/crm/v3/owners/{ownerId}
+    read_only: true
+    params:
+      - name: ownerId
+        type: integer
+        format: int32
+        required: true
+        location: path
+        description: HubSpot owner ID.
+      - name: archived
+        type: boolean
+        required: false
+        location: query
+        description: Whether to return only results that have been archived.
+      - name: idProperty
+        type: string
+        enum:
+          - id
+          - userId
+        required: false
+        location: query
+        description: Whether ownerId is the owner's id or userId.
+  - name: list pipelines
+    description: Retrieve all pipelines
+    method: GET
+    url: https://api.hubapi.com/crm/v3/pipelines/{objectType}
+    read_only: true
+    params:
+      - name: objectType
+        type: string
+        required: true
+        location: path
+        description: CRM object type — e.g. contacts, companies, deals, tickets, products, or line_items.
+  - name: get pipeline
+    description: Return a pipeline by ID
+    method: GET
+    url: https://api.hubapi.com/crm/v3/pipelines/{objectType}/{pipelineId}
+    read_only: true
+    params:
+      - name: objectType
+        type: string
+        required: true
+        location: path
+        description: CRM object type — e.g. contacts, companies, deals, tickets, products, or line_items.
+      - name: pipelineId
+        type: string
+        required: true
+        location: path
+        description: ID of the pipeline.
+  - name: list pipeline stages
+    description: Return all stages of a pipeline
+    method: GET
+    url: https://api.hubapi.com/crm/v3/pipelines/{objectType}/{pipelineId}/stages
+    read_only: true
+    params:
+      - name: objectType
+        type: string
+        required: true
+        location: path
+        description: CRM object type — e.g. contacts, companies, deals, tickets, products, or line_items.
+      - name: pipelineId
+        type: string
+        required: true
+        location: path
+        description: ID of the pipeline.
+  - name: get pipeline stage
+    description: Return a single pipeline stage identified by its stageId.
+    method: GET
+    url: https://api.hubapi.com/crm/v3/pipelines/{objectType}/{pipelineId}/stages/{stageId}
+    read_only: true
+    params:
+      - name: objectType
+        type: string
+        required: true
+        location: path
+        description: CRM object type — e.g. contacts, companies, deals, tickets, products, or line_items.
+      - name: pipelineId
+        type: string
+        required: true
+        location: path
+        description: ID of the pipeline.
+      - name: stageId
+        type: string
+        required: true
+        location: path
+        description: ID of the pipeline stage.
+  - name: list properties
+    description: Read all properties
+    method: GET
+    url: https://api.hubapi.com/crm/v3/properties/{objectType}
+    read_only: true
+    params:
+      - name: objectType
+        type: string
+        required: true
+        location: path
+        description: CRM object type — e.g. contacts, companies, deals, tickets, products, or line_items.
+      - name: archived
+        type: boolean
+        required: false
+        location: query
+        description: Whether to return only results that have been archived.
+      - name: dataSensitivity
+        type: string
+        enum:
+          - highly_sensitive
+          - non_sensitive
+          - sensitive
+        required: false
+        location: query
+        description: Filter to properties at this data-sensitivity level.
+      - name: locale
+        type: string
+        required: false
+        location: query
+        description: Locale code for translated property labels, e.g. en or de.
+      - name: properties
+        type: string
+        required: false
+        location: query
+        description: Comma-separated list of property names to limit the response to.
+  - name: list associations
+    description: Retrieve all associations by object type
+    method: GET
+    url: https://api.hubapi.com/crm/v4/objects/{objectType}/{objectId}/associations/{toObjectType}
+    read_only: true
+    params:
+      - name: objectId
+        type: string
+        required: true
+        location: path
+        description: ID of the object to retrieve associations from.
+      - name: objectType
+        type: string
+        required: true
+        location: path
+        description: CRM object type — e.g. contacts, companies, deals, tickets, products, or line_items.
+      - name: toObjectType
+        type: string
+        required: true
+        location: path
+        description: CRM object type to retrieve associations to — e.g. contacts, companies, deals, tickets.
+      - name: after
+        type: string
+        required: false
+        location: query
+        description: The paging cursor token of the last successfully read resource will be returned as the
+          `paging.next.after` JSON property of a paged response containing more results.
+      - name: limit
+        type: integer
+        format: int32
+        required: false
+        location: query
+        description: The maximum number of results to display per page.

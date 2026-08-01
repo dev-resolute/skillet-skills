@@ -1,0 +1,253 @@
+# Regenerate catalog.yaml operations from a vendored, hand-merged HubSpot spec:
+#   pnpm --filter @kit/engine catalog:import hubspot   (from the runespacedev repo)
+#
+# `include` entries are the names listOperations() reports for this spec —
+# summary || operationId || "METHOD /path". Most HubSpot GET operations carry a
+# unique summary; where the summary is generic and collides after merging
+# (below), the explicit "GET /path" route form is used instead.
+#
+# --- Spec sourcing (SAP-2(b), vendored) -------------------------------------
+# HubSpot publishes no single "CRM v3 objects" spec — every CRM object
+# (contacts, companies, deals, tickets, products, line items), plus owners,
+# pipelines, properties and associations, has its OWN spec file, arranged
+# under a per-object `Rollouts/<rollout-id>/<version>/` tree. The importer
+# accepts exactly one `spec:` per app, so the ten relevant files were fetched
+# from HubSpot/HubSpot-public-api-spec-collection and hand-merged into
+# `hubspot/openapi.json` — every path below pruned to ONLY its `get` operation
+# (no POST/PUT/DELETE, no response schemas/components: nothing importable
+# reads them, and dropping them keeps the merged file self-contained with
+# zero $ref). Source files (raw.githubusercontent.com/HubSpot/
+# HubSpot-public-api-spec-collection/main/PublicApiSpecs/CRM/...):
+#   Contacts/Rollouts/424/v3/contacts.json
+#   Companies/Rollouts/424/v3/companies.json
+#   Deals/Rollouts/424/v3/deals.json
+#   Tickets/Rollouts/424/v3/tickets.json
+#   Line Items/Rollouts/424/v3/lineItems.json
+#   Products/Rollouts/424/v3/products.json
+#   Pipelines/Rollouts/145896/v3/pipelines.json
+#   Properties/Rollouts/145899/v3/properties.json
+#   Crm Owners/Rollouts/146888/v3/crmOwners.json
+#   Associations/Rollouts/130902/v4/associations.json (the "AssocV4" rollout;
+#     Associations also ships a 50914/v4 "FlexAssocV4" variant — same GET
+#     surface, skipped as a duplicate)
+#
+# One deliberate path rewrite: the deals spec's own paths are keyed by
+# HubSpot's internal numeric object-type ID ("/crm/v3/objects/0-3", not
+# "/crm/v3/objects/deals") — every other standard object spec uses its plural
+# name. HubSpot's own docs (developers.hubspot.com/docs/reference/api/crm/
+# objects/deals: "To request a list of all deals, make a GET request to
+# /crm/v3/objects/deals") confirm the plural alias is the documented,
+# supported path, so `openapi.json` keys the deals paths as
+# "/crm/v3/objects/deals{,/{dealId}}" instead of the numeric form — a path-key
+# rename only; the operation body (params, description) is untouched.
+#
+# --- Known engine gap (path-item-level `parameters`) ------------------------
+# The importer only reads a GET operation's own `parameters` array, not
+# `parameters` declared as a sibling of `get` on the path item (see Asana's
+# import.yaml for the mechanism and its cost there). Checked directly against
+# all ten source files before merging: NONE of them declare path-item-level
+# `parameters` on any path used here — every parameter on every operation
+# below, required or optional, lives on the GET operation itself and imports
+# cleanly. No op is missing pagination/filter params from this cause, and no
+# op needed excluding as non-functional.
+#
+# --- Coverage target ---------------------------------------------------------
+# List/get for contacts, companies, deals, tickets, products, line items;
+# owners list/get; pipelines list/get + pipeline stages list/get (both
+# generic over {objectType} — HubSpot's real API, not one op per object
+# type); properties list per object type; associations read (list
+# associations from one object to another object type).
+#
+# Deliberate gaps: batch/search/merge/gdpr endpoints (POST — out of scope for
+# a GET-only import); individual "get property" and "get property group"
+# (brief scope is properties LIST per object type only); pipeline/stage audit
+# history endpoints (byproduct of the pipelines spec, not requested).
+
+spec: ./openapi.json
+base_url: https://api.hubapi.com
+parity_source: https://developers.hubspot.com/docs/reference/api/overview
+
+include:
+  - Retrieve contacts
+  - Retrieve a contact
+  - Retrieve companies
+  - Retrieve a company
+  - GET /crm/v3/objects/deals
+  - GET /crm/v3/objects/deals/{dealId}
+  - GET /crm/v3/objects/tickets
+  - GET /crm/v3/objects/tickets/{ticketId}
+  - GET /crm/v3/objects/products
+  - GET /crm/v3/objects/products/{productId}
+  - GET /crm/v3/objects/line_items
+  - GET /crm/v3/objects/line_items/{lineItemId}
+  - GET /crm/v3/owners
+  - Retrieve a specific owner by ID
+  - Retrieve all pipelines
+  - Return a pipeline by ID
+  - Return all stages of a pipeline
+  - Return a pipeline stage by ID
+  - Read all properties
+  - Retrieve all associations by object type
+
+rename:
+  Retrieve contacts: list contacts
+  Retrieve a contact: get contact
+  Retrieve companies: list companies
+  Retrieve a company: get company
+  GET /crm/v3/objects/deals: list deals
+  GET /crm/v3/objects/deals/{dealId}: get deal
+  GET /crm/v3/objects/tickets: list tickets
+  GET /crm/v3/objects/tickets/{ticketId}: get ticket
+  GET /crm/v3/objects/products: list products
+  GET /crm/v3/objects/products/{productId}: get product
+  GET /crm/v3/objects/line_items: list line items
+  GET /crm/v3/objects/line_items/{lineItemId}: get line item
+  GET /crm/v3/owners: list owners
+  Retrieve a specific owner by ID: get owner
+  Retrieve all pipelines: list pipelines
+  Return a pipeline by ID: get pipeline
+  Return all stages of a pipeline: list pipeline stages
+  Return a pipeline stage by ID: get pipeline stage
+  Read all properties: list properties
+  Retrieve all associations by object type: list associations
+
+# Curated corrections layered over the spec after import, keyed by the catalog
+# name (post-rename). `*` applies to every imported operation that has the
+# named param. They live here rather than in catalog.yaml because a
+# re-import rewrites every field but `description` and reserialises the YAML.
+overrides:
+  "*":
+    params:
+      # hand-authored: objectType/pipelineId/stageId are path params reused
+      # across the pipelines, properties and associations operations below;
+      # HubSpot's spec declares each with description: "" (present but
+      # empty), so the importer ships them with NO description at all
+      # (empty strings are blank per manifest.ts's firstString — same
+      # mechanism Asana's *_gid params hit). Restored here once instead of
+      # six times over.
+      objectType:
+        description: CRM object type — e.g. contacts, companies, deals, tickets, products, or line_items.
+      pipelineId:
+        description: ID of the pipeline.
+      stageId:
+        description: ID of the pipeline stage.
+
+  # hand-authored: task brief's properties-param note applies specifically to
+  # the six object LIST ops (not their get-by-id siblings, and not the
+  # unrelated `properties` filter on the "list properties" op below) —
+  # HubSpot's own multi-clause description is replaced with one crisp line.
+  # The object-ID path param on each get-by-id op has description: "" in the
+  # spec (same blank-string cause as the wildcard params above) — restored
+  # per object type since each is a distinct, one-off param name.
+  # Operation descriptions for deals/tickets/products/line items: these four
+  # share a generic per-object-type spec template whose `summary` — literally
+  # "List" / "Read" — wins over the richer `description` field per
+  # manifest.ts's buildManifestOperation (summary is tried first). Left as
+  # imported, all four object types would ship two ops named "List" and
+  # "Read". Restored below from each spec's own (better) `description` text.
+  # (contacts/companies keep their spec summary as-is — "Retrieve contacts" /
+  # "Retrieve a contact" — already descriptive, no override needed.)
+  list contacts:
+    params:
+      properties:
+        description: Comma-separated property names to return.
+  get contact:
+    params:
+      contactId:
+        description: HubSpot contact ID.
+  list companies:
+    params:
+      properties:
+        description: Comma-separated property names to return.
+  get company:
+    params:
+      companyId:
+        description: HubSpot company ID.
+  list deals:
+    description: Read a page of deals. Control what is returned via the `properties` query param.
+    params:
+      properties:
+        description: Comma-separated property names to return.
+  get deal:
+    description: Read a deal by its ID (`dealId`) or a unique property specified by `idProperty`. Control what is returned via the `properties` query param.
+    params:
+      dealId:
+        description: HubSpot deal ID.
+  list tickets:
+    description: Read a page of tickets. Control what is returned via the `properties` query param.
+    params:
+      properties:
+        description: Comma-separated property names to return.
+  get ticket:
+    description: Read a ticket by its ID (`ticketId`) or a unique property specified by `idProperty`. Control what is returned via the `properties` query param.
+    params:
+      ticketId:
+        description: HubSpot ticket ID.
+  list products:
+    description: Read a page of products. Control what is returned via the `properties` query param.
+    params:
+      properties:
+        description: Comma-separated property names to return.
+  get product:
+    description: Read a product by its ID (`productId`) or a unique property specified by `idProperty`. Control what is returned via the `properties` query param.
+    params:
+      productId:
+        description: HubSpot product ID.
+  list line items:
+    description: Read a page of line items. Control what is returned via the `properties` query param.
+    params:
+      properties:
+        description: Comma-separated property names to return.
+  get line item:
+    description: Read a line item by its ID (`lineItemId`) or a unique property specified by `idProperty`. Control what is returned via the `properties` query param.
+    params:
+      lineItemId:
+        description: HubSpot line item ID.
+
+  # hand-authored: the owners spec ships no operation-level summary/
+  # description on the list op, and no param description on after/email/
+  # limit (archived is fine as shipped).
+  list owners:
+    description: List all owners (HubSpot users who can be assigned records) in the account.
+    params:
+      after:
+        description: Paging cursor from a previous response's paging.next.after.
+      archived:
+        description: Whether to return only results that have been archived.
+      email:
+        description: Filter to the owner with this email address.
+      limit:
+        description: Maximum number of results per page.
+  get owner:
+    params:
+      ownerId:
+        description: HubSpot owner ID.
+      idProperty:
+        description: Whether ownerId is the owner's id or userId.
+
+  # hand-authored: the pipeline-stage-by-ID op ships no operation summary or
+  # description at all.
+  get pipeline stage:
+    description: Return a single pipeline stage identified by its stageId.
+
+  # hand-authored: "properties" here means "filter property definitions by
+  # name" — a different meaning from the object-list `properties` override
+  # above, so it gets its own text rather than sharing that key. dataSensitivity
+  # and locale ship description: "" in the spec.
+  list properties:
+    params:
+      properties:
+        description: Comma-separated list of property names to limit the response to.
+      dataSensitivity:
+        description: Filter to properties at this data-sensitivity level.
+      locale:
+        description: Locale code for translated property labels, e.g. en or de.
+
+  # hand-authored: objectId/toObjectType ship with no `description` key at
+  # all on this op (objectType is covered by the "*" override above).
+  list associations:
+    params:
+      objectId:
+        description: ID of the object to retrieve associations from.
+      toObjectType:
+        description: CRM object type to retrieve associations to — e.g. contacts, companies, deals, tickets.
