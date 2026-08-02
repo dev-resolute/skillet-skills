@@ -23,7 +23,7 @@ operations:
     params:
       - { name: Notion-Version, type: string, required: true, location: header,
           example: "2022-06-28",
-          description: Notion API version date. Keep the example value. }
+          description: Notion API version date; pass 2022-06-28 unless Notion's docs say otherwise. }
       - { name: page_size, type: integer, required: false, location: query,
           description: Max results per page (up to 100). }
       - { name: start_cursor, type: string, required: false, location: query,
@@ -37,7 +37,7 @@ operations:
       - { name: user_id, type: string, required: true, location: path,
           description: UUID of the user. }
       - { name: Notion-Version, type: string, required: true, location: header,
-          example: "2022-06-28", description: Notion API version date. }
+          example: "2022-06-28", description: Notion API version date; pass 2022-06-28 unless Notion's docs say otherwise. }
   - name: Get bot user
     description: Retrieve the bot user for this integration token.
     method: GET
@@ -45,7 +45,7 @@ operations:
     read_only: true
     params:
       - { name: Notion-Version, type: string, required: true, location: header,
-          example: "2022-06-28", description: Notion API version date. }
+          example: "2022-06-28", description: Notion API version date; pass 2022-06-28 unless Notion's docs say otherwise. }
   - name: Get database
     description: Retrieve a database's structure and properties.
     method: GET
@@ -55,7 +55,7 @@ operations:
       - { name: database_id, type: string, required: true, location: path,
           description: UUID of the database. }
       - { name: Notion-Version, type: string, required: true, location: header,
-          example: "2022-06-28", description: Notion API version date. }
+          example: "2022-06-28", description: Notion API version date; pass 2022-06-28 unless Notion's docs say otherwise. }
   - name: Get page
     description: Retrieve a page's properties.
     method: GET
@@ -65,7 +65,7 @@ operations:
       - { name: page_id, type: string, required: true, location: path,
           description: UUID of the page. }
       - { name: Notion-Version, type: string, required: true, location: header,
-          example: "2022-06-28", description: Notion API version date. }
+          example: "2022-06-28", description: Notion API version date; pass 2022-06-28 unless Notion's docs say otherwise. }
   - name: Get page property
     description: Retrieve a single property item of a page.
     method: GET
@@ -77,7 +77,7 @@ operations:
       - { name: property_id, type: string, required: true, location: path,
           description: Property ID from the page object. }
       - { name: Notion-Version, type: string, required: true, location: header,
-          example: "2022-06-28", description: Notion API version date. }
+          example: "2022-06-28", description: Notion API version date; pass 2022-06-28 unless Notion's docs say otherwise. }
   - name: Get block
     description: Retrieve a block by ID.
     method: GET
@@ -87,7 +87,7 @@ operations:
       - { name: block_id, type: string, required: true, location: path,
           description: UUID of the block. }
       - { name: Notion-Version, type: string, required: true, location: header,
-          example: "2022-06-28", description: Notion API version date. }
+          example: "2022-06-28", description: Notion API version date; pass 2022-06-28 unless Notion's docs say otherwise. }
   - name: List block children
     description: List a block's (or page's) child blocks — the page content.
     method: GET
@@ -101,7 +101,7 @@ operations:
       - { name: start_cursor, type: string, required: false, location: query,
           description: Cursor from a previous response. }
       - { name: Notion-Version, type: string, required: true, location: header,
-          example: "2022-06-28", description: Notion API version date. }
+          example: "2022-06-28", description: Notion API version date; pass 2022-06-28 unless Notion's docs say otherwise. }
   - name: List comments
     description: List open comments on a page or block.
     method: GET
@@ -111,7 +111,7 @@ operations:
       - { name: block_id, type: string, required: true, location: query,
           description: UUID of the page or block whose comments to list. }
       - { name: Notion-Version, type: string, required: true, location: header,
-          example: "2022-06-28", description: Notion API version date. }
+          example: "2022-06-28", description: Notion API version date; pass 2022-06-28 unless Notion's docs say otherwise. }
   - name: Search
     description: Search pages and databases shared with the integration. POST — runs only when writes are allowed.
     method: POST
@@ -121,7 +121,7 @@ operations:
       - { name: query, type: string, required: false, location: body,
           description: Text to search page and database titles for. }
       - { name: Notion-Version, type: string, required: true, location: header,
-          example: "2022-06-28", description: Notion API version date. }
+          example: "2022-06-28", description: Notion API version date; pass 2022-06-28 unless Notion's docs say otherwise. }
   - name: Query database
     description: Query a database's rows. POST — runs only when writes are allowed.
     method: POST
@@ -133,4 +133,4 @@ operations:
       - { name: page_size, type: integer, required: false, location: query,
           description: Max results per page (up to 100). }
       - { name: Notion-Version, type: string, required: true, location: header,
-          example: "2022-06-28", description: Notion API version date. }
+          example: "2022-06-28", description: Notion API version date; pass 2022-06-28 unless Notion's docs say otherwise. }
