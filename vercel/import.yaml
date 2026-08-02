@@ -1,0 +1,259 @@
+# Regenerate catalog.yaml operations from a vendored, pruned Vercel spec:
+#   pnpm --filter @kit/engine catalog:import vercel   (from the runespacedev repo)
+#
+# `include` entries are the names listOperations() reports for this spec —
+# summary || operationId || "METHOD /path". Checked directly against the FULL
+# upstream document (all 149 GET operations across 264 paths, not just the 22
+# below): only two summary strings repeat anywhere in the spec ("List flags"
+# and "List all flags for a team", both feature-flags endpoints unrelated to
+# this skill) — none of the 22 entries below collide, so every entry is the
+# summary text verbatim (case-sensitive).
+#
+# --- Spec sourcing (SAP-2(b), vendored + pruned) ----------------------------
+# Source: https://openapi.vercel.sh (Vercel's official spec, task brief's
+# nominal SAP-2(a) URL). Fetched directly: 9.8 MB, 264 paths, 149 GET
+# operations — an order of magnitude past the vendoring threshold (larger
+# than both Sentry's 3.87 MB and GitLab's 3.4 MB, which were vendored at that
+# size), so routed to SAP-2(b) instead of importing live. Pruned to
+# `vercel/openapi.json`:
+#   1. Kept only the 22 paths this skill imports from, GET only (every other
+#      path, and every non-GET method on a kept path, dropped).
+#   2. Stripped each kept operation's `responses` object and replaced it with
+#      a minimal `{"200": {"description": "OK"}}` stub — buildManifestOperation
+#      (packages/engine/src/manifest.ts) never reads `responses`, only
+#      `summary`, `description`, `parameters`, and `requestBody`. Kept
+#      `parameters`, `summary`, `description`, `operationId`, `tags`, and
+#      `security` untouched on every kept operation.
+#   3. Dropped `components` entirely — none of the 22 kept operations'
+#      `parameters` arrays contain a `$ref` (checked directly), so nothing in
+#      the pruned file points at it. `servers` replaced with the flat
+#      `https://api.vercel.com` — matching `base_url` below and the
+#      upstream spec's own single production server entry; not used by the
+#      importer either way (it takes `base_url` from this file).
+# Net: 9.8 MB / 264 paths → 60 KB / 22 paths.
+#
+# --- Known engine gap (path-item-level `parameters`) ------------------------
+# The importer only reads a GET operation's own `parameters` array, not
+# `parameters` declared as a sibling of `get` on the path item (see Asana's
+# import.yaml for the mechanism and its cost there). Checked directly against
+# the FULL upstream spec (all 264 paths, every method) before pruning: zero
+# paths declare any path-item-level `parameters` anywhere in this spec —
+# Vercel's generator puts every parameter, including every required
+# `{idOrName}`/`{deploymentId}`/`{domain}`-style path param below, directly on
+# each operation. No op below is missing a param from this cause, and no op
+# needed excluding as non-functional.
+#
+# --- Known engine gap (200-char description truncation) ---------------------
+# Checked every parameter description on all 22 kept operations before
+# truncation: the longest is 147 characters (`withGitRepoInfo` on `get
+# deployment`) — none reach the 200-char limit, so nothing is lost to
+# truncation anywhere in this skill. No truncation-restoration overrides were
+# needed (contrast Sentry/GitLab, which both had real cases). The overrides
+# below instead (a) fill in path/query params the spec declares with an EMPTY
+# description string (not truncated — never written), and (b) apply the task
+# brief's exact wording for the `teamId`/`slug` team-scoping pair and the env
+# vars decrypted-value gap.
+#
+# --- Coverage target ---------------------------------------------------------
+# Authenticated user; teams (list); projects (list/get) + project domains
+# (list); deployments (list/get) + deployment events + deployment files
+# (list); checks (list/get, both project-scoped and deployment-scoped, v2
+# `checks-v2` API — the v1 `checks` tag is deprecated in the spec, see below);
+# domains (list/get) + DNS records (list); project env vars (list — names and
+# metadata only, see the deliberate gap below); aliases (list); log drains
+# (list/get, GET only — the current `drains` API, not the deprecated
+# `log-drains` one, see below).
+#
+# Deliberate gaps:
+#   * Vercel mixes versioned path prefixes across resources (`/v2/user`,
+#     `/v10/projects`, `/v9/projects/{idOrName}`, `/v7/deployments`,
+#     `/v13/deployments/{idOrUrl}`, `/v5/domains`, `/v4/aliases`, `/v1/drains`,
+#     etc.) — each kept operation uses whatever version the live spec
+#     currently declares for that endpoint; no version was normalized by
+#     hand. The task brief's smoke-op examples (`GET /v9/projects`, `GET
+#     /v6/deployments`) predate this: the spec currently serves project
+#     listing at `/v10/projects` and deployment listing at `/v7/deployments`
+#     (`GET /v9/projects/{idOrName}` — the brief's third smoke op — is
+#     current and unchanged). Smoke-testing should target the versions
+#     actually imported below, not the brief's literal path strings.
+#   * Project env vars: only the LIST endpoint (`GET
+#     /v10/projects/{idOrName}/env`, "list project env vars") is imported.
+#     Its sibling `GET /v1/projects/{idOrName}/env/{id}`
+#     ("Retrieve the decrypted value of an environment variable of a project
+#     by id") is excluded outright — Vercel env var values are encrypted by
+#     design, and that endpoint's entire purpose is decrypting one. The list
+#     endpoint's own `decrypt` query param is imported as-is (optional,
+#     defaults unset/false) but never set by this skill, so calls return
+#     metadata (key names, target environments, type) without values. Same
+#     treatment for the team-level `GET /v1/env` / `GET /v1/env/{id}` (Shared
+#     Environment Variables) pair — out of scope entirely, not just the
+#     decrypt endpoint, to keep the gap consistent at both the project and
+#     team level.
+#   * Log drains: the spec carries three overlapping drain-listing surfaces —
+#     `GET /v1/log-drains` (summary literally reads "...(deprecated)"),
+#     `GET /v2/integrations/log-drains` (its own description says
+#     "(deprecated)", scoped to marketplace integrations), and `GET
+#     /v1/drains` (current, no deprecation marker either in its summary or
+#     its `deprecated` flag). Imported `/v1/drains` (list) and
+#     `/v1/drains/{id}` (get) only; both deprecated log-drains surfaces are
+#     skipped.
+#   * Checks: the spec carries both a `checks-v2`-tagged surface (current)
+#     and a `checks`-tagged surface with `deprecated: true` set on both its
+#     operations (`GET /v1/deployments/{deploymentId}/checks` and its
+#     `{checkId}` get). Imported the `checks-v2` operations only
+#     (project-scoped list/get and deployment-scoped check-runs list/get);
+#     the deprecated v1 pair is skipped entirely.
+#   * All write endpoints (create/update/delete/rerun on projects,
+#     deployments, domains, checks, drains, env vars, aliases) are out of
+#     scope — the importer is GET-only and this skill ships no write
+#     operations, per the task brief's read-first target.
+#
+# `deployments`' `state` filter (`Filter deployments based on their state
+# (`BUILDING`, `ERROR`, `INITIALIZING`, `QUEUED`, `READY`, `CANCELED`,
+# `BLOCKED`)`) is declared as a plain `type: string` with the allowed values
+# only in prose (no JSON `schema.enum` array in the spec) — its 119-char
+# description imports and survives whole, so the agent-facing state list
+# stays intact per the task's SAP-5 review note. No override needed.
+
+spec: ./openapi.json
+base_url: https://api.vercel.com
+parity_source: https://vercel.com/docs/rest-api
+
+include:
+  # --- user, teams ---------------------------------------------------------
+  - Get the User
+  - List all teams
+  # --- projects and project domains -----------------------------------------
+  - Retrieve a list of projects
+  - Find a project by id or name
+  - Retrieve project domains by project by id or name
+  - Get a project domain
+  # --- deployments -----------------------------------------------------------
+  - List deployments
+  - Get a deployment by ID or URL
+  - Get deployment events
+  - List Deployment Files
+  # --- checks (checks-v2, project- and deployment-scoped) ---------------------
+  - List all checks for a project
+  - Get a check
+  - List check runs for a deployment
+  - Get a check run
+  # --- domains and DNS records -----------------------------------------------
+  - List all the domains
+  - Get Information for a Single Domain
+  - List existing DNS records
+  # --- project env vars (metadata only — see deliberate gaps above) ----------
+  - Retrieve the environment variables of a project by id or name
+  # --- aliases -----------------------------------------------------------
+  - List aliases
+  - Get an Alias
+  # --- log drains (current `drains` API, GET only) ----------------------------
+  - Retrieve a list of all Drains
+  - Find a Drain by id
+
+rename:
+  Get the User: get user
+  List all teams: list teams
+
+  Retrieve a list of projects: list projects
+  Find a project by id or name: get project
+  Retrieve project domains by project by id or name: list project domains
+  Get a project domain: get project domain
+
+  List deployments: list deployments
+  Get a deployment by ID or URL: get deployment
+  Get deployment events: list deployment events
+  List Deployment Files: list deployment files
+
+  List all checks for a project: list project checks
+  Get a check: get project check
+  List check runs for a deployment: list deployment check runs
+  Get a check run: get deployment check run
+
+  List all the domains: list domains
+  Get Information for a Single Domain: get domain
+  List existing DNS records: list dns records
+
+  Retrieve the environment variables of a project by id or name: list project env vars
+
+  List aliases: list aliases
+  Get an Alias: get alias
+
+  Retrieve a list of all Drains: list log drains
+  Find a Drain by id: get log drain
+
+# Curated corrections layered over the spec after import, keyed by the catalog
+# name (i.e. post-`rename`). They live here rather than in catalog.yaml
+# because a re-import rewrites every field but `description` and reserialises
+# the YAML, which would drop both the edit and any comment explaining it.
+overrides:
+  "*":
+    params:
+      # task-directed: `teamId` and `slug` appear as an optional pair on
+      # nearly every op below (Vercel scopes almost all reads to a team,
+      # falling back to the caller's personal account). Vercel's own text is
+      # already short and not truncated ("The Team identifier to perform the
+      # request on behalf of." / "The Team slug to perform the request on
+      # behalf of.") — replaced with the task brief's exact wording so both
+      # params read as one scoping decision instead of two near-duplicate
+      # sentences.
+      teamId:
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      slug:
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      # hand-authored: empty in the spec (`""`) on both ops that carry it —
+      # not a truncation loss, the description was simply never written.
+      # Unique to the checks-v2 surface within this skill, safe to wildcard.
+      projectIdOrName:
+        description: The unique project identifier or the project name.
+      deploymentId:
+        description: The unique identifier of the deployment.
+
+  # hand-authored: `checkId`'s spec description ("The ID of the resource that
+  # will be updated.") is boilerplate shared with this op's sibling PATCH —
+  # actively misleading on a GET (nothing is being updated). Op-scoped: the
+  # same param name means something different on other endpoints not
+  # imported here.
+  get project check:
+    params:
+      checkId:
+        description: The unique identifier of the check to retrieve.
+  get deployment check run:
+    params:
+      checkRunId:
+        description: The unique identifier of the check run to retrieve.
+  # hand-authored: `blocks` ships with no description at all in the spec
+  # (only its four-value enum). Op-scoped — only this operation has it.
+  list project checks:
+    params:
+      blocks:
+        description: Filter checks by the stage they block — build-start,
+          deployment-start, deployment-alias, deployment-promotion, or none.
+  # hand-authored: `domain`'s description is empty on this op specifically
+  # (the sibling `get domain` and project-domain ops already carry "The name
+  # of the domain." / "The project domain name" from the spec — only this
+  # one was left blank). Matches the wording already used on `get domain`.
+  list dns records:
+    params:
+      domain:
+        description: The name of the domain.
+  # hand-authored: both params are empty in the spec on this op.
+  list log drains:
+    params:
+      projectId:
+        description: Filter drains by project ID.
+      includeMetadata:
+        description: If true, include additional drain metadata in the response.
+  get log drain:
+    params:
+      id:
+        description: The unique identifier of the drain.
+  # hand-authored: per the task brief's deliberate-gap note — this list
+  # endpoint returns env var names and metadata (key, target, type,
+  # timestamps); the spec's own `decrypt` query param can request the
+  # decrypted value, but this skill never sets it. Restated on the operation
+  # itself (not just here in the header) so the fact is visible wherever the
+  # tool description is surfaced to an agent.
+  list project env vars:
+    description: Retrieve the environment variables for a given project by id or
+      name — returns metadata; decrypted values are not requested.

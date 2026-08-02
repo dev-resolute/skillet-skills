@@ -1,0 +1,1935 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Vercel API",
+    "description": "Vercel combines the best developer experience with an obsessive focus on end-user performance. Our platform enables frontend teams to do their best work.",
+    "contact": {
+      "email": "support@vercel.com",
+      "name": "Vercel Support",
+      "url": "https://vercel.com/support"
+    },
+    "version": "0.0.1"
+  },
+  "servers": [
+    {
+      "url": "https://api.vercel.com"
+    }
+  ],
+  "paths": {
+    "/v2/user": {
+      "get": {
+        "summary": "Get the User",
+        "description": "Retrieves information related to the currently authenticated User.",
+        "operationId": "getAuthUser",
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v2/teams": {
+      "get": {
+        "summary": "List all teams",
+        "description": "Get a paginated list of all the Teams the authenticated User is a member of.",
+        "operationId": "getTeams",
+        "tags": [
+          "teams"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "description": "Maximum number of Teams which may be returned.",
+            "in": "query",
+            "schema": {
+              "description": "Maximum number of Teams which may be returned.",
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "since",
+            "description": "Timestamp (in milliseconds) to only include Teams created since then.",
+            "in": "query",
+            "schema": {
+              "description": "Timestamp (in milliseconds) to only include Teams created since then.",
+              "example": 1540095775951,
+              "type": "number"
+            }
+          },
+          {
+            "name": "until",
+            "description": "Timestamp (in milliseconds) to only include Teams created until then.",
+            "in": "query",
+            "schema": {
+              "description": "Timestamp (in milliseconds) to only include Teams created until then.",
+              "example": 1540095775951,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v10/projects": {
+      "get": {
+        "summary": "Retrieve a list of projects",
+        "description": "Allows to retrieve the list of projects of the authenticated user or team. The list will be paginated and the provided query parameters allow filtering the returned projects.",
+        "operationId": "getProjects",
+        "tags": [
+          "projects"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "description": "Query only projects updated after the given timestamp or continuation token.",
+            "in": "query",
+            "schema": {
+              "description": "Query only projects updated after the given timestamp or continuation token.",
+              "type": "string"
+            }
+          },
+          {
+            "name": "gitForkProtection",
+            "description": "Specifies whether PRs from Git forks should require a team member's authorization before it can be deployed",
+            "in": "query",
+            "schema": {
+              "description": "Specifies whether PRs from Git forks should require a team member's authorization before it can be deployed",
+              "type": "string",
+              "enum": [
+                "1",
+                "0"
+              ],
+              "example": "1"
+            }
+          },
+          {
+            "name": "limit",
+            "description": "Limit the number of projects returned",
+            "in": "query",
+            "schema": {
+              "description": "Limit the number of projects returned",
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "description": "Search projects by the name field",
+            "in": "query",
+            "schema": {
+              "description": "Search projects by the name field",
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "repo",
+            "description": "Filter results by repo. Also used for project count",
+            "in": "query",
+            "schema": {
+              "description": "Filter results by repo. Also used for project count",
+              "type": "string"
+            }
+          },
+          {
+            "name": "repoId",
+            "description": "Filter results by Repository ID.",
+            "in": "query",
+            "schema": {
+              "description": "Filter results by Repository ID.",
+              "type": "string"
+            }
+          },
+          {
+            "name": "repoUrl",
+            "description": "Filter results by Repository URL.",
+            "in": "query",
+            "schema": {
+              "description": "Filter results by Repository URL.",
+              "type": "string",
+              "example": "https://github.com/vercel/next.js"
+            }
+          },
+          {
+            "name": "excludeRepos",
+            "description": "Filter results by excluding those projects that belong to a repo",
+            "in": "query",
+            "schema": {
+              "description": "Filter results by excluding those projects that belong to a repo",
+              "type": "string"
+            }
+          },
+          {
+            "name": "edgeConfigId",
+            "description": "Filter results by connected Edge Config ID",
+            "in": "query",
+            "schema": {
+              "description": "Filter results by connected Edge Config ID",
+              "type": "string"
+            }
+          },
+          {
+            "name": "edgeConfigTokenId",
+            "description": "Filter results by connected Edge Config Token ID",
+            "in": "query",
+            "schema": {
+              "description": "Filter results by connected Edge Config Token ID",
+              "type": "string"
+            }
+          },
+          {
+            "name": "deprecated",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "elasticConcurrencyEnabled",
+            "description": "Filter results by projects with elastic concurrency enabled",
+            "in": "query",
+            "schema": {
+              "description": "Filter results by projects with elastic concurrency enabled",
+              "type": "string",
+              "enum": [
+                "1",
+                "0"
+              ],
+              "example": "1"
+            }
+          },
+          {
+            "name": "staticIpsEnabled",
+            "description": "Filter results by projects with Static IPs enabled",
+            "in": "query",
+            "schema": {
+              "description": "Filter results by projects with Static IPs enabled",
+              "enum": [
+                "0",
+                "1"
+              ],
+              "example": "1",
+              "type": "string"
+            }
+          },
+          {
+            "name": "buildMachineTypes",
+            "description": "Filter results by build machine types. Accepts comma-separated values. Use \"default\" for projects without a build machine type set.",
+            "in": "query",
+            "schema": {
+              "description": "Filter results by build machine types. Accepts comma-separated values. Use \"default\" for projects without a build machine type set.",
+              "type": "string",
+              "example": "default,enhanced"
+            }
+          },
+          {
+            "name": "buildQueueConfiguration",
+            "description": "Filter results by build queue configuration. SKIP_NAMESPACE_QUEUE includes projects without a configuration set.",
+            "in": "query",
+            "schema": {
+              "description": "Filter results by build queue configuration. SKIP_NAMESPACE_QUEUE includes projects without a configuration set.",
+              "type": "string",
+              "enum": [
+                "SKIP_NAMESPACE_QUEUE",
+                "WAIT_FOR_NAMESPACE_QUEUE"
+              ],
+              "example": "SKIP_NAMESPACE_QUEUE"
+            }
+          },
+          {
+            "description": "The Team identifier to perform the request on behalf of.",
+            "in": "query",
+            "name": "teamId",
+            "schema": {
+              "type": "string",
+              "example": "team_1a2b3c4d5e6f7g8h9i0j1k2l"
+            }
+          },
+          {
+            "description": "The Team slug to perform the request on behalf of.",
+            "in": "query",
+            "name": "slug",
+            "schema": {
+              "type": "string",
+              "example": "my-team-url-slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v9/projects/{idOrName}": {
+      "get": {
+        "summary": "Find a project by id or name",
+        "description": "Get the information for a specific project by passing either the project `id` or `name` in the URL.",
+        "operationId": "getProject",
+        "tags": [
+          "projects"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "idOrName",
+            "description": "The unique project identifier or the project name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "example": "prj_12HKQaOmR5t5Uy6vdcQsNIiZgHGB",
+              "description": "The unique project identifier or the project name",
+              "type": "string"
+            },
+            "x-vercel-cli": {
+              "kind": "argument"
+            }
+          },
+          {
+            "description": "The Team identifier to perform the request on behalf of.",
+            "in": "query",
+            "name": "teamId",
+            "schema": {
+              "type": "string",
+              "example": "team_1a2b3c4d5e6f7g8h9i0j1k2l"
+            }
+          },
+          {
+            "description": "The Team slug to perform the request on behalf of.",
+            "in": "query",
+            "name": "slug",
+            "schema": {
+              "type": "string",
+              "example": "my-team-url-slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v9/projects/{idOrName}/domains": {
+      "get": {
+        "summary": "Retrieve project domains by project by id or name",
+        "description": "Retrieve the domains associated with a given project by passing either the project `id` or `name` in the URL.",
+        "operationId": "getProjectDomains",
+        "tags": [
+          "projects"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "idOrName",
+            "description": "The unique project identifier or the project name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "description": "The unique project identifier or the project name",
+              "oneOf": [
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          {
+            "name": "production",
+            "description": "Filters only production domains when set to `true`.",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "false",
+              "description": "Filters only production domains when set to `true`.",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "target",
+            "description": "Filters on the target of the domain. Can be either \"production\", \"preview\"",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "Filters on the target of the domain. Can be either \"production\", \"preview\"",
+              "enum": [
+                "production",
+                "preview"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "customEnvironmentId",
+            "description": "The unique custom environment identifier within the project",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "The unique custom environment identifier within the project",
+              "type": "string",
+              "example": "env_123abc4567"
+            }
+          },
+          {
+            "name": "gitBranch",
+            "description": "Filters domains based on specific branch.",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "Filters domains based on specific branch.",
+              "type": "string"
+            }
+          },
+          {
+            "name": "redirects",
+            "description": "Excludes redirect project domains when \"false\". Includes redirect project domains when \"true\" (default).",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "true",
+              "description": "Excludes redirect project domains when \"false\". Includes redirect project domains when \"true\" (default).",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "redirect",
+            "description": "Filters domains based on their redirect target.",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "Filters domains based on their redirect target.",
+              "type": "string",
+              "example": "example.com"
+            }
+          },
+          {
+            "name": "verified",
+            "description": "Filters domains based on their verification status.",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "Filters domains based on their verification status.",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "description": "Maximum number of domains to list from a request (max 100).",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "Maximum number of domains to list from a request (max 100).",
+              "type": "number",
+              "example": 20
+            }
+          },
+          {
+            "name": "since",
+            "description": "Get domains created after this JavaScript timestamp.",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "Get domains created after this JavaScript timestamp.",
+              "type": "number",
+              "example": 1609499532000
+            }
+          },
+          {
+            "name": "until",
+            "description": "Get domains created before this JavaScript timestamp.",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "Get domains created before this JavaScript timestamp.",
+              "type": "number",
+              "example": 1612264332000
+            }
+          },
+          {
+            "name": "order",
+            "description": "Domains sort order by createdAt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "DESC",
+              "description": "Domains sort order by createdAt",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "description": "The Team identifier to perform the request on behalf of.",
+            "in": "query",
+            "name": "teamId",
+            "schema": {
+              "type": "string",
+              "example": "team_1a2b3c4d5e6f7g8h9i0j1k2l"
+            }
+          },
+          {
+            "description": "The Team slug to perform the request on behalf of.",
+            "in": "query",
+            "name": "slug",
+            "schema": {
+              "type": "string",
+              "example": "my-team-url-slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v9/projects/{idOrName}/domains/{domain}": {
+      "get": {
+        "summary": "Get a project domain",
+        "description": "Get project domain by project id/name and domain name.",
+        "operationId": "getProjectDomain",
+        "tags": [
+          "projects"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "idOrName",
+            "description": "The unique project identifier or the project name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "description": "The unique project identifier or the project name",
+              "type": "string"
+            }
+          },
+          {
+            "name": "domain",
+            "description": "The project domain name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "description": "The project domain name",
+              "type": "string",
+              "example": "www.example.com"
+            }
+          },
+          {
+            "description": "The Team identifier to perform the request on behalf of.",
+            "in": "query",
+            "name": "teamId",
+            "schema": {
+              "type": "string",
+              "example": "team_1a2b3c4d5e6f7g8h9i0j1k2l"
+            }
+          },
+          {
+            "description": "The Team slug to perform the request on behalf of.",
+            "in": "query",
+            "name": "slug",
+            "schema": {
+              "type": "string",
+              "example": "my-team-url-slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v7/deployments": {
+      "get": {
+        "summary": "List deployments",
+        "description": "List deployments under the authenticated user or team. If a deployment hasn't finished uploading (is incomplete), the `url` property will have a value of `null`.",
+        "operationId": "getDeployments",
+        "tags": [
+          "deployments"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "app",
+            "description": "Name of the deployment.",
+            "in": "query",
+            "schema": {
+              "description": "Name of the deployment.",
+              "type": "string",
+              "example": "docs"
+            }
+          },
+          {
+            "name": "from",
+            "description": "Gets the deployment created after this Date timestamp. (default: current time)",
+            "in": "query",
+            "schema": {
+              "description": "Gets the deployment created after this Date timestamp. (default: current time)",
+              "type": "number",
+              "example": 1612948664566,
+              "deprecated": true
+            }
+          },
+          {
+            "name": "limit",
+            "description": "Maximum number of deployments to list from a request.",
+            "in": "query",
+            "schema": {
+              "description": "Maximum number of deployments to list from a request.",
+              "type": "number",
+              "example": 10
+            }
+          },
+          {
+            "name": "projectId",
+            "description": "Filter deployments from the given ID or name.",
+            "in": "query",
+            "schema": {
+              "description": "Filter deployments from the given ID or name.",
+              "type": "string",
+              "example": "QmXGTs7mvAMMC7WW5ebrM33qKG32QK3h4vmQMjmY"
+            }
+          },
+          {
+            "name": "projectIds",
+            "description": "Filter deployments from the given project IDs. Cannot be used when projectId is specified.",
+            "in": "query",
+            "schema": {
+              "description": "Filter deployments from the given project IDs. Cannot be used when projectId is specified.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "example": [
+                "prj_123",
+                "prj_456"
+              ],
+              "minItems": 1,
+              "maxItems": 20
+            }
+          },
+          {
+            "name": "target",
+            "description": "Filter deployments based on the environment.",
+            "in": "query",
+            "schema": {
+              "description": "Filter deployments based on the environment.",
+              "type": "string",
+              "example": "production"
+            }
+          },
+          {
+            "name": "to",
+            "description": "Gets the deployment created before this Date timestamp. (default: current time)",
+            "in": "query",
+            "schema": {
+              "description": "Gets the deployment created before this Date timestamp. (default: current time)",
+              "type": "number",
+              "example": 1612948664566,
+              "deprecated": true
+            }
+          },
+          {
+            "name": "users",
+            "description": "Filter out deployments based on users who have created the deployment.",
+            "in": "query",
+            "schema": {
+              "description": "Filter out deployments based on users who have created the deployment.",
+              "type": "string",
+              "example": "kr1PsOIzqEL5Xg6M4VZcZosf,K4amb7K9dAt5R2vBJWF32bmY"
+            }
+          },
+          {
+            "name": "since",
+            "description": "Get Deployments created after this JavaScript timestamp.",
+            "in": "query",
+            "schema": {
+              "description": "Get Deployments created after this JavaScript timestamp.",
+              "type": "number",
+              "example": 1540095775941
+            }
+          },
+          {
+            "name": "until",
+            "description": "Get Deployments created before this JavaScript timestamp.",
+            "in": "query",
+            "schema": {
+              "description": "Get Deployments created before this JavaScript timestamp.",
+              "type": "number",
+              "example": 1540095775951
+            }
+          },
+          {
+            "name": "state",
+            "description": "Filter deployments based on their state (`BUILDING`, `ERROR`, `INITIALIZING`, `QUEUED`, `READY`, `CANCELED`, `BLOCKED`)",
+            "in": "query",
+            "schema": {
+              "description": "Filter deployments based on their state (`BUILDING`, `ERROR`, `INITIALIZING`, `QUEUED`, `READY`, `CANCELED`, `BLOCKED`)",
+              "type": "string",
+              "example": "BUILDING,READY"
+            }
+          },
+          {
+            "name": "rollbackCandidate",
+            "description": "Filter deployments based on their rollback candidacy",
+            "in": "query",
+            "schema": {
+              "description": "Filter deployments based on their rollback candidacy",
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "branch",
+            "description": "Filter deployments based on the branch name",
+            "in": "query",
+            "schema": {
+              "description": "Filter deployments based on the branch name",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sha",
+            "description": "Filter deployments based on the SHA",
+            "in": "query",
+            "schema": {
+              "description": "Filter deployments based on the SHA",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The Team identifier to perform the request on behalf of.",
+            "in": "query",
+            "name": "teamId",
+            "schema": {
+              "type": "string",
+              "example": "team_1a2b3c4d5e6f7g8h9i0j1k2l"
+            }
+          },
+          {
+            "description": "The Team slug to perform the request on behalf of.",
+            "in": "query",
+            "name": "slug",
+            "schema": {
+              "type": "string",
+              "example": "my-team-url-slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v13/deployments/{idOrUrl}": {
+      "get": {
+        "summary": "Get a deployment by ID or URL",
+        "description": "Retrieves information for a deployment either by supplying its ID (`id` property) or Hostname (`url` property). Additional details will be included when the authenticated user or team is an owner of the deployment.",
+        "operationId": "getDeployment",
+        "tags": [
+          "deployments"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "idOrUrl",
+            "description": "The unique identifier or hostname of the deployment.",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "example": "dpl_89qyp1cskzkLrVicDaZoDbjyHuDJ",
+              "description": "The unique identifier or hostname of the deployment.",
+              "type": "string"
+            }
+          },
+          {
+            "name": "withGitRepoInfo",
+            "description": "When `true`, the response includes the `gitSource` object with the commit SHA, branch name, and connected repository metadata. Defaults to `false`.",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "When `true`, the response includes the `gitSource` object with the commit SHA, branch name, and connected repository metadata. Defaults to `false`.",
+              "type": "string",
+              "example": "true"
+            }
+          },
+          {
+            "description": "The Team identifier to perform the request on behalf of.",
+            "in": "query",
+            "name": "teamId",
+            "schema": {
+              "type": "string",
+              "example": "team_1a2b3c4d5e6f7g8h9i0j1k2l"
+            }
+          },
+          {
+            "description": "The Team slug to perform the request on behalf of.",
+            "in": "query",
+            "name": "slug",
+            "schema": {
+              "type": "string",
+              "example": "my-team-url-slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v3/deployments/{idOrUrl}/events": {
+      "get": {
+        "summary": "Get deployment events",
+        "description": "Get the build logs of a deployment by deployment ID and build ID. It can work as an infinite stream of logs or as a JSON endpoint depending on the input parameters.",
+        "operationId": "getDeploymentEvents",
+        "tags": [
+          "deployments"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "idOrUrl",
+            "description": "The unique identifier or hostname of the deployment.",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "dpl_5WJWYSyB7BpgTj3EuwF37WMRBXBtPQ2iTMJHJBJyRfd",
+              "description": "The unique identifier or hostname of the deployment."
+            }
+          },
+          {
+            "name": "direction",
+            "description": "Order of the returned events based on the timestamp.",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "backward",
+                "forward"
+              ],
+              "default": "forward",
+              "example": "backward",
+              "description": "Order of the returned events based on the timestamp."
+            }
+          },
+          {
+            "name": "follow",
+            "description": "When enabled, this endpoint will return live events as they happen.",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "enum": [
+                0,
+                1
+              ],
+              "example": 1,
+              "description": "When enabled, this endpoint will return live events as they happen."
+            }
+          },
+          {
+            "name": "limit",
+            "description": "Maximum number of events to return. Provide `-1` to return all available logs.",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "example": 100,
+              "description": "Maximum number of events to return. Provide `-1` to return all available logs."
+            }
+          },
+          {
+            "name": "name",
+            "description": "Deployment build ID.",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "bld_cotnkcr76",
+              "description": "Deployment build ID."
+            }
+          },
+          {
+            "name": "since",
+            "description": "Timestamp for when build logs should be pulled from.",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "example": 1540095775941,
+              "description": "Timestamp for when build logs should be pulled from."
+            }
+          },
+          {
+            "name": "until",
+            "description": "Timestamp for when the build logs should be pulled up until.",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "example": 1540106318643,
+              "description": "Timestamp for when the build logs should be pulled up until."
+            }
+          },
+          {
+            "name": "statusCode",
+            "description": "HTTP status code range to filter events by.",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "example": "5xx",
+              "description": "HTTP status code range to filter events by.",
+              "oneOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          {
+            "name": "delimiter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "enum": [
+                0,
+                1
+              ],
+              "example": 1
+            }
+          },
+          {
+            "name": "builds",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "enum": [
+                0,
+                1
+              ],
+              "example": 1
+            }
+          },
+          {
+            "description": "The Team identifier to perform the request on behalf of.",
+            "in": "query",
+            "name": "teamId",
+            "schema": {
+              "type": "string",
+              "example": "team_1a2b3c4d5e6f7g8h9i0j1k2l"
+            }
+          },
+          {
+            "description": "The Team slug to perform the request on behalf of.",
+            "in": "query",
+            "name": "slug",
+            "schema": {
+              "type": "string",
+              "example": "my-team-url-slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v6/deployments/{id}/files": {
+      "get": {
+        "summary": "List Deployment Files",
+        "description": "Allows to retrieve the file structure of the source code of a deployment by supplying the deployment unique identifier. If the deployment was created with the Vercel CLI or the API directly with the `files` key, it will have a file tree that can be retrievable.",
+        "operationId": "listDeploymentFiles",
+        "tags": [
+          "deployments"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "description": "The unique deployment identifier",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "description": "The unique deployment identifier",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The Team identifier to perform the request on behalf of.",
+            "in": "query",
+            "name": "teamId",
+            "schema": {
+              "type": "string",
+              "example": "team_1a2b3c4d5e6f7g8h9i0j1k2l"
+            }
+          },
+          {
+            "description": "The Team slug to perform the request on behalf of.",
+            "in": "query",
+            "name": "slug",
+            "schema": {
+              "type": "string",
+              "example": "my-team-url-slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v2/projects/{projectIdOrName}/checks": {
+      "get": {
+        "summary": "List all checks for a project",
+        "description": "List all checks for a project, optionally filtered by target.",
+        "operationId": "listProjectChecks",
+        "tags": [
+          "checks-v2"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectIdOrName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "blocks",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "build-start",
+                "deployment-start",
+                "deployment-alias",
+                "deployment-promotion",
+                "none"
+              ]
+            }
+          },
+          {
+            "description": "The Team identifier to perform the request on behalf of.",
+            "in": "query",
+            "name": "teamId",
+            "schema": {
+              "type": "string",
+              "example": "team_1a2b3c4d5e6f7g8h9i0j1k2l"
+            }
+          },
+          {
+            "description": "The Team slug to perform the request on behalf of.",
+            "in": "query",
+            "name": "slug",
+            "schema": {
+              "type": "string",
+              "example": "my-team-url-slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v2/projects/{projectIdOrName}/checks/{checkId}": {
+      "get": {
+        "summary": "Get a check",
+        "description": "Return a detailed response for a single check.",
+        "operationId": "getProjectCheck",
+        "tags": [
+          "checks-v2"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectIdOrName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "checkId",
+            "description": "The ID of the resource that will be updated.",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "The ID of the resource that will be updated.",
+              "example": "stf_89ha9sdhh9a9"
+            }
+          },
+          {
+            "description": "The Team identifier to perform the request on behalf of.",
+            "in": "query",
+            "name": "teamId",
+            "schema": {
+              "type": "string",
+              "example": "team_1a2b3c4d5e6f7g8h9i0j1k2l"
+            }
+          },
+          {
+            "description": "The Team slug to perform the request on behalf of.",
+            "in": "query",
+            "name": "slug",
+            "schema": {
+              "type": "string",
+              "example": "my-team-url-slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v2/deployments/{deploymentId}/check-runs": {
+      "get": {
+        "summary": "List check runs for a deployment",
+        "description": "List all check runs for a deployment.",
+        "operationId": "listDeploymentCheckRuns",
+        "tags": [
+          "checks-v2"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "deploymentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The Team identifier to perform the request on behalf of.",
+            "in": "query",
+            "name": "teamId",
+            "schema": {
+              "type": "string",
+              "example": "team_1a2b3c4d5e6f7g8h9i0j1k2l"
+            }
+          },
+          {
+            "description": "The Team slug to perform the request on behalf of.",
+            "in": "query",
+            "name": "slug",
+            "schema": {
+              "type": "string",
+              "example": "my-team-url-slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v2/deployments/{deploymentId}/check-runs/{checkRunId}": {
+      "get": {
+        "summary": "Get a check run",
+        "description": "Return a detailed response for a single check run.",
+        "operationId": "getDeploymentCheckRun",
+        "tags": [
+          "checks-v2"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "deploymentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "checkRunId",
+            "description": "The ID of the resource that will be updated.",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "The ID of the resource that will be updated.",
+              "example": "ckr_89ha9sdhh9a9"
+            }
+          },
+          {
+            "description": "The Team identifier to perform the request on behalf of.",
+            "in": "query",
+            "name": "teamId",
+            "schema": {
+              "type": "string",
+              "example": "team_1a2b3c4d5e6f7g8h9i0j1k2l"
+            }
+          },
+          {
+            "description": "The Team slug to perform the request on behalf of.",
+            "in": "query",
+            "name": "slug",
+            "schema": {
+              "type": "string",
+              "example": "my-team-url-slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v5/domains": {
+      "get": {
+        "summary": "List all the domains",
+        "description": "Retrieves a list of domains registered for the authenticated user or team. By default it returns the last 20 domains if no limit is provided.",
+        "operationId": "getDomains",
+        "tags": [
+          "domains"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "description": "Maximum number of domains to list from a request.",
+            "in": "query",
+            "schema": {
+              "description": "Maximum number of domains to list from a request.",
+              "type": "number",
+              "example": 20
+            }
+          },
+          {
+            "name": "since",
+            "description": "Get domains created after this JavaScript timestamp.",
+            "in": "query",
+            "schema": {
+              "description": "Get domains created after this JavaScript timestamp.",
+              "type": "number",
+              "example": 1609499532000
+            }
+          },
+          {
+            "name": "until",
+            "description": "Get domains created before this JavaScript timestamp.",
+            "in": "query",
+            "schema": {
+              "description": "Get domains created before this JavaScript timestamp.",
+              "type": "number",
+              "example": 1612264332000
+            }
+          },
+          {
+            "description": "The Team identifier to perform the request on behalf of.",
+            "in": "query",
+            "name": "teamId",
+            "schema": {
+              "type": "string",
+              "example": "team_1a2b3c4d5e6f7g8h9i0j1k2l"
+            }
+          },
+          {
+            "description": "The Team slug to perform the request on behalf of.",
+            "in": "query",
+            "name": "slug",
+            "schema": {
+              "type": "string",
+              "example": "my-team-url-slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v5/domains/{domain}": {
+      "get": {
+        "summary": "Get Information for a Single Domain",
+        "description": "Get information for a single domain in an account or team.",
+        "operationId": "getDomain",
+        "tags": [
+          "domains"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "domain",
+            "description": "The name of the domain.",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "description": "The name of the domain.",
+              "type": "string",
+              "example": "example.com"
+            },
+            "x-vercel-cli": {
+              "kind": "argument"
+            }
+          },
+          {
+            "description": "The Team identifier to perform the request on behalf of.",
+            "in": "query",
+            "name": "teamId",
+            "schema": {
+              "type": "string",
+              "example": "team_1a2b3c4d5e6f7g8h9i0j1k2l"
+            }
+          },
+          {
+            "description": "The Team slug to perform the request on behalf of.",
+            "in": "query",
+            "name": "slug",
+            "schema": {
+              "type": "string",
+              "example": "my-team-url-slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v5/domains/{domain}/records": {
+      "get": {
+        "summary": "List existing DNS records",
+        "description": "Retrieves a list of DNS records created for a domain name. By default it returns 20 records if no limit is provided. The rest can be retrieved using the pagination options.",
+        "operationId": "getRecords",
+        "tags": [
+          "dns"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "example.com"
+            },
+            "x-vercel-cli": {
+              "kind": "argument"
+            }
+          },
+          {
+            "name": "limit",
+            "description": "Maximum number of records to list from a request.",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "Maximum number of records to list from a request.",
+              "type": "string",
+              "example": 20
+            }
+          },
+          {
+            "name": "since",
+            "description": "Get records created after this JavaScript timestamp.",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "Get records created after this JavaScript timestamp.",
+              "type": "string",
+              "example": 1609499532000
+            }
+          },
+          {
+            "name": "until",
+            "description": "Get records created before this JavaScript timestamp.",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "Get records created before this JavaScript timestamp.",
+              "type": "string",
+              "example": 1612264332000
+            }
+          },
+          {
+            "description": "The Team identifier to perform the request on behalf of.",
+            "in": "query",
+            "name": "teamId",
+            "schema": {
+              "type": "string",
+              "example": "team_1a2b3c4d5e6f7g8h9i0j1k2l"
+            }
+          },
+          {
+            "description": "The Team slug to perform the request on behalf of.",
+            "in": "query",
+            "name": "slug",
+            "schema": {
+              "type": "string",
+              "example": "my-team-url-slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v10/projects/{idOrName}/env": {
+      "get": {
+        "summary": "Retrieve the environment variables of a project by id or name",
+        "description": "Retrieve the environment variables for a given project by passing either the project `id` or `name` in the URL.",
+        "operationId": "filterProjectEnvs",
+        "tags": [
+          "projects"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "idOrName",
+            "description": "The unique project identifier or the project name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "description": "The unique project identifier or the project name",
+              "type": "string",
+              "example": "prj_XLKmu1DyR1eY7zq8UgeRKbA7yVLA"
+            },
+            "x-vercel-cli": {
+              "kind": "argument"
+            }
+          },
+          {
+            "name": "gitBranch",
+            "description": "If defined, the git branch of the environment variable to filter the results (must have target=preview)",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "If defined, the git branch of the environment variable to filter the results (must have target=preview)",
+              "type": "string",
+              "maxLength": 250,
+              "example": "feature-1"
+            }
+          },
+          {
+            "name": "decrypt",
+            "description": "If true, the environment variable value will be decrypted",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "If true, the environment variable value will be decrypted",
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "example": "true",
+              "deprecated": true
+            }
+          },
+          {
+            "name": "source",
+            "description": "The source that is calling the endpoint.",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "The source that is calling the endpoint.",
+              "type": "string",
+              "example": "vercel-cli:pull"
+            }
+          },
+          {
+            "name": "customEnvironmentId",
+            "description": "The unique custom environment identifier within the project",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "The unique custom environment identifier within the project",
+              "example": "env_123abc4567"
+            }
+          },
+          {
+            "name": "customEnvironmentSlug",
+            "description": "The custom environment slug (name) within the project",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "The custom environment slug (name) within the project",
+              "example": "my-custom-env"
+            }
+          },
+          {
+            "description": "The Team identifier to perform the request on behalf of.",
+            "in": "query",
+            "name": "teamId",
+            "schema": {
+              "type": "string",
+              "example": "team_1a2b3c4d5e6f7g8h9i0j1k2l"
+            }
+          },
+          {
+            "description": "The Team slug to perform the request on behalf of.",
+            "in": "query",
+            "name": "slug",
+            "schema": {
+              "type": "string",
+              "example": "my-team-url-slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v4/aliases": {
+      "get": {
+        "summary": "List aliases",
+        "description": "Retrieves a list of aliases for the authenticated User or Team. When `domain` is provided, only aliases for that domain will be returned. When `projectId` is provided, it will only return the given project aliases.",
+        "operationId": "listAliases",
+        "tags": [
+          "aliases"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "domain",
+            "description": "Get only aliases of the given domain name",
+            "in": "query",
+            "schema": {
+              "description": "Get only aliases of the given domain name",
+              "example": "my-test-domain.com",
+              "maxItems": 20,
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          {
+            "name": "from",
+            "description": "Get only aliases created after the provided timestamp",
+            "in": "query",
+            "schema": {
+              "deprecated": true,
+              "description": "Get only aliases created after the provided timestamp",
+              "example": 1540095775951,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "description": "Maximum number of aliases to list from a request",
+            "in": "query",
+            "schema": {
+              "description": "Maximum number of aliases to list from a request",
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "projectId",
+            "description": "Filter aliases from the given `projectId`",
+            "in": "query",
+            "schema": {
+              "description": "Filter aliases from the given `projectId`",
+              "example": "prj_12HKQaOmR5t5Uy6vdcQsNIiZgHGB",
+              "type": "string"
+            }
+          },
+          {
+            "name": "since",
+            "description": "Get aliases created after this JavaScript timestamp",
+            "in": "query",
+            "schema": {
+              "description": "Get aliases created after this JavaScript timestamp",
+              "example": 1540095775941,
+              "type": "number"
+            }
+          },
+          {
+            "name": "until",
+            "description": "Get aliases created before this JavaScript timestamp",
+            "in": "query",
+            "schema": {
+              "description": "Get aliases created before this JavaScript timestamp",
+              "example": 1540095775951,
+              "type": "number"
+            }
+          },
+          {
+            "name": "rollbackDeploymentId",
+            "description": "Get aliases that would be rolled back for the given deployment",
+            "in": "query",
+            "schema": {
+              "description": "Get aliases that would be rolled back for the given deployment",
+              "example": "dpl_XXX",
+              "type": "string"
+            }
+          },
+          {
+            "description": "The Team identifier to perform the request on behalf of.",
+            "in": "query",
+            "name": "teamId",
+            "schema": {
+              "type": "string",
+              "example": "team_1a2b3c4d5e6f7g8h9i0j1k2l"
+            }
+          },
+          {
+            "description": "The Team slug to perform the request on behalf of.",
+            "in": "query",
+            "name": "slug",
+            "schema": {
+              "type": "string",
+              "example": "my-team-url-slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v4/aliases/{idOrAlias}": {
+      "get": {
+        "summary": "Get an Alias",
+        "description": "Retrieves an Alias for the given host name or alias ID.",
+        "operationId": "getAlias",
+        "tags": [
+          "aliases"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "description": "Get the alias only if it was created after the provided timestamp",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "deprecated": true,
+              "description": "Get the alias only if it was created after the provided timestamp",
+              "example": 1540095775951,
+              "type": "number"
+            }
+          },
+          {
+            "name": "idOrAlias",
+            "description": "The alias or alias ID to be retrieved",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "description": "The alias or alias ID to be retrieved",
+              "example": "example.vercel.app",
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "description": "Get the alias only if it is assigned to the provided project ID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "Get the alias only if it is assigned to the provided project ID",
+              "example": "prj_12HKQaOmR5t5Uy6vdcQsNIiZgHGB",
+              "type": "string"
+            }
+          },
+          {
+            "name": "since",
+            "description": "Get the alias only if it was created after this JavaScript timestamp",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "Get the alias only if it was created after this JavaScript timestamp",
+              "example": 1540095775941,
+              "type": "number"
+            }
+          },
+          {
+            "name": "until",
+            "description": "Get the alias only if it was created before this JavaScript timestamp",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "Get the alias only if it was created before this JavaScript timestamp",
+              "example": 1540095775951,
+              "type": "number"
+            }
+          },
+          {
+            "description": "The Team identifier to perform the request on behalf of.",
+            "in": "query",
+            "name": "teamId",
+            "schema": {
+              "type": "string",
+              "example": "team_1a2b3c4d5e6f7g8h9i0j1k2l"
+            }
+          },
+          {
+            "description": "The Team slug to perform the request on behalf of.",
+            "in": "query",
+            "name": "slug",
+            "schema": {
+              "type": "string",
+              "example": "my-team-url-slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v1/drains": {
+      "get": {
+        "summary": "Retrieve a list of all Drains",
+        "description": "Allows to retrieve the list of Drains of the authenticated team.",
+        "operationId": "getDrains",
+        "tags": [
+          "drains"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includeMetadata",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "description": "The Team identifier to perform the request on behalf of.",
+            "in": "query",
+            "name": "teamId",
+            "schema": {
+              "type": "string",
+              "example": "team_1a2b3c4d5e6f7g8h9i0j1k2l"
+            }
+          },
+          {
+            "description": "The Team slug to perform the request on behalf of.",
+            "in": "query",
+            "name": "slug",
+            "schema": {
+              "type": "string",
+              "example": "my-team-url-slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v1/drains/{id}": {
+      "get": {
+        "summary": "Find a Drain by id",
+        "description": "Get the information for a specific Drain by passing the drain id in the URL.",
+        "operationId": "getDrain",
+        "tags": [
+          "drains"
+        ],
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The Team identifier to perform the request on behalf of.",
+            "in": "query",
+            "name": "teamId",
+            "schema": {
+              "type": "string",
+              "example": "team_1a2b3c4d5e6f7g8h9i0j1k2l"
+            }
+          },
+          {
+            "description": "The Team slug to perform the request on behalf of.",
+            "in": "query",
+            "name": "slug",
+            "schema": {
+              "type": "string",
+              "example": "my-team-url-slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  }
+}

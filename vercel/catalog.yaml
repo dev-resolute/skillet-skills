@@ -1,0 +1,885 @@
+slug: vercel
+version: 1.0.0
+name: Vercel
+category: dev-code
+one_liner: Inspect projects, deployments, domains, and env metadata on Vercel.
+api_domain: api.vercel.com
+status: live
+credentials:
+  - env_var: VERCEL_API_TOKEN
+    label: Vercel access token
+    help_url: https://vercel.com/account/settings/tokens
+auth:
+  scheme: bearer
+  header: Authorization
+  env_vars:
+    - VERCEL_API_TOKEN
+  value_template: Bearer ${VERCEL_API_TOKEN}
+operations:
+  - name: get user
+    description: Get the User
+    method: GET
+    url: https://api.vercel.com/v2/user
+    read_only: true
+    params: []
+  - name: list teams
+    description: List all teams
+    method: GET
+    url: https://api.vercel.com/v2/teams
+    read_only: true
+    params:
+      - name: limit
+        type: number
+        required: false
+        location: query
+        description: Maximum number of Teams which may be returned.
+      - name: since
+        type: number
+        required: false
+        location: query
+        description: Timestamp (in milliseconds) to only include Teams created since then.
+      - name: until
+        type: number
+        required: false
+        location: query
+        description: Timestamp (in milliseconds) to only include Teams created until then.
+  - name: list projects
+    description: Retrieve a list of projects
+    method: GET
+    url: https://api.vercel.com/v10/projects
+    read_only: true
+    params:
+      - name: from
+        type: string
+        required: false
+        location: query
+        description: Query only projects updated after the given timestamp or continuation token.
+      - name: gitForkProtection
+        type: string
+        enum:
+          - "1"
+          - "0"
+        required: false
+        location: query
+        description: Specifies whether PRs from Git forks should require a team member's authorization
+          before it can be deployed
+      - name: limit
+        type: string
+        required: false
+        location: query
+        description: Limit the number of projects returned
+      - name: search
+        type: string
+        required: false
+        location: query
+        description: Search projects by the name field
+      - name: repo
+        type: string
+        required: false
+        location: query
+        description: Filter results by repo. Also used for project count
+      - name: repoId
+        type: string
+        required: false
+        location: query
+        description: Filter results by Repository ID.
+      - name: repoUrl
+        type: string
+        required: false
+        location: query
+        description: Filter results by Repository URL.
+      - name: excludeRepos
+        type: string
+        required: false
+        location: query
+        description: Filter results by excluding those projects that belong to a repo
+      - name: edgeConfigId
+        type: string
+        required: false
+        location: query
+        description: Filter results by connected Edge Config ID
+      - name: edgeConfigTokenId
+        type: string
+        required: false
+        location: query
+        description: Filter results by connected Edge Config Token ID
+      - name: deprecated
+        type: boolean
+        required: false
+        location: query
+      - name: elasticConcurrencyEnabled
+        type: string
+        enum:
+          - "1"
+          - "0"
+        required: false
+        location: query
+        description: Filter results by projects with elastic concurrency enabled
+      - name: staticIpsEnabled
+        type: string
+        enum:
+          - "0"
+          - "1"
+        required: false
+        location: query
+        description: Filter results by projects with Static IPs enabled
+      - name: buildMachineTypes
+        type: string
+        required: false
+        location: query
+        description: Filter results by build machine types. Accepts comma-separated values. Use "default"
+          for projects without a build machine type set.
+      - name: buildQueueConfiguration
+        type: string
+        enum:
+          - SKIP_NAMESPACE_QUEUE
+          - WAIT_FOR_NAMESPACE_QUEUE
+        required: false
+        location: query
+        description: Filter results by build queue configuration. SKIP_NAMESPACE_QUEUE includes projects
+          without a configuration set.
+      - name: teamId
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      - name: slug
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+  - name: get project
+    description: Find a project by id or name
+    method: GET
+    url: https://api.vercel.com/v9/projects/{idOrName}
+    read_only: true
+    params:
+      - name: idOrName
+        type: string
+        required: true
+        location: path
+        description: The unique project identifier or the project name
+      - name: teamId
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      - name: slug
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+  - name: list project domains
+    description: Retrieve project domains by project by id or name
+    method: GET
+    url: https://api.vercel.com/v9/projects/{idOrName}/domains
+    read_only: true
+    params:
+      - name: idOrName
+        type: string
+        required: true
+        location: path
+        description: The unique project identifier or the project name
+      - name: production
+        type: string
+        enum:
+          - "true"
+          - "false"
+        required: false
+        location: query
+        description: Filters only production domains when set to `true`.
+      - name: target
+        type: string
+        enum:
+          - production
+          - preview
+        required: false
+        location: query
+        description: Filters on the target of the domain. Can be either "production", "preview"
+      - name: customEnvironmentId
+        type: string
+        required: false
+        location: query
+        description: The unique custom environment identifier within the project
+      - name: gitBranch
+        type: string
+        required: false
+        location: query
+        description: Filters domains based on specific branch.
+      - name: redirects
+        type: string
+        enum:
+          - "true"
+          - "false"
+        required: false
+        location: query
+        description: Excludes redirect project domains when "false". Includes redirect project domains when
+          "true" (default).
+      - name: redirect
+        type: string
+        required: false
+        location: query
+        description: Filters domains based on their redirect target.
+      - name: verified
+        type: string
+        enum:
+          - "true"
+          - "false"
+        required: false
+        location: query
+        description: Filters domains based on their verification status.
+      - name: limit
+        type: number
+        required: false
+        location: query
+        description: Maximum number of domains to list from a request (max 100).
+      - name: since
+        type: number
+        required: false
+        location: query
+        description: Get domains created after this JavaScript timestamp.
+      - name: until
+        type: number
+        required: false
+        location: query
+        description: Get domains created before this JavaScript timestamp.
+      - name: order
+        type: string
+        enum:
+          - ASC
+          - DESC
+        required: false
+        location: query
+        description: Domains sort order by createdAt
+      - name: teamId
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      - name: slug
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+  - name: get project domain
+    description: Get a project domain
+    method: GET
+    url: https://api.vercel.com/v9/projects/{idOrName}/domains/{domain}
+    read_only: true
+    params:
+      - name: idOrName
+        type: string
+        required: true
+        location: path
+        description: The unique project identifier or the project name
+      - name: domain
+        type: string
+        required: true
+        location: path
+        description: The project domain name
+      - name: teamId
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      - name: slug
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+  - name: list deployments
+    description: List deployments
+    method: GET
+    url: https://api.vercel.com/v7/deployments
+    read_only: true
+    params:
+      - name: app
+        type: string
+        required: false
+        location: query
+        description: Name of the deployment.
+      - name: from
+        type: number
+        required: false
+        location: query
+        description: "Gets the deployment created after this Date timestamp. (default: current time)"
+      - name: limit
+        type: number
+        required: false
+        location: query
+        description: Maximum number of deployments to list from a request.
+      - name: projectId
+        type: string
+        required: false
+        location: query
+        description: Filter deployments from the given ID or name.
+      - name: projectIds
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Filter deployments from the given project IDs. Cannot be used when projectId is specified.
+      - name: target
+        type: string
+        required: false
+        location: query
+        description: Filter deployments based on the environment.
+      - name: to
+        type: number
+        required: false
+        location: query
+        description: "Gets the deployment created before this Date timestamp. (default: current time)"
+      - name: users
+        type: string
+        required: false
+        location: query
+        description: Filter out deployments based on users who have created the deployment.
+      - name: since
+        type: number
+        required: false
+        location: query
+        description: Get Deployments created after this JavaScript timestamp.
+      - name: until
+        type: number
+        required: false
+        location: query
+        description: Get Deployments created before this JavaScript timestamp.
+      - name: state
+        type: string
+        required: false
+        location: query
+        description: Filter deployments based on their state (`BUILDING`, `ERROR`, `INITIALIZING`, `QUEUED`,
+          `READY`, `CANCELED`, `BLOCKED`)
+      - name: rollbackCandidate
+        type: boolean
+        required: false
+        location: query
+        description: Filter deployments based on their rollback candidacy
+      - name: branch
+        type: string
+        required: false
+        location: query
+        description: Filter deployments based on the branch name
+      - name: sha
+        type: string
+        required: false
+        location: query
+        description: Filter deployments based on the SHA
+      - name: teamId
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      - name: slug
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+  - name: get deployment
+    description: Get a deployment by ID or URL
+    method: GET
+    url: https://api.vercel.com/v13/deployments/{idOrUrl}
+    read_only: true
+    params:
+      - name: idOrUrl
+        type: string
+        required: true
+        location: path
+        description: The unique identifier or hostname of the deployment.
+      - name: withGitRepoInfo
+        type: string
+        required: false
+        location: query
+        description: When `true`, the response includes the `gitSource` object with the commit SHA, branch
+          name, and connected repository metadata. Defaults to `false`.
+      - name: teamId
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      - name: slug
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+  - name: list deployment events
+    description: Get deployment events
+    method: GET
+    url: https://api.vercel.com/v3/deployments/{idOrUrl}/events
+    read_only: true
+    params:
+      - name: idOrUrl
+        type: string
+        required: true
+        location: path
+        description: The unique identifier or hostname of the deployment.
+      - name: direction
+        type: string
+        enum:
+          - backward
+          - forward
+        required: false
+        location: query
+        description: Order of the returned events based on the timestamp.
+      - name: follow
+        type: number
+        enum:
+          - "0"
+          - "1"
+        required: false
+        location: query
+        description: When enabled, this endpoint will return live events as they happen.
+      - name: limit
+        type: number
+        required: false
+        location: query
+        description: Maximum number of events to return. Provide `-1` to return all available logs.
+      - name: name
+        type: string
+        required: false
+        location: query
+        description: Deployment build ID.
+      - name: since
+        type: number
+        required: false
+        location: query
+        description: Timestamp for when build logs should be pulled from.
+      - name: until
+        type: number
+        required: false
+        location: query
+        description: Timestamp for when the build logs should be pulled up until.
+      - name: statusCode
+        type: string
+        required: false
+        location: query
+        description: HTTP status code range to filter events by.
+      - name: delimiter
+        type: number
+        enum:
+          - "0"
+          - "1"
+        required: false
+        location: query
+      - name: builds
+        type: number
+        enum:
+          - "0"
+          - "1"
+        required: false
+        location: query
+      - name: teamId
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      - name: slug
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+  - name: list deployment files
+    description: List Deployment Files
+    method: GET
+    url: https://api.vercel.com/v6/deployments/{id}/files
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The unique deployment identifier
+      - name: teamId
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      - name: slug
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+  - name: list project checks
+    description: List all checks for a project
+    method: GET
+    url: https://api.vercel.com/v2/projects/{projectIdOrName}/checks
+    read_only: true
+    params:
+      - name: projectIdOrName
+        type: string
+        required: true
+        location: path
+        description: The unique project identifier or the project name.
+      - name: blocks
+        type: string
+        enum:
+          - build-start
+          - deployment-start
+          - deployment-alias
+          - deployment-promotion
+          - none
+        required: false
+        location: query
+        description: Filter checks by the stage they block — build-start, deployment-start,
+          deployment-alias, deployment-promotion, or none.
+      - name: teamId
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      - name: slug
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+  - name: get project check
+    description: Get a check
+    method: GET
+    url: https://api.vercel.com/v2/projects/{projectIdOrName}/checks/{checkId}
+    read_only: true
+    params:
+      - name: projectIdOrName
+        type: string
+        required: true
+        location: path
+        description: The unique project identifier or the project name.
+      - name: checkId
+        type: string
+        required: true
+        location: path
+        description: The unique identifier of the check to retrieve.
+      - name: teamId
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      - name: slug
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+  - name: list deployment check runs
+    description: List check runs for a deployment
+    method: GET
+    url: https://api.vercel.com/v2/deployments/{deploymentId}/check-runs
+    read_only: true
+    params:
+      - name: deploymentId
+        type: string
+        required: true
+        location: path
+        description: The unique identifier of the deployment.
+      - name: teamId
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      - name: slug
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+  - name: get deployment check run
+    description: Get a check run
+    method: GET
+    url: https://api.vercel.com/v2/deployments/{deploymentId}/check-runs/{checkRunId}
+    read_only: true
+    params:
+      - name: deploymentId
+        type: string
+        required: true
+        location: path
+        description: The unique identifier of the deployment.
+      - name: checkRunId
+        type: string
+        required: true
+        location: path
+        description: The unique identifier of the check run to retrieve.
+      - name: teamId
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      - name: slug
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+  - name: list domains
+    description: List all the domains
+    method: GET
+    url: https://api.vercel.com/v5/domains
+    read_only: true
+    params:
+      - name: limit
+        type: number
+        required: false
+        location: query
+        description: Maximum number of domains to list from a request.
+      - name: since
+        type: number
+        required: false
+        location: query
+        description: Get domains created after this JavaScript timestamp.
+      - name: until
+        type: number
+        required: false
+        location: query
+        description: Get domains created before this JavaScript timestamp.
+      - name: teamId
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      - name: slug
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+  - name: get domain
+    description: Get Information for a Single Domain
+    method: GET
+    url: https://api.vercel.com/v5/domains/{domain}
+    read_only: true
+    params:
+      - name: domain
+        type: string
+        required: true
+        location: path
+        description: The name of the domain.
+      - name: teamId
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      - name: slug
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+  - name: list dns records
+    description: List existing DNS records
+    method: GET
+    url: https://api.vercel.com/v5/domains/{domain}/records
+    read_only: true
+    params:
+      - name: domain
+        type: string
+        required: true
+        location: path
+        description: The name of the domain.
+      - name: limit
+        type: string
+        required: false
+        location: query
+        description: Maximum number of records to list from a request.
+      - name: since
+        type: string
+        required: false
+        location: query
+        description: Get records created after this JavaScript timestamp.
+      - name: until
+        type: string
+        required: false
+        location: query
+        description: Get records created before this JavaScript timestamp.
+      - name: teamId
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      - name: slug
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+  - name: list project env vars
+    description: Retrieve the environment variables for a given project by id or name — returns
+      metadata; decrypted values are not requested.
+    method: GET
+    url: https://api.vercel.com/v10/projects/{idOrName}/env
+    read_only: true
+    params:
+      - name: idOrName
+        type: string
+        required: true
+        location: path
+        description: The unique project identifier or the project name
+      - name: gitBranch
+        type: string
+        required: false
+        location: query
+        description: If defined, the git branch of the environment variable to filter the results (must have
+          target=preview)
+      - name: decrypt
+        type: string
+        enum:
+          - "true"
+          - "false"
+        required: false
+        location: query
+        description: If true, the environment variable value will be decrypted
+      - name: source
+        type: string
+        required: false
+        location: query
+        description: The source that is calling the endpoint.
+      - name: customEnvironmentId
+        type: string
+        required: false
+        location: query
+        description: The unique custom environment identifier within the project
+      - name: customEnvironmentSlug
+        type: string
+        required: false
+        location: query
+        description: The custom environment slug (name) within the project
+      - name: teamId
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      - name: slug
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+  - name: list aliases
+    description: List aliases
+    method: GET
+    url: https://api.vercel.com/v4/aliases
+    read_only: true
+    params:
+      - name: domain
+        type: string
+        required: false
+        location: query
+        description: Get only aliases of the given domain name
+      - name: from
+        type: number
+        required: false
+        location: query
+        description: Get only aliases created after the provided timestamp
+      - name: limit
+        type: number
+        required: false
+        location: query
+        description: Maximum number of aliases to list from a request
+      - name: projectId
+        type: string
+        required: false
+        location: query
+        description: Filter aliases from the given `projectId`
+      - name: since
+        type: number
+        required: false
+        location: query
+        description: Get aliases created after this JavaScript timestamp
+      - name: until
+        type: number
+        required: false
+        location: query
+        description: Get aliases created before this JavaScript timestamp
+      - name: rollbackDeploymentId
+        type: string
+        required: false
+        location: query
+        description: Get aliases that would be rolled back for the given deployment
+      - name: teamId
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      - name: slug
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+  - name: get alias
+    description: Get an Alias
+    method: GET
+    url: https://api.vercel.com/v4/aliases/{idOrAlias}
+    read_only: true
+    params:
+      - name: from
+        type: number
+        required: false
+        location: query
+        description: Get the alias only if it was created after the provided timestamp
+      - name: idOrAlias
+        type: string
+        required: true
+        location: path
+        description: The alias or alias ID to be retrieved
+      - name: projectId
+        type: string
+        required: false
+        location: query
+        description: Get the alias only if it is assigned to the provided project ID
+      - name: since
+        type: number
+        required: false
+        location: query
+        description: Get the alias only if it was created after this JavaScript timestamp
+      - name: until
+        type: number
+        required: false
+        location: query
+        description: Get the alias only if it was created before this JavaScript timestamp
+      - name: teamId
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      - name: slug
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+  - name: list log drains
+    description: Retrieve a list of all Drains
+    method: GET
+    url: https://api.vercel.com/v1/drains
+    read_only: true
+    params:
+      - name: projectId
+        type: string
+        required: false
+        location: query
+        description: Filter drains by project ID.
+      - name: includeMetadata
+        type: boolean
+        required: false
+        location: query
+        description: If true, include additional drain metadata in the response.
+      - name: teamId
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      - name: slug
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+  - name: get log drain
+    description: Find a Drain by id
+    method: GET
+    url: https://api.vercel.com/v1/drains/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The unique identifier of the drain.
+      - name: teamId
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
+      - name: slug
+        type: string
+        required: false
+        location: query
+        description: Team ID (or slug) to scope the request; omit for personal account.
