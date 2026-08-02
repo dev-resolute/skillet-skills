@@ -1,0 +1,650 @@
+slug: sendgrid
+version: 1.0.0
+name: SendGrid
+category: comms-messaging
+one_liner: Review email stats, suppressions, templates, and senders in SendGrid.
+api_domain: api.sendgrid.com
+status: live
+credentials:
+  - env_var: SENDGRID_API_KEY
+    label: SendGrid API key (read access is enough for all read ops)
+    help_url: https://app.sendgrid.com/settings/api_keys
+auth:
+  scheme: bearer
+  header: Authorization
+  env_vars:
+    - SENDGRID_API_KEY
+  value_template: Bearer ${SENDGRID_API_KEY}
+operations:
+  - name: list stats
+    description: Retrieve global email statistics
+    method: GET
+    url: https://api.sendgrid.com/v3/stats
+    read_only: true
+    params:
+      - name: on-behalf-of
+        type: string
+        required: false
+        location: header
+        description: Run this call on behalf of a parent account's Subuser or customer account. Pass
+          "account-id <id>" for a customer account, or the Subuser's username for a Subuser. Omit to
+          use the caller's own account.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results to return.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: The point in the list to begin retrieving results.
+      - name: aggregated_by
+        type: string
+        enum:
+          - day
+          - week
+          - month
+        required: false
+        location: query
+        description: How to group the statistics. Must be either "day", "week", or "month".
+      - name: start_date
+        type: string
+        format: date
+        required: true
+        location: query
+        description: Start date of the range to retrieve statistics for, as YYYY-MM-DD, e.g. 2026-07-01.
+      - name: end_date
+        type: string
+        format: date
+        required: false
+        location: query
+        description: End date of the range to retrieve statistics for, as YYYY-MM-DD, e.g. 2026-07-31.
+          Defaults to today if omitted.
+  - name: list category stats
+    description: Retrieve Email Statistics for Categories
+    method: GET
+    url: https://api.sendgrid.com/v3/categories/stats
+    read_only: true
+    params:
+      - name: start_date
+        type: string
+        format: date
+        required: true
+        location: query
+        description: Start date of the range to retrieve statistics for, as YYYY-MM-DD, e.g. 2026-07-01.
+      - name: end_date
+        type: string
+        format: date
+        required: false
+        location: query
+        description: End date of the range to retrieve statistics for, as YYYY-MM-DD, e.g. 2026-07-31.
+          Defaults to today if omitted.
+      - name: categories
+        type: string
+        required: true
+        location: query
+        description: The individual categories that you want to retrieve statistics for. You may include up
+          to 10 different categories.
+      - name: aggregated_by
+        type: string
+        enum:
+          - day
+          - week
+          - month
+        required: false
+        location: query
+        description: How to group the statistics. Must be either "day", "week", or "month".
+      - name: on-behalf-of
+        type: string
+        required: false
+        location: header
+        description: Run this call on behalf of a parent account's Subuser or customer account. Pass
+          "account-id <id>" for a customer account, or the Subuser's username for a Subuser. Omit to
+          use the caller's own account.
+  - name: list browser stats
+    description: Retrieve email statistics by browser.
+    method: GET
+    url: https://api.sendgrid.com/v3/browsers/stats
+    read_only: true
+    params:
+      - name: browsers
+        type: string
+        required: false
+        location: query
+        description: The browsers to get statistics for. You can include up to 10 different browsers by
+          including this parameter multiple times.
+      - name: on-behalf-of
+        type: string
+        required: false
+        location: header
+        description: Run this call on behalf of a parent account's Subuser or customer account. Pass
+          "account-id <id>" for a customer account, or the Subuser's username for a Subuser. Omit to
+          use the caller's own account.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results to return.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: The point in the list to begin retrieving results.
+      - name: aggregated_by
+        type: string
+        enum:
+          - day
+          - week
+          - month
+        required: false
+        location: query
+        description: How to group the statistics. Must be either "day", "week", or "month".
+      - name: start_date
+        type: string
+        format: date
+        required: true
+        location: query
+        description: Start date of the range to retrieve statistics for, as YYYY-MM-DD, e.g. 2026-07-01.
+      - name: end_date
+        type: string
+        format: date
+        required: false
+        location: query
+        description: End date of the range to retrieve statistics for, as YYYY-MM-DD, e.g. 2026-07-31.
+          Defaults to today if omitted.
+  - name: list mailbox provider stats
+    description: Retrieve email statistics by mailbox provider.
+    method: GET
+    url: https://api.sendgrid.com/v3/mailbox_providers/stats
+    read_only: true
+    params:
+      - name: mailbox_providers
+        type: string
+        required: false
+        location: query
+        description: The mail box providers to get statistics for. You can include up to 10 by including
+          this parameter multiple times.
+      - name: on-behalf-of
+        type: string
+        required: false
+        location: header
+        description: Run this call on behalf of a parent account's Subuser or customer account. Pass
+          "account-id <id>" for a customer account, or the Subuser's username for a Subuser. Omit to
+          use the caller's own account.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: The number of results to return.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: The point in the list to begin retrieving results.
+      - name: aggregated_by
+        type: string
+        enum:
+          - day
+          - week
+          - month
+        required: false
+        location: query
+        description: How to group the statistics. Must be either "day", "week", or "month".
+      - name: start_date
+        type: string
+        format: date
+        required: true
+        location: query
+        description: Start date of the range to retrieve statistics for, as YYYY-MM-DD, e.g. 2026-07-01.
+      - name: end_date
+        type: string
+        format: date
+        required: false
+        location: query
+        description: End date of the range to retrieve statistics for, as YYYY-MM-DD, e.g. 2026-07-31.
+          Defaults to today if omitted.
+  - name: list unsubscribe groups
+    description: Retrieve all suppression groups associated with the user.
+    method: GET
+    url: https://api.sendgrid.com/v3/asm/groups
+    read_only: true
+    params:
+      - name: id
+        type: integer
+        required: false
+        location: query
+        description: The ID of the suppression group(s) you want to retrieve.
+      - name: on-behalf-of
+        type: string
+        required: false
+        location: header
+        description: Run this call on behalf of a parent account's Subuser or customer account. Pass
+          "account-id <id>" for a customer account, or the Subuser's username for a Subuser. Omit to
+          use the caller's own account.
+  - name: get unsubscribe group
+    description: Get information on a single suppression group.
+    method: GET
+    url: https://api.sendgrid.com/v3/asm/groups/{group_id}
+    read_only: true
+    params:
+      - name: on-behalf-of
+        type: string
+        required: false
+        location: header
+        description: Run this call on behalf of a parent account's Subuser or customer account. Pass
+          "account-id <id>" for a customer account, or the Subuser's username for a Subuser. Omit to
+          use the caller's own account.
+      - name: group_id
+        type: string
+        required: true
+        location: path
+        description: The ID of the suppression group you would like to retrieve.
+  - name: list blocks
+    description: Retrieve all blocks
+    method: GET
+    url: https://api.sendgrid.com/v3/suppression/blocks
+    read_only: true
+    params:
+      - name: start_time
+        type: integer
+        required: false
+        location: query
+        description: The start of the time range when a blocked email was created (inclusive). This is a
+          unix timestamp.
+      - name: end_time
+        type: integer
+        required: false
+        location: query
+        description: The end of the time range when a blocked email was created (inclusive). This is a unix
+          timestamp.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Page size — maximum number of items to return in one request. Omit to use the default;
+          this endpoint's max is 500 per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Number of items to skip before the returned page starts. 0 (the default) is the first
+          page; use multiples of `limit` to page further (e.g. offset=10 with limit=10 for page 2).
+      - name: email
+        type: string
+        required: false
+        location: query
+        description: Filter by email address prefix, e.g. "sales" matches "sales@example.com". Use %25 as a
+          wildcard (percent-encode reserved characters, e.g. @ as %40).
+      - name: on-behalf-of
+        type: string
+        required: false
+        location: header
+        description: Run this call on behalf of a parent account's Subuser or customer account. Pass
+          "account-id <id>" for a customer account, or the Subuser's username for a Subuser. Omit to
+          use the caller's own account.
+  - name: get block
+    description: Retrieve a specific block
+    method: GET
+    url: https://api.sendgrid.com/v3/suppression/blocks/{email}
+    read_only: true
+    params:
+      - name: on-behalf-of
+        type: string
+        required: false
+        location: header
+        description: Run this call on behalf of a parent account's Subuser or customer account. Pass
+          "account-id <id>" for a customer account, or the Subuser's username for a Subuser. Omit to
+          use the caller's own account.
+      - name: email
+        type: string
+        format: email
+        required: true
+        location: path
+        description: The email address of the specific block.
+  - name: list bounces
+    description: Retrieve all bounces
+    method: GET
+    url: https://api.sendgrid.com/v3/suppression/bounces
+    read_only: true
+    params:
+      - name: start_time
+        type: integer
+        required: false
+        location: query
+        description: Refers start of the time range in unix timestamp when a bounce was created (inclusive).
+      - name: end_time
+        type: integer
+        required: false
+        location: query
+        description: Refers end of the time range in unix timestamp when a bounce was created (inclusive).
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Page size — maximum number of items to return in one request. Omit to use the default;
+          this endpoint's max is 500 per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Number of items to skip before the returned page starts. 0 (the default) is the first
+          page; use multiples of `limit` to page further (e.g. offset=10 with limit=10 for page 2).
+      - name: email
+        type: string
+        required: false
+        location: query
+        description: Filter by email address prefix, e.g. "sales" matches "sales@example.com". Use %25 as a
+          wildcard (percent-encode reserved characters, e.g. @ as %40).
+      - name: on-behalf-of
+        type: string
+        required: false
+        location: header
+        description: Run this call on behalf of a parent account's Subuser or customer account. Pass
+          "account-id <id>" for a customer account, or the Subuser's username for a Subuser. Omit to
+          use the caller's own account.
+  - name: get bounce
+    description: Retrieve a Bounce
+    method: GET
+    url: https://api.sendgrid.com/v3/suppression/bounces/{email}
+    read_only: true
+    params:
+      - name: email
+        type: string
+        format: email
+        required: true
+        location: path
+        description: The email address of the specific bounce you would like to retrieve
+      - name: on-behalf-of
+        type: string
+        required: false
+        location: header
+        description: Run this call on behalf of a parent account's Subuser or customer account. Pass
+          "account-id <id>" for a customer account, or the Subuser's username for a Subuser. Omit to
+          use the caller's own account.
+  - name: list spam reports
+    description: Retrieve all spam reports
+    method: GET
+    url: https://api.sendgrid.com/v3/suppression/spam_reports
+    read_only: true
+    params:
+      - name: start_time
+        type: integer
+        required: false
+        location: query
+        description: The start of the time range when a spam report was created (inclusive). This is a unix
+          timestamp.
+      - name: end_time
+        type: integer
+        required: false
+        location: query
+        description: The end of the time range when a spam report was created (inclusive). This is a unix
+          timestamp.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Page size — maximum number of items to return in one request. Omit to use the default;
+          this endpoint's max is 500 per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Number of items to skip before the returned page starts. 0 (the default) is the first
+          page; use multiples of `limit` to page further (e.g. offset=10 with limit=10 for page 2).
+      - name: email
+        type: string
+        required: false
+        location: query
+        description: Filter by email address prefix, e.g. "sales" matches "sales@example.com". Use %25 as a
+          wildcard (percent-encode reserved characters, e.g. @ as %40).
+      - name: on-behalf-of
+        type: string
+        required: false
+        location: header
+        description: Run this call on behalf of a parent account's Subuser or customer account. Pass
+          "account-id <id>" for a customer account, or the Subuser's username for a Subuser. Omit to
+          use the caller's own account.
+  - name: get spam report
+    description: Retrieve a specific spam report
+    method: GET
+    url: https://api.sendgrid.com/v3/suppression/spam_reports/{email}
+    read_only: true
+    params:
+      - name: on-behalf-of
+        type: string
+        required: false
+        location: header
+        description: Run this call on behalf of a parent account's Subuser or customer account. Pass
+          "account-id <id>" for a customer account, or the Subuser's username for a Subuser. Omit to
+          use the caller's own account.
+      - name: email
+        type: string
+        format: email
+        required: true
+        location: path
+        description: The email address of a specific spam report that you want to retrieve.
+  - name: list invalid emails
+    description: Retrieve all invalid emails
+    method: GET
+    url: https://api.sendgrid.com/v3/suppression/invalid_emails
+    read_only: true
+    params:
+      - name: start_time
+        type: integer
+        required: false
+        location: query
+        description: Refers start of the time range in unix timestamp when an invalid email was created
+          (inclusive).
+      - name: end_time
+        type: integer
+        required: false
+        location: query
+        description: Refers end of the time range in unix timestamp when an invalid email was created
+          (inclusive).
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Page size — maximum number of items to return in one request. Omit to use the default;
+          this endpoint's max is 500 per page.
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Number of items to skip before the returned page starts. 0 (the default) is the first
+          page; use multiples of `limit` to page further (e.g. offset=10 with limit=10 for page 2).
+      - name: email
+        type: string
+        required: false
+        location: query
+        description: This parameter allows you to filter results by email address. Only invalid addresses
+          matching an address passed in this parameter will be returned.
+      - name: on-behalf-of
+        type: string
+        required: false
+        location: header
+        description: Run this call on behalf of a parent account's Subuser or customer account. Pass
+          "account-id <id>" for a customer account, or the Subuser's username for a Subuser. Omit to
+          use the caller's own account.
+  - name: get invalid email
+    description: Retrieve a specific invalid email
+    method: GET
+    url: https://api.sendgrid.com/v3/suppression/invalid_emails/{email}
+    read_only: true
+    params:
+      - name: on-behalf-of
+        type: string
+        required: false
+        location: header
+        description: Run this call on behalf of a parent account's Subuser or customer account. Pass
+          "account-id <id>" for a customer account, or the Subuser's username for a Subuser. Omit to
+          use the caller's own account.
+      - name: email
+        type: string
+        required: true
+        location: path
+        description: The specific email address of the invalid email entry that you want to retrieve.
+  - name: list templates
+    description: Retrieve paged transactional templates.
+    method: GET
+    url: https://api.sendgrid.com/v3/templates
+    read_only: true
+    params:
+      - name: generations
+        type: string
+        enum:
+          - legacy
+          - dynamic
+          - legacy,dynamic
+        required: false
+        location: query
+        description: Comma-delimited list specifying which generations of templates to return. Options are
+          `legacy`, `dynamic` or `legacy,dynamic`.
+      - name: page_size
+        type: number
+        required: true
+        location: query
+        description: The number of templates to be returned in each page of results
+      - name: page_token
+        type: string
+        required: false
+        location: query
+        description: A token corresponding to a specific page of results, as provided by metadata
+      - name: on-behalf-of
+        type: string
+        required: false
+        location: header
+        description: Run this call on behalf of a parent account's Subuser or customer account. Pass
+          "account-id <id>" for a customer account, or the Subuser's username for a Subuser. Omit to
+          use the caller's own account.
+  - name: get template
+    description: Retrieve a single transactional template.
+    method: GET
+    url: https://api.sendgrid.com/v3/templates/{template_id}
+    read_only: true
+    params:
+      - name: on-behalf-of
+        type: string
+        required: false
+        location: header
+        description: Run this call on behalf of a parent account's Subuser or customer account. Pass
+          "account-id <id>" for a customer account, or the Subuser's username for a Subuser. Omit to
+          use the caller's own account.
+      - name: template_id
+        type: string
+        required: true
+        location: path
+        description: The ID of the transactional template to retrieve.
+  - name: list senders
+    description: Get All Verified Senders
+    method: GET
+    url: https://api.sendgrid.com/v3/verified_senders
+    read_only: true
+    params:
+      - name: limit
+        type: number
+        required: false
+        location: query
+        description: Maximum number of results to return. Combine with `lastSeenID` to page through further
+          results.
+      - name: lastSeenID
+        type: number
+        required: false
+        location: query
+        description: Return senders with an ID greater than this value — the starting point for the next
+          page of results.
+      - name: id
+        type: integer
+        required: false
+        location: query
+        description: Returns information about only the Sender Identity passed in the request.
+  - name: list api keys
+    description: Retrieve all API Keys belonging to the authenticated user
+    method: GET
+    url: https://api.sendgrid.com/v3/api_keys
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Maximum number of API keys to return.
+      - name: on-behalf-of
+        type: string
+        required: false
+        location: header
+        description: Run this call on behalf of a parent account's Subuser or customer account. Pass
+          "account-id <id>" for a customer account, or the Subuser's username for a Subuser. Omit to
+          use the caller's own account.
+  - name: list marketing lists
+    description: Get All Lists
+    method: GET
+    url: https://api.sendgrid.com/v3/marketing/lists
+    read_only: true
+    params:
+      - name: page_size
+        type: number
+        required: false
+        location: query
+        description: Maximum number of elements to return. Defaults to 100, returns 1000 max
+      - name: page_token
+        type: string
+        required: false
+        location: query
+        description: Pagination cursor from a previous response's metadata, for paging through further results.
+  - name: get contacts count
+    description: Get Total Contact Count
+    method: GET
+    url: https://api.sendgrid.com/v3/marketing/contacts/count
+    read_only: true
+    params: []
+  - name: list mail settings
+    description: Retrieve all mail settings
+    method: GET
+    url: https://api.sendgrid.com/v3/mail_settings
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: "`limit` sets the page size, i.e. maximum number of items from the list to be returned
+          for a single API request. If omitted, the default page size is used."
+      - name: offset
+        type: integer
+        required: false
+        location: query
+        description: Number of items to skip before the returned page starts. 0 (the default) is the first
+          page; use multiples of `limit` to page further (e.g. offset=10 with limit=10 for page 2).
+      - name: on-behalf-of
+        type: string
+        required: false
+        location: header
+        description: Run this call on behalf of a parent account's Subuser or customer account. Pass
+          "account-id <id>" for a customer account, or the Subuser's username for a Subuser. Omit to
+          use the caller's own account.
+  - name: Send mail
+    description: Send an email through SendGrid's Mail Send API. POST — runs only when writes are
+      allowed. Minimal payload needs personalizations (array, each with a `to` list of recipient
+      email objects), a `from` sender email, a `subject`, and `content` (array of type/value pairs,
+      e.g. text/plain body). Optional fields include cc/bcc, reply_to, template_id, attachments,
+      categories, and custom_args — see the body param for the full JSON shape.
+    method: POST
+    url: https://api.sendgrid.com/v3/mail/send
+    read_only: false
+    params:
+      - name: body
+        type: json
+        required: true
+        location: body
+        description: "Full JSON request body per SendGrid's Mail Send schema. Required top-level fields:
+          personalizations and from. Minimal example — {\"personalizations\": [{\"to\": [{\"email\":
+          \"recipient@example.com\"}]}], \"from\": {\"email\": \"sender@example.com\"}, \"subject\":
+          \"Hello\", \"content\": [{\"type\": \"text/plain\", \"value\": \"Hello from SendGrid\"}]}.
+          personalizations[] items also accept cc, bcc, subject (overrides top-level), headers, and
+          send_at (unix timestamp). Top-level optionals include reply_to ({email}), template_id
+          (dynamic templates start with d-), attachments (content is base64, plus filename, type,
+          and disposition), categories (up to 10 strings), custom_args, and mail_settings and
+          tracking_settings objects. Full schema:
+          https://www.twilio.com/docs/sendgrid/api-reference/mail-send/mail-send"

@@ -1,0 +1,337 @@
+# Regenerate catalog.yaml operations from a vendored, hand-merged SendGrid spec:
+#   pnpm --filter @kit/engine catalog:import sendgrid   (from the runespacedev repo)
+#
+# `include` entries are the names listOperations() reports for this spec —
+# summary || operationId || "METHOD /path". Every summary below is unique
+# within the merged file (21 GET operations total), so each entry is the
+# summary text verbatim (case-sensitive, including trailing periods where the
+# vendor spec has one and omits one elsewhere — SendGrid is inconsistent).
+#
+# --- Spec sourcing (SAP-2(b), vendored + hand-merged) -----------------------
+# SendGrid (twilio/sendgrid-oai) publishes one OpenAPI file PER PRODUCT DOMAIN
+# under spec/json/ — there is no single "whole API" spec to point `spec:` at.
+# Eight domain files cover this skill's target areas; each was fetched, then
+# every parameter's `$ref` (components/parameters/*, and the nested schema
+# $ref on `aggregated_by`) was resolved to its literal value from that SAME
+# source file (refs never cross files) before merging into `openapi.json` —
+# so the merged file is fully self-contained with zero `$ref`, and pinning
+# SendGrid's `openapi: 3.1.0` (below the parser's 3.1.1 allowlist ceiling,
+# harmlessly re-pinned by pinToSupportedOpenApiVersion regardless) can never
+# lose a referenced parameter the way it did for Resend. Kept only the exact
+# 21 (path, GET) pairs this skill imports — no POST/PUT/DELETE/PATCH, no
+# `responses` (stubbed to a 200 placeholder; buildManifestOperation never
+# reads them) — mirrors the hubspot/gitlab vendoring pattern. Source files
+# (raw.githubusercontent.com/twilio/sendgrid-oai/main/spec/json/...):
+#   tsg_stats_v3.json           — /v3/stats, /v3/categories/stats,
+#                                  /v3/browsers/stats, /v3/mailbox_providers/stats
+#   tsg_suppressions_v3.json    — /v3/asm/groups(/{group_id}),
+#                                  /v3/suppression/{blocks,bounces,spam_reports,
+#                                  invalid_emails}(/{email})
+#   tsg_templates_v3.json       — /v3/templates(/{template_id})
+#   tsg_verified_senders_v3.json — /v3/verified_senders
+#   tsg_api_keys_v3.json        — /v3/api_keys
+#   tsg_mc_lists_v3.json        — /v3/marketing/lists
+#   tsg_mc_contacts_v3.json     — /v3/marketing/contacts/count
+#   tsg_mail_settings_v3.json   — /v3/mail_settings
+#
+# Senders domain note: SendGrid ships THREE senders surfaces —
+# /v3/verified_senders (current Sender Identity API, Settings > Sender
+# Authentication in the dashboard), /v3/senders (legacy "lmc" Sender Identity
+# API predating Marketing Campaigns v2), and /v3/marketing/senders (the
+# newer "mc" Single Sends sender surface). The brief's "senders list" target
+# is singular; /v3/verified_senders was chosen as the one skill ships — it is
+# the surface SendGrid's own current docs point to and the dashboard's
+# Sender Authentication page uses. The other two are not imported.
+#
+# --- Known engine gap (path-item-level `parameters`) ------------------------
+# The importer only reads a GET operation's own `parameters` array, not
+# `parameters` declared as a sibling of `get` on the path item (see Asana's
+# import.yaml for the mechanism and its cost there). SendGrid's suppressions,
+# templates spec files declare EVERY single-resource path parameter this way
+# — group_id, email (blocks/spam_reports/invalid_emails), template_id — never
+# on the GET operation itself. Checked directly: in every one of these cases
+# the missing parameter IS a `{placeholder}` in the operation's own URL, so
+# `buildManifestOperation` auto-declares it (`type: string, required: true`,
+# NO description) rather than leaving the URL template broken — the op is
+# functional, just under-documented. Restored below via `overrides` (verbatim
+# from the spec's own path-item parameter text where it has one; hand-written
+# where the spec ships an empty or absent description, per `get template`'s
+# `template_id`). Nothing here hit the OTHER half of this gap (a REQUIRED
+# param declared at path-item level that is NOT a URL placeholder, e.g.
+# Asana's Typeahead `resource_type` filter) — that shape, where the importer
+# truly cannot supply the parameter at all, is not present in any of the 21
+# operations below, so nothing was excluded as non-functional.
+#
+# --- Known engine gap (200-char description truncation) ---------------------
+# `on-behalf-of` (a header, present via $ref on nearly every SendGrid
+# operation) carries the same ~650-800 char paragraph on every op it appears
+# on and is truncated mid-sentence at import. Restored once via `overrides:
+# "*"` with a crisp restatement, since its meaning is identical everywhere it
+# appears — same rationale as Jira/Confluence's `base_url` wildcard. `limit`,
+# `offset`, and the blocks/bounces/spam_reports `email` prefix filter carry
+# similarly long, truncated boilerplate but are NOT wildcarded: their prose
+# is near-identical across the 4-5 ops that share it, but `limit`/`offset`
+# also appear on the stats endpoints with SHORT, already-correct native text
+# ("The number of results to return.") that a `*` override would wrongly
+# clobber — so these are patched per-operation instead (repeats the same
+# override 3-4 times rather than risk overwriting an unrelated param).
+# `start_date`/`end_date`/`aggregated_by` ARE wildcarded: those exact names
+# occur only on the 4 stats operations below (suppressions use the
+# differently-named, unix-timestamp `start_time`/`end_time` instead), so
+# there is no cross-domain collision risk.
+#
+# --- Known engine gap (`example:` stripped by catalog build) ----------------
+# catalog-lib.mjs's `toOperationsManifest` (the catalog.yaml → catalog.json /
+# catalog.sql path, distinct from the engine's own manifest.ts) never reads
+# `example`. SendGrid's stats endpoints declare `start_date`/`end_date` as
+# plain `type: string` with NO `format` at all (not `format: date` — the
+# vendor spec omits it) and only prose-document `YYYY-MM-DD`; the `*`
+# override below sets `format: date` explicitly AND states a literal
+# canonical date (2026-07-01) directly in the description prose, since a
+# stripped `example:` would otherwise be the only place that value could live.
+#
+# --- Coverage target ---------------------------------------------------------
+# Global stats + stats by category/browser/mailbox-provider; suppressions —
+# unsubscribe groups, blocks, bounces, spam reports, invalid emails, each
+# list AND get; templates list/get; senders list; API key metadata list;
+# marketing lists + total contact count; mail settings read (the "list mail
+# settings" op returns every setting's current state — full read coverage in
+# one call, so no per-setting reads were added). Plus `Send mail` (POST
+# /v3/mail/send), hand-authored and `keep`-protected — see the header
+# comment this file grows once that op exists in catalog.yaml.
+#
+# Deliberate gaps: all write/update/delete endpoints across every domain
+# (out of scope — importer is GET-only); the two other senders surfaces
+# (see note above); per-list/per-contact marketing reads beyond the brief's
+# "lists + contacts count" (list/get on individual lists and contacts,
+# imports/exports status — all path-param ops in mc_contacts.json/mc_lists.json
+# beyond the two selected, left out as target creep); individual per-setting
+# mail-settings reads (address_whitelist, bounce_purge, footer,
+# forward_bounce, forward_spam, legacy template — the umbrella `list mail
+# settings` already returns all of their enabled/disabled state); bounce
+# classification stats (`/v3/suppression/bounces/classifications`) — real and
+# functional, but not named in the brief's suppressions list and the 21 ops
+# above already sit comfortably in the 20-30 target range.
+
+spec: ./openapi.json
+base_url: https://api.sendgrid.com
+parity_source: https://www.twilio.com/docs/sendgrid/api-reference
+
+include:
+  # --- stats ---------------------------------------------------------------
+  - Retrieve global email statistics
+  - Retrieve Email Statistics for Categories
+  - Retrieve email statistics by browser.
+  - Retrieve email statistics by mailbox provider.
+  # --- suppressions ----------------------------------------------------------
+  - Retrieve all suppression groups associated with the user.
+  - Get information on a single suppression group.
+  - Retrieve all blocks
+  - Retrieve a specific block
+  - Retrieve all bounces
+  - Retrieve a Bounce
+  - Retrieve all spam reports
+  - Retrieve a specific spam report
+  - Retrieve all invalid emails
+  - Retrieve a specific invalid email
+  # --- templates -------------------------------------------------------------
+  - Retrieve paged transactional templates.
+  - Retrieve a single transactional template.
+  # --- senders, API keys -------------------------------------------------------
+  - Get All Verified Senders
+  - Retrieve all API Keys belonging to the authenticated user
+  # --- marketing ---------------------------------------------------------------
+  - Get All Lists
+  - Get Total Contact Count
+  # --- mail settings -------------------------------------------------------------
+  - Retrieve all mail settings
+
+rename:
+  Retrieve global email statistics: list stats
+  Retrieve Email Statistics for Categories: list category stats
+  Retrieve email statistics by browser.: list browser stats
+  Retrieve email statistics by mailbox provider.: list mailbox provider stats
+
+  Retrieve all suppression groups associated with the user.: list unsubscribe groups
+  Get information on a single suppression group.: get unsubscribe group
+  Retrieve all blocks: list blocks
+  Retrieve a specific block: get block
+  Retrieve all bounces: list bounces
+  Retrieve a Bounce: get bounce
+  Retrieve all spam reports: list spam reports
+  Retrieve a specific spam report: get spam report
+  Retrieve all invalid emails: list invalid emails
+  Retrieve a specific invalid email: get invalid email
+
+  Retrieve paged transactional templates.: list templates
+  Retrieve a single transactional template.: get template
+
+  Get All Verified Senders: list senders
+  Retrieve all API Keys belonging to the authenticated user: list api keys
+
+  Get All Lists: list marketing lists
+  Get Total Contact Count: get contacts count
+
+  Retrieve all mail settings: list mail settings
+
+# Curated corrections layered over the spec after import, keyed by the catalog
+# name (post-`rename`). `*` applies to every imported operation that has the
+# named param. They live here rather than in catalog.yaml because a
+# re-import rewrites every field but `description` and reserialises the YAML.
+overrides:
+  "*":
+    params:
+      # hand-authored: on-behalf-of's native text (~650-800 chars, near-
+      # identical wherever it appears) is truncated at 200 chars on import.
+      # Same meaning everywhere it appears — a legitimate wildcard target.
+      on-behalf-of:
+        description: Run this call on behalf of a parent account's Subuser or
+          customer account. Pass "account-id <id>" for a customer account, or
+          the Subuser's username for a Subuser. Omit to use the caller's own account.
+      # hand-authored: format: date is missing from the vendor spec entirely
+      # (plain type: string) even though every stats endpoint requires
+      # YYYY-MM-DD; and `example:` is stripped by the catalog build, so the
+      # canonical date lives directly in the description text instead.
+      # start_date/end_date occur ONLY on the 4 stats operations below.
+      start_date:
+        format: date
+        description: Start date of the range to retrieve statistics for, as
+          YYYY-MM-DD, e.g. 2026-07-01.
+      end_date:
+        format: date
+        description: End date of the range to retrieve statistics for, as
+          YYYY-MM-DD, e.g. 2026-07-31. Defaults to today if omitted.
+
+  # hand-authored: group_id is declared only on the path item (see the
+  # "Known engine gap" header comment) — buildManifestOperation auto-declares
+  # it with no description; restored verbatim from the spec's own path-item
+  # parameter text.
+  get unsubscribe group:
+    params:
+      group_id:
+        description: The ID of the suppression group you would like to retrieve.
+
+  # hand-authored: limit/offset/email share identical ~200-600 char text
+  # across list blocks/bounces/spam_reports (email) and all four lists
+  # (limit/offset) — restored per-operation, not `*`, because `limit`/
+  # `offset` also exist on the stats ops with short, correct native text a
+  # wildcard would wrongly overwrite.
+  list blocks:
+    params:
+      limit:
+        description: Page size — maximum number of items to return in one
+          request. Omit to use the default; this endpoint's max is 500 per page.
+      offset:
+        description: Number of items to skip before the returned page starts.
+          0 (the default) is the first page; use multiples of `limit` to page
+          further (e.g. offset=10 with limit=10 for page 2).
+      email:
+        description: Filter by email address prefix, e.g. "sales" matches
+          "sales@example.com". Use %25 as a wildcard (percent-encode reserved
+          characters, e.g. @ as %40).
+  get block:
+    params:
+      email:
+        format: email
+        description: The email address of the specific block.
+
+  list bounces:
+    params:
+      limit:
+        description: Page size — maximum number of items to return in one
+          request. Omit to use the default; this endpoint's max is 500 per page.
+      offset:
+        description: Number of items to skip before the returned page starts.
+          0 (the default) is the first page; use multiples of `limit` to page
+          further (e.g. offset=10 with limit=10 for page 2).
+      email:
+        description: Filter by email address prefix, e.g. "sales" matches
+          "sales@example.com". Use %25 as a wildcard (percent-encode reserved
+          characters, e.g. @ as %40).
+
+  list spam reports:
+    params:
+      limit:
+        description: Page size — maximum number of items to return in one
+          request. Omit to use the default; this endpoint's max is 500 per page.
+      offset:
+        description: Number of items to skip before the returned page starts.
+          0 (the default) is the first page; use multiples of `limit` to page
+          further (e.g. offset=10 with limit=10 for page 2).
+      email:
+        description: Filter by email address prefix, e.g. "sales" matches
+          "sales@example.com". Use %25 as a wildcard (percent-encode reserved
+          characters, e.g. @ as %40).
+  get spam report:
+    params:
+      email:
+        format: email
+        description: The email address of a specific spam report that you want to retrieve.
+
+  list invalid emails:
+    params:
+      limit:
+        description: Page size — maximum number of items to return in one
+          request. Omit to use the default; this endpoint's max is 500 per page.
+      offset:
+        description: Number of items to skip before the returned page starts.
+          0 (the default) is the first page; use multiples of `limit` to page
+          further (e.g. offset=10 with limit=10 for page 2).
+  get invalid email:
+    params:
+      email:
+        description: The specific email address of the invalid email entry
+          that you want to retrieve.
+
+  # hand-authored: the vendor spec ships template_id with NO description at
+  # all (not even an empty string) — nothing to restore, so this is written
+  # fresh.
+  get template:
+    params:
+      template_id:
+        description: The ID of the transactional template to retrieve.
+
+  # hand-authored: both params are individually over 200 chars in the spec
+  # (203 and 215) and get truncated mid-sentence.
+  list senders:
+    params:
+      limit:
+        description: Maximum number of results to return. Combine with
+          `lastSeenID` to page through further results.
+      lastSeenID:
+        description: Return senders with an ID greater than this value — the
+          starting point for the next page of results.
+
+  # hand-authored: the spec ships limit with an empty description.
+  list api keys:
+    params:
+      limit:
+        description: Maximum number of API keys to return.
+
+  # hand-authored: the spec ships page_token with an empty description.
+  list marketing lists:
+    params:
+      page_token:
+        description: Pagination cursor from a previous response's metadata,
+          for paging through further results.
+
+  # hand-authored: offset repeats the same 593-char boilerplate as the
+  # suppressions endpoints above; limit's native 154-char text is fine as-is.
+  list mail settings:
+    params:
+      offset:
+        description: Number of items to skip before the returned page starts.
+          0 (the default) is the first page; use multiples of `limit` to page
+          further (e.g. offset=10 with limit=10 for page 2).
+
+# Operations carried over from catalog.yaml verbatim — the importer is GET-only
+# and `Send mail` is this skill's only write operation (Resend precedent: core
+# value requires one write, kept and re-import-protected). catalog.yaml is the
+# source of truth for it; see the hand-authored block there. Order of
+# operations followed the gitlab precedent: import ran first (producing the 21
+# GET ops above with no `keep:`), THEN `Send mail` was hand-authored into
+# catalog.yaml and added here, and the import was re-run to confirm it comes
+# through untouched rather than getting silently deleted by the GET-only
+# import.
+keep:
+  - Send mail
