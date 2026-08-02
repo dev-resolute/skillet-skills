@@ -1,0 +1,252 @@
+# Regenerate catalog.yaml operations from a vendored, pruned Intercom spec:
+#   pnpm --filter @kit/engine catalog:import intercom   (from the runespacedev repo)
+#
+# `include` entries are the names listOperations() reports for this spec —
+# summary || operationId || "METHOD /path". Checked directly against the FULL
+# upstream document (all 108 GET operations across 164 paths, not just the 23
+# below): only one pair of GET summaries collides anywhere in the spec
+# ("List all articles", used by two unrelated Articles endpoints neither of
+# which this skill imports) — every entry below is unique and is the summary
+# text verbatim (case-sensitive).
+#
+# --- Spec sourcing (SAP-2(b), vendored + pruned) ----------------------------
+# Source: https://github.com/intercom/Intercom-OpenAPI, versioned spec file
+#   https://raw.githubusercontent.com/intercom/Intercom-OpenAPI/main/descriptions/2.16/api.intercom.io.yaml
+# 2.16 is the latest directory under descriptions/ in the repo (2.7 through
+# 2.16 exist; 2.16 sorts highest both lexically and numerically) — vendored
+# spec version 2.16, OpenAPI 3.0.1, 1.3 MB, 164 paths, 108 GET operations.
+# Pruned to `intercom/openapi.json`:
+#   1. Kept only the 23 paths this skill imports from, GET only (every other
+#      path, and every non-GET method on a kept path, dropped).
+#   2. Stripped each kept operation's `responses` object and replaced it with
+#      a minimal `{"200": {"description": "OK"}}` stub — buildManifestOperation
+#      (packages/engine/src/manifest.ts) never reads `responses`, only
+#      `summary`, `description`, `parameters`, and `requestBody`. Kept
+#      `parameters`, `summary`, `description`, `operationId`, `tags`, and
+#      `security` untouched (values, not references — see next point) on
+#      every kept operation.
+#   3. Fully dereferenced every kept operation's `parameters` in the pruning
+#      script itself (not left for the importer) and dropped the ~1.2 MB
+#      `components.schemas` block (338 schemas, almost entirely response
+#      shapes this skill's GET-only params never touch) — the one $ref every
+#      kept operation's parameters actually used, `Intercom-Version` →
+#      `#/components/schemas/intercom_version`, is inlined in place instead.
+#      Net effect: zero `$ref` anywhere in the pruned file.
+#   4. `servers` trimmed to the single flat production entry
+#      `https://api.intercom.io` (the upstream spec also lists EU/AU regional
+#      servers — this skill targets the global/US host per the task's
+#      `api_domain`; not used by the importer either way, which takes
+#      `base_url` from this file, kept only for a human skimming the file).
+# Net: 1.3 MB / 164 paths → 43 KB / 23 paths.
+#
+# --- Known engine gap (path-item-level `parameters`) ------------------------
+# The importer only reads a GET operation's own `parameters` array, not
+# `parameters` declared as a sibling of `get` on the path item (see Asana's
+# import.yaml for the mechanism and its cost there). Checked directly against
+# the FULL upstream spec (all 164 paths) before pruning: only 4 paths in the
+# entire spec declare any path-item-level `parameters` at all —
+# /ai/content_import_sources/{source_id}, /ai/external_pages/{page_id}, and
+# the two /custom_object_instances/{...} paths — and none of them is one of
+# the 23 paths this skill imports. Zero impact on this skill: no op below is
+# missing a param from this cause, and no op needed excluding as
+# non-functional.
+#
+# --- Intercom-Version header (REQUIRED on every modern-API call) ------------
+# Every one of Intercom's REST endpoints accepts (and Intercom's own docs
+# recommend always sending) an `Intercom-Version` header pinning the response
+# shape to a specific API version — declared on every GET operation in this
+# spec as an operation-level parameter (never path-item-level, so the gap
+# above doesn't touch it either), but NOT marked `required` by the spec
+# itself (defaults to the workspace app's configured version if omitted,
+# which drifts per-workspace and per-app — an unreliable default for a tool
+# other agents call against arbitrary customer workspaces). Forced required
+# below via `overrides: "*"` (Notion's static-header pattern — see
+# notion/catalog.yaml's `Notion-Version` param): every one of the 23
+# operations gets `Intercom-Version` as a required header param. Checked
+# directly: CatalogParam (catalog-import.ts) has no `example` field at all —
+# toCatalogParam never emits one, so a spec-imported param's `example` never
+# reaches catalog.yaml (Notion's own `example: "2022-06-28"` only survives
+# because Notion is 100% hand-authored via `keep:`, bypassing this
+# serialiser entirely — and even for Notion that value never reaches the
+# runtime tool schema either: toOperationsManifest in catalog-lib.mjs has its
+# own fixed field list — name/type/required/location/itemsType/enum/format/
+# description — with no `example`). The pinned value therefore has to live in
+# prose, the one field guaranteed to reach the calling agent: the
+# description below spells out "(2.16)" explicitly rather than leaning on an
+# example field that would silently vanish. The spec's `enum` of all 22
+# historical version strings ("1.0" .. "2.16") IS carried through by
+# ordinary extraction (enum is a real CatalogParam field) and is left intact
+# — genuinely useful here, since an agent integrating against an older
+# workspace can pin an older version.
+#
+# --- Coverage target ---------------------------------------------------------
+# Current admin + app (`/me`); admins (list/get); contacts (list/get, plus a
+# contact's companies/segments/tags); companies (list/get — `GET /companies`
+# doubles as both: paginated list with optional tag_id/segment_id filters, or
+# a single-company lookup via name/company_id query params); conversations
+# (list/get); teams (list/get); segments (list, plus get to round out the
+# pair); tags (list, plus get to round out the pair); data attributes (list);
+# a contact's notes (list); ticket types (list/get); and a single ticket
+# (get — Intercom has no GET-list endpoint for tickets, only POST
+# /tickets/search, so "get" is the only tier-1-eligible tickets op; matches
+# the task brief, which only asks for "tickets get").
+#
+# --- Deliberate gaps (POST-only "modern" search surfaces, per task brief) ---
+# Intercom's newer, richer filtering endpoints for contacts and conversations
+# are POST-only search endpoints (`POST /contacts/search`,
+# `POST /conversations/search`, both with a nested query-DSL request body).
+# Both are skipped — this is a read-first tier-1 manifest (GET preferred per
+# the global constraints) and, more importantly, a plain GET alternative
+# genuinely exists and is imported instead: `GET /contacts` ("List all
+# contacts", paginated) and `GET /conversations` ("List all conversations",
+# paginated via `starting_after`). No POST list/search op ships from this
+# skill. (`GET /companies/scroll`, a cursor-based bulk-export mechanism for
+# huge company datasets, is similarly skipped in favor of `GET /companies`'s
+# built-in `page`/`per_page` pagination — sufficient for this tier's target
+# range and consistent with every other list op here.)
+#
+# --- Other things NOT imported, and why --------------------------------------
+#   * All write endpoints (create/update/delete/merge/archive/block/convert on
+#     every resource) are out of scope — this skill ships no write operations.
+#   * `POST /companies/list` (an alternate list-by-filter-body endpoint) is
+#     POST-only and redundant with `GET /companies`'s query-param filters.
+#   * `GET /companies/{company_id}/notes` and `GET /companies/{company_id}/segments`
+#     exist and would round out a "company notes"/"company segments" pair
+#     symmetrically to contacts, but are not named in the task brief's target
+#     list (only "notes on contact" is) and are left out to hold the op count
+#     inside the 20-28 target without scope creep.
+#   * `GET /segments/{segment_id}` and `GET /tags/{tag_id}` ARE imported even
+#     though the task brief's target list says only "segments; tags;" without
+#     "list/get" — added to round out list/get pairs the same way every other
+#     resource in this skill has one, consistent with the GitLab precedent
+#     (its import.yaml documents the same reasoning for its own round-out ops).
+
+spec: ./openapi.json
+base_url: https://api.intercom.io
+parity_source: https://developers.intercom.com/docs/references/rest-api
+
+include:
+  # --- current admin -------------------------------------------------------
+  - Identify an admin
+  # --- admins --------------------------------------------------------------
+  - List all admins
+  - Retrieve an admin
+  # --- contacts --------------------------------------------------------------
+  - List all contacts
+  - Get a contact
+  - List attached companies for contact
+  - List attached segments for contact
+  - List tags attached to a contact
+  # --- companies -------------------------------------------------------------
+  - Retrieve companies
+  - Retrieve a company by ID
+  # --- conversations -----------------------------------------------------------
+  - List all conversations
+  - Retrieve a conversation
+  # --- teams -------------------------------------------------------------------
+  - List all teams
+  - Retrieve a team
+  # --- segments ------------------------------------------------------------
+  - List all segments
+  - Retrieve a segment
+  # --- tags ------------------------------------------------------------------
+  - List all tags
+  - Find a specific tag
+  # --- data attributes ---------------------------------------------------------
+  - List all data attributes
+  # --- notes -------------------------------------------------------------------
+  - List all notes
+  # --- ticket types and tickets --------------------------------------------------
+  - List all ticket types
+  - Retrieve a ticket type
+  - Retrieve a ticket
+
+rename:
+  Identify an admin: get current admin
+
+  List all admins: list admins
+  Retrieve an admin: get admin
+
+  List all contacts: list contacts
+  Get a contact: get contact
+  List attached companies for contact: list contact companies
+  List attached segments for contact: list contact segments
+  List tags attached to a contact: list contact tags
+
+  Retrieve companies: list companies
+  Retrieve a company by ID: get company
+
+  List all conversations: list conversations
+  Retrieve a conversation: get conversation
+
+  List all teams: list teams
+  Retrieve a team: get team
+
+  List all segments: list segments
+  Retrieve a segment: get segment
+
+  List all tags: list tags
+  Find a specific tag: get tag
+
+  List all data attributes: list data attributes
+
+  List all notes: list contact notes
+
+  List all ticket types: list ticket types
+  Retrieve a ticket type: get ticket type
+  Retrieve a ticket: get ticket
+
+# Curated corrections layered over the spec after import, keyed by the catalog
+# name (i.e. post-`rename`). They live here rather than in catalog.yaml
+# because a re-import rewrites every field but `description` and reserialises
+# the YAML, which would drop both the edit and any comment explaining it.
+overrides:
+  "*":
+    params:
+      # hand-authored: forces Intercom-Version to a required header param on
+      # every operation — see the header comment above for why the spec's own
+      # `required` (absent, i.e. optional) is not safe to ship as-is. The
+      # description also drops the spec's stray `</br>` HTML fragment and
+      # tells the calling agent what to do with the enum: keep the example
+      # unless there's a specific reason to pin an older version.
+      Intercom-Version:
+        required: true
+        description: Intercom API version to pin the response shape to. Keep
+          the example value (2.16) unless you have a specific reason to call
+          against an older API version.
+
+  # hand-authored: the spec's own `contact_id` description on this one
+  # operation is the literal string "contact_id" (not truncation — thin from
+  # the source). Every sibling operation below describes it properly
+  # ("The unique identifier for the contact which is given by Intercom") —
+  # restored here for consistency, per SAP-5's "thin spec descriptions"
+  # guidance (not just the 200-char truncation case).
+  get contact:
+    params:
+      contact_id:
+        description: The unique identifier for the contact which is given by Intercom.
+
+  # hand-authored: the importer truncates every param description to 200
+  # chars (a universal limit, not Intercom-specific — see manifest.ts).
+  # `display_as`'s spec text is 208 chars and the cut lands mid-word
+  # ("...alongside the visib[le text.]") — restored in full below.
+  get conversation:
+    params:
+      display_as:
+        description: Set to plaintext to retrieve conversation messages in
+          plain text. This affects both the body and subject fields. Inline
+          links are rendered as `label (url)`, preserving the link URL
+          alongside the visible text.
+
+  # hand-authored: `ticket_id`'s spec text embeds a `{% admonition %}` shortcode
+  # (Intercom's docs-site templating, never rendered outside developers.intercom.com)
+  # around its most important sentence — the warning that this is NOT the
+  # Inbox ticket number (#12345-style) a human sees. Restored as plain prose
+  # with the shortcode markup stripped; the guidance itself is unchanged.
+  get ticket:
+    params:
+      ticket_id:
+        description: "The unique identifier for the ticket, given by Intercom.
+          This is the internal `id` field from the API response — not the
+          ticket_id shown in the Intercom Inbox (e.g. #12345). Use the `id`
+          value from the ticket object returned by the API."

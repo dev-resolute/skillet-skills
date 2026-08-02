@@ -1,0 +1,1484 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Intercom API",
+    "version": "2.16",
+    "description": "The intercom API reference."
+  },
+  "servers": [
+    {
+      "url": "https://api.intercom.io",
+      "description": "The production API server"
+    }
+  ],
+  "paths": {
+    "/me": {
+      "get": {
+        "summary": "Identify an admin",
+        "description": "\nYou can view the currently authorised admin along with the embedded app object (a \"workspace\" in legacy terminology).\n\n> \ud83d\udea7 Single Sign On\n>\n> If you are building a custom \"Log in with Intercom\" flow for your site, and you call the `/me` endpoint to identify the logged-in user, you should not accept any sign-ins from users with unverified email addresses as it poses a potential impersonation security risk.\n",
+        "operationId": "identifyAdmin",
+        "tags": [
+          "Admins"
+        ],
+        "parameters": [
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/admins": {
+      "get": {
+        "summary": "List all admins",
+        "description": "You can fetch a list of admins for a given workspace.",
+        "operationId": "listAdmins",
+        "tags": [
+          "Admins"
+        ],
+        "parameters": [
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          },
+          {
+            "name": "display_avatar",
+            "in": "query",
+            "required": false,
+            "description": "If set to true, the response will include the admin's avatar object containing the image URL. Defaults to false.",
+            "example": true,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/admins/{admin_id}": {
+      "get": {
+        "summary": "Retrieve an admin",
+        "description": "You can retrieve the details of a single admin.",
+        "operationId": "retrieveAdmin",
+        "tags": [
+          "Admins"
+        ],
+        "parameters": [
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          },
+          {
+            "name": "admin_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of a given admin",
+            "example": 123,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/contacts": {
+      "get": {
+        "summary": "List all contacts",
+        "description": "You can fetch a list of all contacts (ie. users or leads) in your workspace.\n{% admonition type=\"info\" name=\"Merged contacts\" %}\n  Contacts that have been merged (via POST /contacts/merge) will not appear in list results. Only the target contact from the merge remains accessible.\n{% /admonition %}\n{% admonition type=\"warning\" name=\"Pagination\" %}\n  You can use pagination to limit the number of results returned. The default is `50` results per page.\n  See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#pagination-for-list-apis) for more details on how to use the `starting_after` param.\n{% /admonition %}\n",
+        "operationId": "ListContacts",
+        "tags": [
+          "Contacts"
+        ],
+        "parameters": [
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          },
+          {
+            "name": "include_merge_history",
+            "in": "query",
+            "description": "Pass `true` to include a `merge_history` array on each contact in the response. Only returned for contacts with a `user` role.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/contacts/{contact_id}": {
+      "get": {
+        "summary": "Get a contact",
+        "description": "You can fetch the details of a single contact.\n\n{% admonition type=\"info\" name=\"Merged contacts return 410 Gone\" %}\n  If a contact has been merged into another contact via the Merge endpoint (`POST /contacts/merge`), requesting it by its original ID will return **HTTP 410 Gone** with a `Link` header pointing to the canonical (merged-into) contact.\n\n  **Response headers:**\n  ```\n  Link: </contacts/{canonical_id}>; rel=\"canonical\"\n  ```\n\n  **Response body:**\n  ```json\n  {\n    \"type\": \"error.list\",\n    \"errors\": [{ \"code\": \"contact_merged\", \"message\": \"This contact has been merged. See the 'Link' header for the canonical contact.\" }]\n  }\n  ```\n\n  The `Link` header contains the path to the final merge target, resolving multi-hop merge chains (up to 3 hops).\n{% /admonition %}\n",
+        "operationId": "ShowContact",
+        "tags": [
+          "Contacts"
+        ],
+        "parameters": [
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          },
+          {
+            "name": "contact_id",
+            "in": "path",
+            "description": "contact_id",
+            "example": "63a07ddf05a32042dffac965",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "include_merge_history",
+            "in": "query",
+            "description": "Pass `true` to include the contact's merge history in the response. Only returned for contacts with a `user` role.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/contacts/{contact_id}/companies": {
+      "get": {
+        "summary": "List attached companies for contact",
+        "description": "You can fetch a list of companies that are associated to a contact.",
+        "operationId": "listCompaniesForAContact",
+        "tags": [
+          "Contacts",
+          "Companies"
+        ],
+        "parameters": [
+          {
+            "name": "contact_id",
+            "in": "path",
+            "description": "The unique identifier for the contact which is given by Intercom",
+            "example": "63a07ddf05a32042dffac965",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/contacts/{contact_id}/segments": {
+      "get": {
+        "summary": "List attached segments for contact",
+        "description": "You can fetch a list of segments that are associated to a contact.",
+        "operationId": "listSegmentsForAContact",
+        "tags": [
+          "Contacts",
+          "Segments"
+        ],
+        "parameters": [
+          {
+            "name": "contact_id",
+            "in": "path",
+            "description": "The unique identifier for the contact which is given by Intercom",
+            "example": "63a07ddf05a32042dffac965",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/contacts/{contact_id}/tags": {
+      "get": {
+        "summary": "List tags attached to a contact",
+        "description": "You can fetch a list of all tags that are attached to a specific contact.",
+        "operationId": "listTagsForAContact",
+        "tags": [
+          "Contacts",
+          "Tags"
+        ],
+        "parameters": [
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          },
+          {
+            "name": "contact_id",
+            "in": "path",
+            "description": "The unique identifier for the contact which is given by Intercom",
+            "example": "63a07ddf05a32042dffac965",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/companies": {
+      "get": {
+        "summary": "Retrieve companies",
+        "description": "You can fetch a single company by passing in `company_id` or `name`.\n\n  `https://api.intercom.io/companies?name={name}`\n\n  `https://api.intercom.io/companies?company_id={company_id}`\n\nYou can fetch all companies and filter by `segment_id` or `tag_id` as a query parameter.\n\n  `https://api.intercom.io/companies?tag_id={tag_id}`\n\n  `https://api.intercom.io/companies?segment_id={segment_id}`\n",
+        "operationId": "retrieveCompany",
+        "tags": [
+          "Companies"
+        ],
+        "parameters": [
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "description": "The `name` of the company to filter by.",
+            "example": "my company",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": false,
+            "description": "The `company_id` of the company to filter by.",
+            "example": "12345",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tag_id",
+            "in": "query",
+            "required": false,
+            "description": "The `tag_id` of the company to filter by.",
+            "example": "678910",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "segment_id",
+            "in": "query",
+            "required": false,
+            "description": "The `segment_id` of the company to filter by.",
+            "example": "98765",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "The page of results to fetch. Defaults to first page",
+            "example": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "description": "How many results to display per page. Defaults to 15",
+            "example": 15,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/companies/{company_id}": {
+      "get": {
+        "summary": "Retrieve a company by ID",
+        "description": "You can fetch a single company.",
+        "operationId": "RetrieveACompanyById",
+        "tags": [
+          "Companies"
+        ],
+        "parameters": [
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          },
+          {
+            "name": "company_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier for the company which is given by Intercom",
+            "example": "5f4d3c1c-7b1b-4d7d-a97e-6095715c6632",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/conversations": {
+      "get": {
+        "summary": "List all conversations",
+        "description": "You can fetch a list of all conversations.\n\nYou can optionally request the result page size and the cursor to start after to fetch the result.\n{% admonition type=\"warning\" name=\"Pagination\" %}\n  You can use pagination to limit the number of results returned. The default is `20` results per page.\n  See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#pagination-for-list-apis) for more details on how to use the `starting_after` param.\n{% /admonition %}\n",
+        "operationId": "listConversations",
+        "tags": [
+          "Conversations"
+        ],
+        "parameters": [
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "maximum": 150
+            },
+            "required": false,
+            "description": "How many results per page"
+          },
+          {
+            "name": "starting_after",
+            "in": "query",
+            "required": false,
+            "description": "String used to get the next page of conversations.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/conversations/{conversation_id}": {
+      "get": {
+        "summary": "Retrieve a conversation",
+        "description": "\nYou can fetch the details of a single conversation.\n\nThis will return a single Conversation model with all its conversation parts.\n\n{% admonition type=\"warning\" name=\"Hard limit of 500 parts\" %}\nThe maximum number of conversation parts that can be returned via the API is 500. If you have more than that we will return the 500 most recent conversation parts.\n{% /admonition %}\n\nFor AI agent conversation metadata, please note that you need to have the agent enabled in your workspace, which is a [paid feature](https://www.intercom.com/help/en/articles/8205718-fin-resolutions#h_97f8c2e671).\n",
+        "operationId": "retrieveConversation",
+        "tags": [
+          "Conversations"
+        ],
+        "parameters": [
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          },
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "description": "The id of the conversation to target",
+            "example": 123,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "display_as",
+            "in": "query",
+            "required": false,
+            "description": "Set to plaintext to retrieve conversation messages in plain text. This affects both the body and subject fields. Inline links are rendered as `label (url)`, preserving the link URL alongside the visible text.",
+            "example": "plaintext",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "include_translations",
+            "in": "query",
+            "required": false,
+            "description": "If set to true, conversation parts will be translated to the detected language of the conversation.",
+            "example": true,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/teams": {
+      "get": {
+        "summary": "List all teams",
+        "description": "This will return a list of team objects for the App.",
+        "operationId": "listTeams",
+        "tags": [
+          "Teams"
+        ],
+        "parameters": [
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/teams/{team_id}": {
+      "get": {
+        "summary": "Retrieve a team",
+        "description": "You can fetch the details of a single team, containing an array of admins that belong to this team.",
+        "operationId": "retrieveTeam",
+        "tags": [
+          "Teams"
+        ],
+        "parameters": [
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          },
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of a given team.",
+            "example": "123",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/segments": {
+      "get": {
+        "summary": "List all segments",
+        "description": "You can fetch a list of all segments.",
+        "operationId": "listSegments",
+        "tags": [
+          "Segments"
+        ],
+        "parameters": [
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          },
+          {
+            "name": "include_count",
+            "in": "query",
+            "required": false,
+            "description": "It includes the count of contacts that belong to each segment.",
+            "example": true,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/segments/{segment_id}": {
+      "get": {
+        "summary": "Retrieve a segment",
+        "description": "You can fetch the details of a single segment.",
+        "operationId": "retrieveSegment",
+        "tags": [
+          "Segments"
+        ],
+        "parameters": [
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          },
+          {
+            "name": "segment_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identified of a given segment.",
+            "example": "123",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/tags": {
+      "get": {
+        "summary": "List all tags",
+        "description": "You can fetch a list of all tags for a given workspace.\n\n",
+        "operationId": "listTags",
+        "tags": [
+          "Tags"
+        ],
+        "parameters": [
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/tags/{tag_id}": {
+      "get": {
+        "summary": "Find a specific tag",
+        "description": "You can fetch the details of tags that are on the workspace by their id.\nThis will return a tag object.\n",
+        "operationId": "findTag",
+        "tags": [
+          "Tags"
+        ],
+        "parameters": [
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          },
+          {
+            "name": "tag_id",
+            "in": "path",
+            "description": "The unique identifier of a given tag",
+            "example": "123",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/data_attributes": {
+      "get": {
+        "summary": "List all data attributes",
+        "description": "You can fetch a list of all data attributes belonging to a workspace for contacts or companies.\n\n{% admonition type=\"warning\" %}\nConversation attributes are no longer returned by this endpoint. Calling without a `model` parameter no longer includes them, and `model=conversation` returns a `422` error. Use `GET /conversations/attributes` instead.\n{% /admonition %}\n",
+        "operationId": "lisDataAttributes",
+        "tags": [
+          "Data Attributes"
+        ],
+        "parameters": [
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          },
+          {
+            "name": "model",
+            "in": "query",
+            "required": false,
+            "description": "Specify the data attribute model to return. For conversation attributes, use GET /conversations/attributes instead.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "contact",
+                "company"
+              ]
+            },
+            "example": "company"
+          },
+          {
+            "name": "include_archived",
+            "in": "query",
+            "required": false,
+            "description": "Include archived attributes in the list. By default we return only non archived data attributes.",
+            "example": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/contacts/{contact_id}/notes": {
+      "get": {
+        "summary": "List all notes",
+        "description": "You can fetch a list of notes that are associated to a contact.",
+        "operationId": "listNotes",
+        "tags": [
+          "Notes",
+          "Contacts"
+        ],
+        "parameters": [
+          {
+            "name": "contact_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of a contact.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/ticket_types": {
+      "get": {
+        "summary": "List all ticket types",
+        "description": "You can get a list of all ticket types for a workspace.",
+        "operationId": "listTicketTypes",
+        "tags": [
+          "Ticket Types"
+        ],
+        "parameters": [
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/ticket_types/{ticket_type_id}": {
+      "get": {
+        "summary": "Retrieve a ticket type",
+        "description": "You can fetch the details of a single ticket type.",
+        "operationId": "getTicketType",
+        "tags": [
+          "Ticket Types"
+        ],
+        "parameters": [
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          },
+          {
+            "name": "ticket_type_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier for the ticket type which is given by Intercom.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/tickets/{ticket_id}": {
+      "get": {
+        "summary": "Retrieve a ticket",
+        "description": "You can fetch the details of a single ticket.",
+        "operationId": "getTicket",
+        "tags": [
+          "Tickets"
+        ],
+        "parameters": [
+          {
+            "name": "Intercom-Version",
+            "in": "header",
+            "schema": {
+              "description": "Intercom API version.</br>By default, it's equal to the version set in the app package.",
+              "type": "string",
+              "example": "2.16",
+              "default": "2.16",
+              "enum": [
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "2.0",
+                "2.1",
+                "2.2",
+                "2.3",
+                "2.4",
+                "2.5",
+                "2.6",
+                "2.7",
+                "2.8",
+                "2.9",
+                "2.10",
+                "2.11",
+                "2.12",
+                "2.13",
+                "2.14",
+                "2.15",
+                "2.16"
+              ]
+            }
+          },
+          {
+            "name": "ticket_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier for the ticket which is given by Intercom.\n{% admonition type=\"info\" name=\"Not the Inbox ticket ID\" %}\nThis is the internal `id` field from the API response, not the `ticket_id` displayed in the Intercom Inbox (e.g., #12345). Use the `id` value from the ticket object returned by the API.\n{% /admonition %}\n",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  }
+}
