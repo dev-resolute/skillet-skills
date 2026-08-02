@@ -1,0 +1,413 @@
+slug: discord
+version: 1.0.0
+name: Discord
+category: comms-messaging
+one_liner: Read servers, channels, members, and messages visible to your bot.
+api_domain: discord.com
+status: live
+credentials:
+  - env_var: DISCORD_BOT_TOKEN
+    label: Discord bot token (bot invited to your server with read scopes)
+    help_url: https://discord.com/developers/applications
+auth:
+  scheme: api_key
+  header: Authorization
+  env_vars:
+    - DISCORD_BOT_TOKEN
+  value_template: Bot ${DISCORD_BOT_TOKEN}
+operations:
+  - name: get current bot user
+    method: GET
+    url: https://discord.com/api/v10/users/@me
+    read_only: true
+    params: []
+  - name: list bot guilds
+    method: GET
+    url: https://discord.com/api/v10/users/@me/guilds
+    read_only: true
+    params:
+      - name: before
+        type: string
+        format: snowflake
+        required: false
+        location: query
+        description: Only return guilds with an ID before this guild's snowflake ID (for pagination).
+      - name: after
+        type: string
+        format: snowflake
+        required: false
+        location: query
+        description: Only return guilds with an ID after this guild's snowflake ID (for pagination).
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Max number of guilds to return (1-200). CatalogParam has no min/max field — this range
+          comes from the spec's schema, not the param itself.
+      - name: with_counts
+        type: boolean
+        required: false
+        location: query
+        description: If true, include approximate member and online-presence counts in the response.
+  - name: get guild
+    method: GET
+    url: https://discord.com/api/v10/guilds/{guild_id}
+    read_only: true
+    params:
+      - name: with_counts
+        type: boolean
+        required: false
+        location: query
+        description: If true, include approximate member and online-presence counts in the response.
+      - name: guild_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the Discord server (guild).
+  - name: list guild channels
+    method: GET
+    url: https://discord.com/api/v10/guilds/{guild_id}/channels
+    read_only: true
+    params:
+      - name: guild_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the Discord server (guild).
+  - name: list guild members
+    method: GET
+    url: https://discord.com/api/v10/guilds/{guild_id}/members
+    read_only: true
+    params:
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Max number of members to return (1-1000).
+      - name: after
+        type: string
+        format: snowflake
+        required: false
+        location: query
+        description: Only return members with a user ID greater (higher snowflake value) than this — for
+          pagination, not a filter on any particular user.
+      - name: guild_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the Discord server (guild).
+  - name: get guild member
+    method: GET
+    url: https://discord.com/api/v10/guilds/{guild_id}/members/{user_id}
+    read_only: true
+    params:
+      - name: guild_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the Discord server (guild).
+      - name: user_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the Discord user.
+  - name: list guild roles
+    method: GET
+    url: https://discord.com/api/v10/guilds/{guild_id}/roles
+    read_only: true
+    params:
+      - name: guild_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the Discord server (guild).
+  - name: get guild role
+    method: GET
+    url: https://discord.com/api/v10/guilds/{guild_id}/roles/{role_id}
+    read_only: true
+    params:
+      - name: guild_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the Discord server (guild).
+      - name: role_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the role.
+  - name: list guild emojis
+    method: GET
+    url: https://discord.com/api/v10/guilds/{guild_id}/emojis
+    read_only: true
+    params:
+      - name: guild_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the Discord server (guild).
+  - name: get guild emoji
+    method: GET
+    url: https://discord.com/api/v10/guilds/{guild_id}/emojis/{emoji_id}
+    read_only: true
+    params:
+      - name: guild_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the Discord server (guild).
+      - name: emoji_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the custom emoji.
+  - name: list guild invites
+    method: GET
+    url: https://discord.com/api/v10/guilds/{guild_id}/invites
+    read_only: true
+    params:
+      - name: guild_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the Discord server (guild).
+  - name: get channel
+    method: GET
+    url: https://discord.com/api/v10/channels/{channel_id}
+    read_only: true
+    params:
+      - name: channel_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the channel.
+  - name: list channel messages
+    method: GET
+    url: https://discord.com/api/v10/channels/{channel_id}/messages
+    read_only: true
+    params:
+      - name: around
+        type: string
+        format: snowflake
+        required: false
+        location: query
+        description: Return messages around this message ID (mutually exclusive with before/after — the API
+          honors only one).
+      - name: before
+        type: string
+        format: snowflake
+        required: false
+        location: query
+        description: Return messages with an ID before (older than) this message ID.
+      - name: after
+        type: string
+        format: snowflake
+        required: false
+        location: query
+        description: Return messages with an ID after (newer than) this message ID.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Max number of messages to return (1-100).
+      - name: channel_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the channel.
+  - name: get channel message
+    method: GET
+    url: https://discord.com/api/v10/channels/{channel_id}/messages/{message_id}
+    read_only: true
+    params:
+      - name: channel_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the channel.
+      - name: message_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the message.
+  - name: list pinned messages
+    method: GET
+    url: https://discord.com/api/v10/channels/{channel_id}/messages/pins
+    read_only: true
+    params:
+      - name: before
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: Only return messages pinned before this ISO 8601 timestamp.
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Max number of pinned messages to return (1-50).
+      - name: channel_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the channel.
+  - name: list active guild threads
+    method: GET
+    url: https://discord.com/api/v10/guilds/{guild_id}/threads/active
+    read_only: true
+    params:
+      - name: guild_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the Discord server (guild).
+  - name: get user
+    method: GET
+    url: https://discord.com/api/v10/users/{user_id}
+    read_only: true
+    params:
+      - name: user_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the Discord user.
+  - name: get current application
+    method: GET
+    url: https://discord.com/api/v10/applications/@me
+    read_only: true
+    params: []
+  - name: list guild webhooks
+    method: GET
+    url: https://discord.com/api/v10/guilds/{guild_id}/webhooks
+    read_only: true
+    params:
+      - name: guild_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the Discord server (guild).
+  - name: get webhook
+    method: GET
+    url: https://discord.com/api/v10/webhooks/{webhook_id}
+    read_only: true
+    params:
+      - name: webhook_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the webhook.
+  - name: list guild scheduled events
+    method: GET
+    url: https://discord.com/api/v10/guilds/{guild_id}/scheduled-events
+    read_only: true
+    params:
+      - name: with_user_count
+        type: boolean
+        required: false
+        location: query
+        description: If true, include the count of users subscribed to the scheduled event.
+      - name: guild_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the Discord server (guild).
+  - name: get guild scheduled event
+    method: GET
+    url: https://discord.com/api/v10/guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}
+    read_only: true
+    params:
+      - name: with_user_count
+        type: boolean
+        required: false
+        location: query
+        description: If true, include the count of users subscribed to the scheduled event.
+      - name: guild_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the Discord server (guild).
+      - name: guild_scheduled_event_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the guild scheduled event.
+  - name: get guild audit log
+    method: GET
+    url: https://discord.com/api/v10/guilds/{guild_id}/audit-logs
+    read_only: true
+    params:
+      - name: user_id
+        type: string
+        format: snowflake
+        required: false
+        location: query
+        description: Filter entries to actions performed by this moderator's user ID (the actor, not the
+          target).
+      - name: target_id
+        type: string
+        format: snowflake
+        required: false
+        location: query
+        description: Filter entries to actions performed on this target entity's snowflake ID (a user,
+          channel, role, etc., depending on the entry's type).
+      - name: action_type
+        type: integer
+        required: false
+        location: query
+        description: Optional numeric audit-log event-type filter (Discord's AUDIT_LOG_EVENT_TYPE enum —
+          CatalogParam cannot carry the spec's 76-value oneOf/const set as an enum, so the common
+          codes are listed here) — GUILD_UPDATE=1, CHANNEL_CREATE=10, CHANNEL_UPDATE=11,
+          CHANNEL_DELETE=12, MEMBER_KICK=20, MEMBER_BAN_ADD=22, MEMBER_BAN_REMOVE=23,
+          MEMBER_UPDATE=24, ROLE_CREATE=30, ROLE_DELETE=32, INVITE_CREATE=40, WEBHOOK_CREATE=50,
+          EMOJI_CREATE=60, MESSAGE_DELETE=72, MESSAGE_PIN=74. Omit to return entries of every action
+          type. Full list —
+          https://discord.com/developers/docs/resources/audit-log#audit-log-entry-object-audit-log-events
+      - name: before
+        type: string
+        format: snowflake
+        required: false
+        location: query
+        description: Only return entries with an ID before (older than) this audit-log-entry snowflake ID
+          (for pagination).
+      - name: after
+        type: string
+        format: snowflake
+        required: false
+        location: query
+        description: Only return entries with an ID after (newer than) this audit-log-entry snowflake ID
+          (for pagination).
+      - name: limit
+        type: integer
+        required: false
+        location: query
+        description: Max number of entries to return (1-100).
+      - name: guild_id
+        type: string
+        format: snowflake
+        required: true
+        location: path
+        description: Snowflake ID of the Discord server (guild).

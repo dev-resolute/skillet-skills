@@ -1,0 +1,360 @@
+# Regenerate catalog.yaml operations from a vendored, pruned Discord spec:
+#   pnpm --filter @kit/engine catalog:import discord   (from the runespacedev repo)
+#
+# `include` entries are the names listOperations() reports for this spec —
+# summary || operationId || "METHOD /path". Every operation in the upstream
+# spec (242 operations across all methods, not just the 23 GET ops below) has
+# an EMPTY `summary` string — Discord's official spec carries no summary or
+# description text anywhere on an operation, only `operationId` — so every
+# entry below is the operationId verbatim. Checked directly: all 242
+# operationIds in the full spec are globally unique, so there is no ambiguity
+# falling back to operationId as the match key.
+#
+# --- Spec sourcing (SAP-2(b), vendored + pruned) ----------------------------
+# Source: https://raw.githubusercontent.com/discord/discord-api-spec/main/specs/openapi.json
+# (OpenAPI 3.1.0, 1.18 MB, 150 paths, 103 GET operations). Pruned to
+# `discord/openapi.json`:
+#   1. Kept only the 23 paths this skill imports from, GET only (every other
+#      path, and every non-GET method on a kept path, dropped).
+#   2. Stripped each kept operation's `responses` object and replaced it with
+#      a minimal `{"200": {"description": "OK"}}` stub — buildManifestOperation
+#      (packages/engine/src/manifest.ts) never reads `responses`, only
+#      `summary`, `description`, `parameters`, and `requestBody`. Kept
+#      `operationId`, `parameters`, and `security` on every kept operation
+#      (the last is cheap and documents the auth scope each op expects; this
+#      spec has no `tags` field anywhere to carry through).
+#   3. Every kept GET operation's `parameters` schema is a plain inline type
+#      EXCEPT three ops (`list_my_guilds`, `list_messages`,
+#      `list_guild_audit_log_entries`) whose snowflake-ID query params
+#      (`before`/`after`/`around`/`user_id`/`target_id`) reference
+#      `#/components/schemas/SnowflakeType`, and one param
+#      (`list_guild_audit_log_entries`'s `action_type`) that references
+#      `#/components/schemas/AuditLogActionTypes`. Both refs were resolved
+#      and inlined in the pruning script itself (not left for the importer):
+#      `SnowflakeType` → `{"type": "string", "pattern": "^(0|[1-9][0-9]*)$",
+#      "format": "snowflake"}` verbatim; `AuditLogActionTypes` (a 76-entry
+#      `oneOf`/`const` integer enum) simplified to its bare `{"type":
+#      "integer"}` — extractParams (manifest.ts) only reads a flat
+#      `schema.enum` array, never `oneOf`/`const`, so inlining the full oneOf
+#      would not have surfaced as a catalog `enum` either way; see the
+#      `action_type` override below for how its guidance ships instead. The
+#      ~1.2 MB `components.schemas` block (kept only for those two refs) was
+#      dropped entirely once both were inlined — net effect: zero `$ref`
+#      anywhere in the pruned file, and no risk of the importer's own
+#      dereference step (which needs `components.schemas` present to resolve
+#      any surviving `$ref`) falling back to the raw, un-dereferenced spec.
+#   4. `components` trimmed to just `securitySchemes.BotToken` (kept for a
+#      human skimming the file; not read by the importer, which takes auth
+#      from catalog.yaml's own `auth:` block).
+# Net: 1.18 MB / 150 paths → 12 KB / 23 paths.
+#
+# --- Known engine gap (path-item-level `parameters`) ------------------------
+# The importer only reads a GET operation's own `parameters` array, not
+# `parameters` declared as a sibling of `get` on the path item (see Asana's
+# import.yaml for the mechanism). Discord's spec declares EVERY path-segment
+# ID (`guild_id`, `channel_id`, `user_id`, `role_id`, `emoji_id`,
+# `message_id`, `webhook_id`, `guild_scheduled_event_id`) this way — as a
+# path-item-level parameter referencing `SnowflakeType`, never as a
+# GET-operation-level parameter — on every one of the 23 paths below, so this
+# gap touches all 23 operations, not a subset. Checked directly: no operation
+# below is missing a param outright because of it. Unlike Asana's typeahead
+# case, none of these are lost — every `{placeholder}` in a URL template gets
+# auto-declared by buildManifestOperation's own fallback (deviation 3 in
+# manifest.ts) as a required `type: string` path param, whether or not the
+# spec-level extraction saw it, because it scans the URL template text
+# directly. What IS lost is the description and the `format: snowflake` hint
+# the spec attaches via the `SnowflakeType` ref — restored below via
+# `overrides: "*"`, one entry per distinct path-param name (each name means
+# exactly one thing everywhere it appears in this skill: `user_id` is always
+# "a Discord user's snowflake ID", whether the op reaches it via a guild
+# member lookup or a direct user lookup). No op needed excluding: every
+# path-item-level parameter in this spec is a path segment already covered by
+# the URL-template auto-declare, never a REQUIRED query filter the way
+# Asana's typeahead `resource_type` was — the exclude-as-non-functional rule
+# does not apply to any operation here.
+#
+# --- Spec-quality gap (this app, distinct from the engine gaps above) -------
+# Every kept operation's own `summary`/`description` is empty (see the header
+# note above) and no `parameters` entry anywhere in the FULL upstream spec —
+# not just the 23 kept here — carries a `description` on the parameter or its
+# schema either. This is not truncation (gap b in the task brief); there is
+# no prose to truncate. Every operation description below, and every
+# meaningfully-named param description, is therefore hand-authored via
+# `overrides` rather than restored from a longer spec original. Two related
+# losses worth naming explicitly, since neither has anywhere else to live:
+#   * CatalogParam (catalog-import.ts) has no min/max fields — extractParams
+#     never reads `schema.minimum`/`schema.maximum` — so the valid numeric
+#     range on every `limit` param below (200 for guild lists, 1000 for
+#     guild members, 100 for channel messages, 50 for pinned messages, 100
+#     for audit log entries — five different ranges, never the same twice)
+#     would be silently invisible to a calling agent without being restated
+#     in prose. Each `limit` override below states its own op's real
+#     min/max from the spec's `schema.minimum`/`maximum`, checked directly
+#     against the pre-pruning spec rather than guessed.
+#   * `action_type` on `get guild audit log` (`AuditLogActionTypes`, see the
+#     pruning note above) loses its 76-value `oneOf`/`const` enum the same
+#     way `example` is lost elsewhere (gap c in the task brief) — nowhere in
+#     the catalog format for a value shape `enum` cannot hold. Its override
+#     below states the common action-type codes in prose and links Discord's
+#     own event-type reference for the rest, the same treatment Sentry's
+#     `dataset` override gives a closed-but-large value set.
+#
+# --- Type correction: `list_guild_members`'s `after` -------------------------
+# The spec itself types this one param `{"type": "integer", "minimum": 0}` —
+# every other snowflake-shaped ID in this spec, including `after` on every
+# OTHER paginated list here, is `SnowflakeType` (a string). Discord snowflakes
+# routinely exceed 2^53 and lose precision if ever round-tripped through a
+# JSON/JS number, so importing this one param as `integer` (which is what a
+# literal read of the spec produces) would ship a real correctness bug for
+# large guilds. Overridden to `type: string, format: snowflake` below, with a
+# note on why. Found in SAP-5 review, not by contrast with any other app.
+#
+# --- @me literal path segments (checked, not mangled) ------------------------
+# `/users/@me`, `/users/@me/guilds`, and `/applications/@me` all encode `@me`
+# as literal path TEXT in the spec's own path keys, never inside `{}` —
+# confirmed by inspecting the raw `paths` keys before pruning. The
+# URL-template auto-declare in manifest.ts only matches `{...}` placeholders
+# via regex, so `@me` is never mistaken for a path parameter and never
+# mangled into a required `me` param needing a value. No `keep:`
+# hand-authoring was needed for any of the three `@me` operations below.
+#
+# --- Coverage target ---------------------------------------------------------
+# Current bot user + the guilds it's in; guild (get + channels/members/roles/
+# emojis/invites lists, plus a member/role/emoji get to round out each
+# list); channel (get + messages list/get + pinned messages list); a guild's
+# active threads (list); any user (get); the bot's own application (get);
+# guild webhooks (list, metadata only — no message-execute surface is
+# imported, and no webhook token ever appears in any op below); guild
+# scheduled events (list + get to round out the pair); guild audit log
+# (get). 23 operations, inside the task's 20-30 target range.
+#
+# --- Deliberate gaps (round-outs added, and scope intentionally held) -------
+# `get guild member`, `get guild role`, `get guild emoji`, and `get guild
+# scheduled event` are added beyond the task brief's literal wording (which
+# names only the list op for members/roles/emojis/scheduled-events) to round
+# out list/get pairs the same way every other resource in this skill has one
+# — consistent with the Intercom/GitLab precedent for this exact call.
+# `get webhook` (metadata only, no token in the URL) is added for the same
+# reason paired against `list guild webhooks`. Held out of scope, on purpose:
+# channel-scoped webhooks list (`GET /channels/{channel_id}/webhooks`) — the
+# task brief says "webhooks list" once, and guild-scoped covers every
+# webhook in a server without a second near-duplicate op; guild bans, guild
+# integrations, guild templates, stage instances, stickers, soundboard
+# sounds, voice regions, and every OAuth2/entitlement/SKU/lobby endpoint —
+# none named in the task brief's target list; and every write endpoint
+# (message send, channel/role/emoji create-update-delete, webhook execute) —
+# this is a read-first, GET-only manifest per the global constraints, and
+# "no webhook execution" is explicit in the task brief besides.
+
+spec: ./openapi.json
+base_url: https://discord.com/api/v10
+parity_source: https://discord.com/developers/docs/reference
+
+include:
+  # --- current bot user and its guilds --------------------------------------
+  - get_my_user
+  - list_my_guilds
+  # --- guild ---------------------------------------------------------------
+  - get_guild
+  - list_guild_channels
+  - list_guild_members
+  - get_guild_member
+  - list_guild_roles
+  - get_guild_role
+  - list_guild_emojis
+  - get_guild_emoji
+  - list_guild_invites
+  # --- channel and messages --------------------------------------------------
+  - get_channel
+  - list_messages
+  - get_message
+  - list_pins
+  # --- threads ---------------------------------------------------------------
+  - get_active_guild_threads
+  # --- users and applications --------------------------------------------------
+  - get_user
+  - get_my_application
+  # --- webhooks (metadata only) ------------------------------------------------
+  - get_guild_webhooks
+  - get_webhook
+  # --- scheduled events and audit log --------------------------------------------
+  - list_guild_scheduled_events
+  - get_guild_scheduled_event
+  - list_guild_audit_log_entries
+
+rename:
+  get_my_user: get current bot user
+  list_my_guilds: list bot guilds
+
+  get_guild: get guild
+  list_guild_channels: list guild channels
+  list_guild_members: list guild members
+  get_guild_member: get guild member
+  list_guild_roles: list guild roles
+  get_guild_role: get guild role
+  list_guild_emojis: list guild emojis
+  get_guild_emoji: get guild emoji
+  list_guild_invites: list guild invites
+
+  get_channel: get channel
+  list_messages: list channel messages
+  get_message: get channel message
+  list_pins: list pinned messages
+
+  get_active_guild_threads: list active guild threads
+
+  get_user: get user
+  get_my_application: get current application
+
+  get_guild_webhooks: list guild webhooks
+  get_webhook: get webhook
+
+  list_guild_scheduled_events: list guild scheduled events
+  get_guild_scheduled_event: get guild scheduled event
+  list_guild_audit_log_entries: get guild audit log
+
+# Curated corrections layered over the spec after import, keyed by the catalog
+# name (i.e. post-`rename`). They live here rather than in catalog.yaml
+# because a re-import rewrites every field but `description` and reserialises
+# the YAML, which would drop both the edit and any comment explaining it.
+overrides:
+  "*":
+    params:
+      # hand-authored: every path-segment ID in this spec is declared
+      # path-item-level (see the header comment's engine-gap note), so
+      # extraction never sees it and the URL-template auto-declare fills it
+      # in as a bare `type: string, required: true` with no description or
+      # format. Each name below means the same thing on every operation that
+      # has it — restored with the spec's own `SnowflakeType` shape
+      # (`format: snowflake`) plus a plain-English description.
+      guild_id:
+        format: snowflake
+        description: Snowflake ID of the Discord server (guild).
+      channel_id:
+        format: snowflake
+        description: Snowflake ID of the channel.
+      user_id:
+        format: snowflake
+        description: Snowflake ID of the Discord user.
+      role_id:
+        format: snowflake
+        description: Snowflake ID of the role.
+      emoji_id:
+        format: snowflake
+        description: Snowflake ID of the custom emoji.
+      message_id:
+        format: snowflake
+        description: Snowflake ID of the message.
+      webhook_id:
+        format: snowflake
+        description: Snowflake ID of the webhook.
+      guild_scheduled_event_id:
+        format: snowflake
+        description: Snowflake ID of the guild scheduled event.
+      # hand-authored: identical meaning on both operations that carry it —
+      # "get guild" and "list bot guilds" both return approximate
+      # member/presence counts when set.
+      with_counts:
+        description: If true, include approximate member and online-presence
+          counts in the response.
+      # hand-authored: identical meaning on both scheduled-event operations —
+      # includes the count of users subscribed to the event.
+      with_user_count:
+        description: If true, include the count of users subscribed to the
+          scheduled event.
+
+  # hand-authored: cursor pagination for the bot's guild list. `before`/
+  # `after` here are cursors over GUILD snowflake IDs — a different thing
+  # than the message-ID and audit-log-entry-ID cursors the same param names
+  # mean on other operations below, so these are op-scoped, not "*".
+  list bot guilds:
+    params:
+      before:
+        description: Only return guilds with an ID before this guild's
+          snowflake ID (for pagination).
+      after:
+        description: Only return guilds with an ID after this guild's
+          snowflake ID (for pagination).
+      limit:
+        description: Max number of guilds to return (1-200). CatalogParam has
+          no min/max field — this range comes from the spec's schema, not the
+          param itself.
+
+  # hand-authored: the spec types this one param `integer` — every other
+  # snowflake-shaped ID in this skill, including `after` on every other
+  # paginated list here, is a string per Discord's own `SnowflakeType`.
+  # Retyped to match: Discord snowflakes routinely exceed 2^53 and lose
+  # precision as a JSON/JS number. See the header comment's "Type correction"
+  # note for the full reasoning.
+  list guild members:
+    params:
+      after:
+        type: string
+        format: snowflake
+        description: Only return members with a user ID greater (higher
+          snowflake value) than this — for pagination, not a filter on any
+          particular user.
+      limit:
+        description: Max number of members to return (1-1000).
+
+  # hand-authored: `around`/`before`/`after` are cursors over MESSAGE
+  # snowflake IDs on this operation specifically (op-scoped: the same names
+  # mean guild IDs or audit-log-entry IDs elsewhere in this skill).
+  list channel messages:
+    params:
+      around:
+        description: Return messages around this message ID (mutually
+          exclusive with before/after — the API honors only one).
+      before:
+        description: Return messages with an ID before (older than) this
+          message ID.
+      after:
+        description: Return messages with an ID after (newer than) this
+          message ID.
+      limit:
+        description: Max number of messages to return (1-100).
+
+  # hand-authored: `before` here is an ISO 8601 timestamp (format: date-time,
+  # carried through automatically by extraction), not a snowflake ID —
+  # distinct from every other `before` in this skill.
+  list pinned messages:
+    params:
+      before:
+        description: Only return messages pinned before this ISO 8601
+          timestamp.
+      limit:
+        description: Max number of pinned messages to return (1-50).
+
+  # hand-authored: query-string filters for the audit log, all op-scoped —
+  # `user_id`/`before`/`after` on this operation mean something distinct
+  # from the "*" wildcard's user_id (a path segment) and from the guild-ID
+  # or message-ID cursors elsewhere; a per-op patch here wins over the "*"
+  # wildcard's user_id entry.
+  get guild audit log:
+    params:
+      user_id:
+        description: Filter entries to actions performed by this moderator's
+          user ID (the actor, not the target).
+      target_id:
+        description: Filter entries to actions performed on this target
+          entity's snowflake ID (a user, channel, role, etc., depending on
+          the entry's type).
+      action_type:
+        description: "Optional numeric audit-log event-type filter (Discord's
+          AUDIT_LOG_EVENT_TYPE enum — CatalogParam cannot carry the spec's
+          76-value oneOf/const set as an enum, so the common codes are listed
+          here) — GUILD_UPDATE=1, CHANNEL_CREATE=10, CHANNEL_UPDATE=11,
+          CHANNEL_DELETE=12, MEMBER_KICK=20, MEMBER_BAN_ADD=22,
+          MEMBER_BAN_REMOVE=23, MEMBER_UPDATE=24, ROLE_CREATE=30,
+          ROLE_DELETE=32, INVITE_CREATE=40, WEBHOOK_CREATE=50,
+          EMOJI_CREATE=60, MESSAGE_DELETE=72, MESSAGE_PIN=74. Omit to return
+          entries of every action type. Full list —
+          https://discord.com/developers/docs/resources/audit-log#audit-log-entry-object-audit-log-events"
+      before:
+        description: Only return entries with an ID before (older than) this
+          audit-log-entry snowflake ID (for pagination).
+      after:
+        description: Only return entries with an ID after (newer than) this
+          audit-log-entry snowflake ID (for pagination).
+      limit:
+        description: Max number of entries to return (1-100).
