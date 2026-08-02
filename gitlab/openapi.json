@@ -1,0 +1,4050 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "GitLab REST API",
+    "description": "GitLab REST API used to interact with a GitLab installation.",
+    "termsOfService": "https://handbook.gitlab.com/handbook/legal/api-terms/",
+    "version": "19.3.0-pre",
+    "license": {
+      "name": "CC BY-SA 4.0",
+      "url": "https://gitlab.com/gitlab-org/gitlab/-/blob/master/LICENSE",
+      "x-gitlab-description": "The license applies to the OpenAPI specification document itself. For terms governing use of the GitLab API, see the termsOfService field."
+    }
+  },
+  "servers": [
+    {
+      "url": "https://gitlab.com/api/v4"
+    }
+  ],
+  "paths": {
+    "/user": {
+      "get": {
+        "operationId": "getApiV4User",
+        "summary": "Retrieve current user details",
+        "description": "Retrieves details about your user account.",
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects": {
+      "get": {
+        "operationId": "getApiV4Projects",
+        "summary": "List all projects",
+        "description": "Lists all projects. Unauthenticated requests return only public projects with a limited subset of attributes. You can filter responses by custom attributes.",
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "required": false,
+            "description": "Return projects ordered by field. storage_size, repository_size, wiki_size, packages_size are only available to admins. Similarity is available when searching and is limited to projects the user has access to.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "id",
+                "name",
+                "path",
+                "created_at",
+                "updated_at",
+                "last_activity_at",
+                "similarity",
+                "star_count",
+                "storage_size",
+                "repository_size",
+                "wiki_size",
+                "packages_size"
+              ],
+              "default": "created_at",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "description": "Return projects sorted in ascending and descending order",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "archived",
+            "required": false,
+            "description": "Limit by archived status",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "visibility",
+            "required": false,
+            "description": "Limit by visibility",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "private",
+                "internal",
+                "public"
+              ],
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "search",
+            "required": false,
+            "description": "Return list of projects matching the search criteria",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "search_namespaces",
+            "required": false,
+            "description": "Include ancestor namespaces when matching search criteria",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "owned",
+            "required": false,
+            "description": "Limit by owned by authenticated user",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "starred",
+            "required": false,
+            "description": "Limit by starred status",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "imported",
+            "required": false,
+            "description": "Limit by imported by authenticated user",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "membership",
+            "required": false,
+            "description": "Limit by projects that the current user is a member of",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "with_issues_enabled",
+            "required": false,
+            "description": "Limit by enabled issues feature",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "with_merge_requests_enabled",
+            "required": false,
+            "description": "Limit by enabled merge requests feature",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "with_programming_language",
+            "required": false,
+            "description": "Limit to repositories which use the given programming language",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "min_access_level",
+            "required": false,
+            "description": "Limit by minimum access level of authenticated user",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                10,
+                15,
+                20,
+                25,
+                30,
+                40,
+                50
+              ],
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "id_after",
+            "required": false,
+            "description": "Limit results to projects with IDs greater than the specified ID",
+            "schema": {
+              "type": "integer",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "id_before",
+            "required": false,
+            "description": "Limit results to projects with IDs less than the specified ID",
+            "schema": {
+              "type": "integer",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "last_activity_after",
+            "required": false,
+            "description": "Limit results to projects with last_activity after specified time. Format: ISO 8601 YYYY-MM-DDTHH:MM:SSZ",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "last_activity_before",
+            "required": false,
+            "description": "Limit results to projects with last_activity before specified time. Format: ISO 8601 YYYY-MM-DDTHH:MM:SSZ",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "repository_storage",
+            "required": false,
+            "description": "Which storage shard the repository is on. Available only to admins",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "topic",
+            "required": false,
+            "description": "Comma-separated list of topics. Limit results to projects having all topics",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "nullable": true
+            },
+            "in": "query",
+            "style": "form",
+            "explode": false
+          },
+          {
+            "name": "topic_id",
+            "required": false,
+            "description": "Limit results to projects with the assigned topic given by the topic ID",
+            "schema": {
+              "type": "integer",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "updated_before",
+            "required": false,
+            "description": "Return projects updated before the specified datetime. Format: ISO 8601 YYYY-MM-DDTHH:MM:SSZ",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "updated_after",
+            "required": false,
+            "description": "Return projects updated after the specified datetime. Format: ISO 8601 YYYY-MM-DDTHH:MM:SSZ",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "include_pending_delete",
+            "required": false,
+            "description": "Include projects in pending delete state. Can only be set by admins",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "marked_for_deletion_on",
+            "required": false,
+            "description": "Date when the project was marked for deletion",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "active",
+            "required": false,
+            "description": "Limit by projects that are not archived and not marked for deletion",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "wiki_checksum_failed",
+            "required": false,
+            "description": "Limit by projects where wiki checksum is failed",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "repository_checksum_failed",
+            "required": false,
+            "description": "Limit by projects where repository checksum is failed",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "include_hidden",
+            "required": false,
+            "description": "Include hidden projects. Can only be set by admins",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "page",
+            "required": false,
+            "description": "Current page number",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 1
+          },
+          {
+            "name": "per_page",
+            "required": false,
+            "description": "Number of items per page",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 20
+          },
+          {
+            "name": "simple",
+            "required": false,
+            "description": "Return only the ID, URL, name, and path of each project",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "statistics",
+            "required": false,
+            "description": "Include project statistics",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "with_custom_attributes",
+            "required": false,
+            "description": "Include custom attributes in the response",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "custom_attributes",
+            "required": false,
+            "description": "Filter with custom attributes",
+            "schema": {
+              "type": "object",
+              "nullable": true
+            },
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects/{id}": {
+      "get": {
+        "operationId": "getApiV4ProjectsId",
+        "summary": "Retrieve a project",
+        "description": "Retrieves details on a specified project. This endpoint can be accessed without authentication if the project is publicly accessible.",
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The ID or URL-encoded path of the project",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "in": "path"
+          },
+          {
+            "name": "statistics",
+            "required": false,
+            "description": "Include project statistics",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "with_custom_attributes",
+            "required": false,
+            "description": "Include custom attributes in the response",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "custom_attributes",
+            "required": false,
+            "description": "Filter with custom attributes",
+            "schema": {
+              "type": "object",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "license",
+            "required": false,
+            "description": "Include project license data",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects/{id}/issues": {
+      "get": {
+        "operationId": "getApiV4ProjectsIdIssues",
+        "summary": "List all project issues",
+        "description": "Lists all issues for a specified project. If the project is private, you need to provide credentials to authorize. In most cases, you should authenticate with a personal access token.",
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The ID or URL-encoded path of the project",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "in": "path"
+          },
+          {
+            "name": "with_labels_details",
+            "required": false,
+            "description": "Return titles of labels and other details",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "state",
+            "required": false,
+            "description": "Return opened, closed, or all issues",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "opened",
+                "closed",
+                "all"
+              ],
+              "default": "all",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "closed_by_id",
+            "required": false,
+            "description": "Return issues which were closed by the user with the given ID.",
+            "schema": {
+              "type": "integer",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "order_by",
+            "required": false,
+            "description": "Return issues ordered by `created_at`, `due_date`, `label_priority`, `milestone_due`, `popularity`, `priority`, `relative_position`, `title`, or `updated_at` fields.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "created_at",
+                "due_date",
+                "label_priority",
+                "milestone_due",
+                "popularity",
+                "priority",
+                "relative_position",
+                "title",
+                "updated_at",
+                "weight"
+              ],
+              "default": "created_at",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "description": "Return issues sorted in `asc` or `desc` order.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "due_date",
+            "required": false,
+            "description": "Return issues that have no due date (`0`), or whose due date is this week, this month, between two weeks ago and next month, or which are overdue. Accepts: `overdue`, `week`, `month`, `next_month_and_previous_two_weeks`, `0`",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "0",
+                "any",
+                "today",
+                "tomorrow",
+                "overdue",
+                "week",
+                "month",
+                "next_month_and_previous_two_weeks",
+                ""
+              ],
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "issue_type",
+            "required": false,
+            "description": "The type of the issue. Accepts: issue, incident, test_case, requirement, task, ticket",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "issue",
+                "incident",
+                "test_case",
+                "requirement",
+                "task",
+                "ticket"
+              ],
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "labels",
+            "required": false,
+            "description": "Comma-separated list of label names",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "nullable": true
+            },
+            "in": "query",
+            "style": "form",
+            "explode": false
+          },
+          {
+            "name": "milestone",
+            "required": false,
+            "description": "Milestone title",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "milestone_id",
+            "required": false,
+            "description": "Return issues assigned to milestones with the specified timebox value (\"Any\", \"None\", \"Upcoming\" or \"Started\")",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Any",
+                "None",
+                "Upcoming",
+                "Started"
+              ],
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "iids",
+            "required": false,
+            "description": "The IID array of issues",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "nullable": true
+            },
+            "in": "query",
+            "style": "form",
+            "explode": false
+          },
+          {
+            "name": "search",
+            "required": false,
+            "description": "Search issues for text present in the title, description, or any combination of these",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "in",
+            "required": false,
+            "description": "`title`, `description`, or a string joining them with comma",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "author_id",
+            "required": false,
+            "description": "Return issues which are authored by the user with the given ID",
+            "schema": {
+              "type": "integer",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "author_username",
+            "required": false,
+            "description": "Return issues which are authored by the user with the given username",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "assignee_id",
+            "required": false,
+            "description": "Return issues which are assigned to the user with the given ID",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "nullable": true
+                },
+                {
+                  "type": "string",
+                  "nullable": true
+                }
+              ]
+            },
+            "in": "query"
+          },
+          {
+            "name": "assignee_username",
+            "required": false,
+            "description": "Return issues which are assigned to the user with the given username",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "created_after",
+            "required": false,
+            "description": "Return issues created after the specified time",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "created_before",
+            "required": false,
+            "description": "Return issues created before the specified time",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "updated_after",
+            "required": false,
+            "description": "Return issues updated after the specified time",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "updated_before",
+            "required": false,
+            "description": "Return issues updated before the specified time",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "not",
+            "required": false,
+            "description": "Filters by the specified parameters",
+            "schema": {
+              "type": "object",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "not[labels]",
+            "required": false,
+            "description": "Comma-separated list of label names",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "not[milestone]",
+            "required": false,
+            "description": "Milestone title",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "not[milestone_id]",
+            "required": false,
+            "description": "Return issues assigned to milestones without the specified timebox value (\"Any\", \"None\", \"Upcoming\" or \"Started\")",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Any",
+                "None",
+                "Upcoming",
+                "Started"
+              ],
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "not[iids]",
+            "required": false,
+            "description": "The IID array of issues",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "not[author_id]",
+            "required": false,
+            "description": "Return issues which are not authored by the user with the given ID",
+            "schema": {
+              "type": "integer",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "not[author_username]",
+            "required": false,
+            "description": "Return issues which are not authored by the user with the given username",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "not[assignee_id]",
+            "required": false,
+            "description": "Return issues which are not assigned to the user with the given ID",
+            "schema": {
+              "type": "integer",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "not[assignee_username]",
+            "required": false,
+            "description": "Return issues which are not assigned to the user with the given username",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "not[weight]",
+            "required": false,
+            "description": "Return issues without the specified weight",
+            "schema": {
+              "type": "integer",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "not[iteration_id]",
+            "required": false,
+            "description": "Return issues which are not assigned to the iteration with the given ID",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "nullable": true
+                },
+                {
+                  "type": "string",
+                  "nullable": true
+                }
+              ]
+            },
+            "in": "query"
+          },
+          {
+            "name": "not[iteration_title]",
+            "required": false,
+            "description": "Return issues which are not assigned to the iteration with the given title",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "scope",
+            "required": false,
+            "description": "Return issues for the given scope: `created_by_me`, `assigned_to_me` or `all`",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "created-by-me",
+                "assigned-to-me",
+                "created_by_me",
+                "assigned_to_me",
+                "all"
+              ],
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "my_reaction_emoji",
+            "required": false,
+            "description": "Return issues reacted by the authenticated user by the given emoji",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "confidential",
+            "required": false,
+            "description": "Filter confidential or public issues",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "weight",
+            "required": false,
+            "description": "The weight of the issue",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "nullable": true
+                },
+                {
+                  "type": "string",
+                  "nullable": true
+                }
+              ]
+            },
+            "in": "query"
+          },
+          {
+            "name": "epic_id",
+            "required": false,
+            "description": "The ID of an epic associated with the issues",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "nullable": true
+                },
+                {
+                  "type": "string",
+                  "nullable": true
+                }
+              ]
+            },
+            "in": "query"
+          },
+          {
+            "name": "health_status",
+            "required": false,
+            "description": "The health status of the issue. Must be one of: on_track, needs_attention, at_risk, none, any",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "on_track",
+                "needs_attention",
+                "at_risk",
+                "none",
+                "any"
+              ],
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "iteration_id",
+            "required": false,
+            "description": "Return issues which are assigned to the iteration with the given ID",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "nullable": true
+                },
+                {
+                  "type": "string",
+                  "nullable": true
+                }
+              ]
+            },
+            "in": "query"
+          },
+          {
+            "name": "iteration_title",
+            "required": false,
+            "description": "Return issues which are assigned to the iteration with the given title",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "page",
+            "required": false,
+            "description": "Current page number",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 1
+          },
+          {
+            "name": "per_page",
+            "required": false,
+            "description": "Number of items per page",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 20
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "description": "Cursor for obtaining the next set of records",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects/{id}/issues/{issue_iid}": {
+      "get": {
+        "operationId": "getApiV4ProjectsIdIssuesIssueIid",
+        "summary": "Retrieve a project issue",
+        "description": "Retrieves a specified issue for a project. If the project is private or the issue is confidential, you need to provide credentials to authorize. In most cases, you should authenticate with a personal access token.",
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The ID or URL-encoded path of the project",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "in": "path"
+          },
+          {
+            "name": "issue_iid",
+            "required": true,
+            "description": "The internal ID of a project issue",
+            "schema": {
+              "type": "integer"
+            },
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects/{id}/merge_requests": {
+      "get": {
+        "operationId": "getApiV4ProjectsIdMergeRequests",
+        "summary": "List all project merge requests",
+        "description": "Lists all project merge requests.",
+        "tags": [
+          "Merge requests"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The ID or URL-encoded path of the project.",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "in": "path"
+          },
+          {
+            "name": "author_id",
+            "required": false,
+            "description": "Returns merge requests created by the given user `id`. Mutually exclusive with `author_username`. Combine with `scope=all` or `scope=assigned_to_me`.",
+            "schema": {
+              "type": "integer",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "author_username",
+            "required": false,
+            "description": "Returns merge requests created by the given `username`. Mutually exclusive with `author_id`.",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "assignee_id",
+            "required": false,
+            "description": "Returns merge requests assigned to the given user `id`. `None` returns unassigned merge requests. `Any` returns merge requests with an assignee.",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "nullable": true
+                },
+                {
+                  "type": "string",
+                  "nullable": true
+                }
+              ]
+            },
+            "in": "query"
+          },
+          {
+            "name": "assignee_username",
+            "required": false,
+            "description": "Returns merge requests created by the given `username`. Mutually exclusive with `author_id`.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "reviewer_username",
+            "required": false,
+            "description": "Returns merge requests which have the user as a reviewer with the given `username`. `None` returns merge requests with no reviewers. `Any` returns merge requests with any reviewer. Mutually exclusive with `reviewer_id`. Introduced in GitLab 13.8.",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "labels",
+            "required": false,
+            "description": "Returns merge requests matching a comma-separated list of labels. `None` lists all merge requests with no labels. `Any` lists all merge requests with at least one label. Predefined names are case-insensitive.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "nullable": true
+            },
+            "in": "query",
+            "style": "form",
+            "explode": false
+          },
+          {
+            "name": "milestone",
+            "required": false,
+            "description": "Returns merge requests for a specific milestone. `None` returns merge requests with no milestone. `Any` returns merge requests that have an assigned milestone.",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "my_reaction_emoji",
+            "required": false,
+            "description": "Returns merge requests reacted by the authenticated user by the given `emoji`. `None` returns issues not given a reaction. `Any` returns issues given at least one reaction.",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "reviewer_id",
+            "required": false,
+            "description": "Returns merge requests which have the user as a reviewer with the given user `id`. `None` returns merge requests with no reviewers. `Any` returns merge requests with any reviewer. Mutually exclusive with `reviewer_username`.",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "nullable": true
+                },
+                {
+                  "type": "string",
+                  "nullable": true
+                }
+              ]
+            },
+            "in": "query"
+          },
+          {
+            "name": "state",
+            "required": false,
+            "description": "Returns `all` merge requests or just those that are `opened`, `closed`, `locked`, or `merged`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "opened",
+                "closed",
+                "locked",
+                "merged",
+                "all"
+              ],
+              "default": "all",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "order_by",
+            "required": false,
+            "description": "Returns merge requests ordered by `created_at`, `label_priority`, `milestone_due`, `popularity`, `priority`, `title`, `updated_at` or `merged_at` fields. Introduced in GitLab 14.8.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "created_at",
+                "label_priority",
+                "milestone_due",
+                "popularity",
+                "priority",
+                "title",
+                "updated_at",
+                "merged_at"
+              ],
+              "default": "created_at",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "description": "Returns merge requests sorted in `asc` or `desc` order.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "with_labels_details",
+            "required": false,
+            "description": "If `true`, response returns more details for each label in labels field: `:name`,`:color`, `:description`, `:description_html`, `:text_color`",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "with_merge_status_recheck",
+            "required": false,
+            "description": "If `true`, this projection requests (but does not guarantee) that the `merge_status` field be recalculated asynchronously. Introduced in GitLab 13.0.",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "created_after",
+            "required": false,
+            "description": "Returns merge requests created on or after the given time. Expected in ISO 8601 format.",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "2019-03-15T08:00:00Z"
+          },
+          {
+            "name": "created_before",
+            "required": false,
+            "description": "Returns merge requests created on or before the given time. Expected in ISO 8601 format.",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "2019-03-15T08:00:00Z"
+          },
+          {
+            "name": "updated_after",
+            "required": false,
+            "description": "Returns merge requests updated on or after the given time. Expected in ISO 8601 format.",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "2019-03-15T08:00:00Z"
+          },
+          {
+            "name": "updated_before",
+            "required": false,
+            "description": "Returns merge requests updated on or before the given time. Expected in ISO 8601 format.",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "2019-03-15T08:00:00Z"
+          },
+          {
+            "name": "merged_after",
+            "required": false,
+            "description": "Returns merge requests merged on or after the given time. Expected in ISO 8601 format.",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "2019-03-15T08:00:00Z"
+          },
+          {
+            "name": "merged_before",
+            "required": false,
+            "description": "Returns merge requests merged on or before the given time. Expected in ISO 8601 format.",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "2019-03-15T08:00:00Z"
+          },
+          {
+            "name": "view",
+            "required": false,
+            "description": "If simple, returns the `iid`, URL, title, description, and basic state of merge request",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "simple"
+              ],
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "scope",
+            "required": false,
+            "description": "Returns merge requests for the given scope: `created_by_me`, `assigned_to_me`, `reviews_for_me` or `all`",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "created-by-me",
+                "assigned-to-me",
+                "created_by_me",
+                "assigned_to_me",
+                "reviews_for_me",
+                "all"
+              ],
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "source_branch",
+            "required": false,
+            "description": "Returns merge requests with the given source branch",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "source_project_id",
+            "required": false,
+            "description": "Returns merge requests with the given source project id",
+            "schema": {
+              "type": "integer",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "target_branch",
+            "required": false,
+            "description": "Returns merge requests with the given target branch",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "search",
+            "required": false,
+            "description": "Search merge requests against their `title` and `description`.",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "in",
+            "required": false,
+            "description": "Modify the scope of the search attribute. `title`, `description`, or a string joining them with comma.",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "title,description"
+          },
+          {
+            "name": "wip",
+            "required": false,
+            "description": "Deprecated. Use `draft` instead. Filter merge requests against their `wip` status. `yes` to return only draft merge requests, `no` to return non-draft merge requests.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "yes",
+                "no"
+              ],
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "draft",
+            "required": false,
+            "description": "Filter merge requests against their `draft` status. `true` to return only draft merge requests, `false` to return non-draft merge requests.",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "not",
+            "required": false,
+            "description": "Returns merge requests that do not match the parameters supplied",
+            "schema": {
+              "type": "object",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "not[author_id]",
+            "required": false,
+            "description": "`<Negated>` Returns merge requests created by the given user `id`. Mutually exclusive with `author_username`. Combine with `scope=all` or `scope=assigned_to_me`.",
+            "schema": {
+              "type": "integer",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "not[author_username]",
+            "required": false,
+            "description": "`<Negated>` Returns merge requests created by the given `username`. Mutually exclusive with `author_id`.",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "not[assignee_id]",
+            "required": false,
+            "description": "`<Negated>` Returns merge requests assigned to the given user `id`. `None` returns unassigned merge requests. `Any` returns merge requests with an assignee.",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "nullable": true
+                },
+                {
+                  "type": "string",
+                  "nullable": true
+                }
+              ]
+            },
+            "in": "query"
+          },
+          {
+            "name": "not[assignee_username]",
+            "required": false,
+            "description": "`<Negated>` Returns merge requests created by the given `username`. Mutually exclusive with `author_id`.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "not[reviewer_username]",
+            "required": false,
+            "description": "`<Negated>` Returns merge requests which have the user as a reviewer with the given `username`. `None` returns merge requests with no reviewers. `Any` returns merge requests with any reviewer. Mutually exclusive with `reviewer_id`. Introduced in GitLab 13.8.",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "not[labels]",
+            "required": false,
+            "description": "`<Negated>` Returns merge requests matching a comma-separated list of labels. `None` lists all merge requests with no labels. `Any` lists all merge requests with at least one label. Predefined names are case-insensitive.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "not[milestone]",
+            "required": false,
+            "description": "`<Negated>` Returns merge requests for a specific milestone. `None` returns merge requests with no milestone. `Any` returns merge requests that have an assigned milestone.",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "not[my_reaction_emoji]",
+            "required": false,
+            "description": "`<Negated>` Returns merge requests reacted by the authenticated user by the given `emoji`. `None` returns issues not given a reaction. `Any` returns issues given at least one reaction.",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "not[reviewer_id]",
+            "required": false,
+            "description": "`<Negated>` Returns merge requests which have the user as a reviewer with the given user `id`. `None` returns merge requests with no reviewers. `Any` returns merge requests with any reviewer. Mutually exclusive with `reviewer_username`.",
+            "schema": {
+              "type": "integer",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "deployed_before",
+            "required": false,
+            "description": "Returns merge requests deployed before the given date/time. Expected in ISO 8601 format.",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "2019-03-15T08:00:00Z"
+          },
+          {
+            "name": "deployed_after",
+            "required": false,
+            "description": "Returns merge requests deployed after the given date/time. Expected in ISO 8601 format",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "2019-03-15T08:00:00Z"
+          },
+          {
+            "name": "environment",
+            "required": false,
+            "description": "Returns merge requests deployed to the given environment",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "2019-03-15T08:00:00Z"
+          },
+          {
+            "name": "merge_user_id",
+            "required": false,
+            "description": "Returns merge requests which have been merged by the user with the given user `id`. Mutually exclusive with `merge_user_username`.",
+            "schema": {
+              "type": "integer",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "merge_user_username",
+            "required": false,
+            "description": "Returns merge requests which have been merged by the user with the given `username`. Mutually exclusive with `merge_user_id`.",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "approver_ids",
+            "required": false,
+            "description": "Return merge requests which have specified the users with the given IDs as an individual approver",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "nullable": true
+                },
+                {
+                  "type": "array",
+                  "nullable": true
+                }
+              ]
+            },
+            "in": "query"
+          },
+          {
+            "name": "approved_by_ids",
+            "required": false,
+            "description": "Return merge requests which have been approved by the specified users with the given IDs",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "nullable": true
+                },
+                {
+                  "type": "array",
+                  "nullable": true
+                }
+              ]
+            },
+            "in": "query"
+          },
+          {
+            "name": "approved_by_usernames",
+            "required": false,
+            "description": "Return merge requests which have been approved by the specified users with the given\n            usernames",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "nullable": true
+                },
+                {
+                  "type": "array",
+                  "nullable": true
+                }
+              ]
+            },
+            "in": "query"
+          },
+          {
+            "name": "page",
+            "required": false,
+            "description": "Current page number",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 1
+          },
+          {
+            "name": "per_page",
+            "required": false,
+            "description": "Number of items per page",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 20
+          },
+          {
+            "name": "iids",
+            "required": false,
+            "description": "Returns the request having the given `iid`.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "nullable": true
+            },
+            "in": "query",
+            "style": "form",
+            "explode": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects/{id}/merge_requests/{merge_request_iid}": {
+      "get": {
+        "operationId": "getApiV4ProjectsIdMergeRequestsMergeRequestIid",
+        "summary": "Retrieve a merge request",
+        "description": "Retrieves a merge request for a specified project.",
+        "tags": [
+          "Merge requests"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The ID or URL-encoded path of the project.",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "in": "path"
+          },
+          {
+            "name": "merge_request_iid",
+            "required": true,
+            "description": "The internal ID of the merge request.",
+            "schema": {
+              "type": "integer"
+            },
+            "in": "path"
+          },
+          {
+            "name": "render_html",
+            "required": false,
+            "description": "If `true`, response includes rendered HTML for title and description.",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "include_diverged_commits_count",
+            "required": false,
+            "description": "If `true`, response includes the commits behind the target branch.",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "include_rebase_in_progress",
+            "required": false,
+            "description": "If `true`, response includes whether a rebase operation is in progress.",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects/{id}/merge_requests/{merge_request_iid}/changes": {
+      "get": {
+        "operationId": "getApiV4ProjectsIdMergeRequestsMergeRequestIidChanges",
+        "summary": "Retrieve merge request changes",
+        "description": "Retrieves changes for a specified merge request.",
+        "tags": [
+          "Merge requests"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The ID or URL-encoded path of the project.",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "in": "path"
+          },
+          {
+            "name": "unidiff",
+            "required": false,
+            "description": "A diff in a Unified diff format",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "merge_request_iid",
+            "required": true,
+            "description": "The IID of a merge request",
+            "schema": {
+              "type": "integer"
+            },
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects/{id}/merge_requests/{merge_request_iid}/commits": {
+      "get": {
+        "operationId": "getApiV4ProjectsIdMergeRequestsMergeRequestIidCommits",
+        "summary": "Retrieve merge request commits",
+        "description": "Retrieves commits for a specified merge request.",
+        "tags": [
+          "Merge requests"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The ID or URL-encoded path of the project.",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "in": "path"
+          },
+          {
+            "name": "merge_request_iid",
+            "required": true,
+            "description": "The internal ID of the merge request.",
+            "schema": {
+              "type": "integer"
+            },
+            "in": "path"
+          },
+          {
+            "name": "page",
+            "required": false,
+            "description": "Current page number",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 1
+          },
+          {
+            "name": "per_page",
+            "required": false,
+            "description": "Number of items per page",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 20
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects/{id}/pipelines": {
+      "get": {
+        "operationId": "getApiV4ProjectsIdPipelines",
+        "summary": "List all project pipelines",
+        "description": "Lists all pipelines in a project. By default, child pipelines are not included in the results. To return child pipelines, set `source` to `parent_pipeline`.",
+        "tags": [
+          "Pipelines"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The project ID or URL-encoded path",
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "example": "11"
+          },
+          {
+            "name": "page",
+            "required": false,
+            "description": "Current page number",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 1
+          },
+          {
+            "name": "per_page",
+            "required": false,
+            "description": "Number of items per page",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 20
+          },
+          {
+            "name": "scope",
+            "required": false,
+            "description": "The scope of pipelines",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "running",
+                "pending",
+                "finished",
+                "branches",
+                "tags"
+              ],
+              "nullable": true
+            },
+            "in": "query",
+            "example": "pending"
+          },
+          {
+            "name": "status",
+            "required": false,
+            "description": "The status of pipelines",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "created",
+                "waiting_for_resource",
+                "preparing",
+                "waiting_for_callback",
+                "pending",
+                "running",
+                "success",
+                "failed",
+                "canceling",
+                "canceled",
+                "skipped",
+                "manual",
+                "scheduled"
+              ],
+              "nullable": true
+            },
+            "in": "query",
+            "example": "pending"
+          },
+          {
+            "name": "ref",
+            "required": false,
+            "description": "The ref of pipelines",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "develop"
+          },
+          {
+            "name": "sha",
+            "required": false,
+            "description": "The sha of pipelines",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "a91957a858320c0e17f3a0eca7cfacbff50ea29a"
+          },
+          {
+            "name": "yaml_errors",
+            "required": false,
+            "description": "Returns pipelines with invalid configurations",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query",
+            "example": false
+          },
+          {
+            "name": "username",
+            "required": false,
+            "description": "The username of the user who triggered pipelines",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "root"
+          },
+          {
+            "name": "updated_before",
+            "required": false,
+            "description": "Return pipelines updated before the specified datetime. Format: ISO 8601 YYYY-MM-DDTHH:MM:SSZ",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "2015-12-24T15:51:21.880Z"
+          },
+          {
+            "name": "updated_after",
+            "required": false,
+            "description": "Return pipelines updated after the specified datetime. Format: ISO 8601 YYYY-MM-DDTHH:MM:SSZ",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "2015-12-24T15:51:21.880Z"
+          },
+          {
+            "name": "created_before",
+            "required": false,
+            "description": "Return pipelines created before the specified datetime. Format: ISO 8601 YYYY-MM-DDTHH:MM:SSZ",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "2015-12-24T15:51:21.880Z"
+          },
+          {
+            "name": "created_after",
+            "required": false,
+            "description": "Return pipelines created after the specified datetime. Format: ISO 8601 YYYY-MM-DDTHH:MM:SSZ",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "2015-12-24T15:51:21.880Z"
+          },
+          {
+            "name": "order_by",
+            "required": false,
+            "description": "Order pipelines",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "id",
+                "status",
+                "ref",
+                "updated_at",
+                "user_id"
+              ],
+              "default": "id",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "status"
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "description": "Sort pipelines",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "asc"
+          },
+          {
+            "name": "source",
+            "required": false,
+            "description": "The source of pipelines",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "unknown",
+                "push",
+                "web",
+                "trigger",
+                "schedule",
+                "api",
+                "external",
+                "pipeline",
+                "chat",
+                "webide",
+                "merge_request_event",
+                "external_pull_request_event",
+                "parent_pipeline",
+                "ondemand_dast_scan",
+                "ondemand_dast_validation",
+                "security_orchestration_policy",
+                "container_registry_push",
+                "duo_workflow",
+                "pipeline_execution_policy_schedule",
+                "dependency_management_security_update"
+              ],
+              "nullable": true
+            },
+            "in": "query",
+            "example": "push"
+          },
+          {
+            "name": "name",
+            "required": false,
+            "description": "Filter pipelines by name",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "Build pipeline"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects/{id}/pipelines/{pipeline_id}": {
+      "get": {
+        "operationId": "getApiV4ProjectsIdPipelinesPipelineId",
+        "summary": "Retrieve a pipeline",
+        "description": "Retrieves a specified pipeline from a project. You can also get a child pipeline.",
+        "tags": [
+          "Pipelines"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The project ID or URL-encoded path",
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "example": "11"
+          },
+          {
+            "name": "pipeline_id",
+            "required": true,
+            "description": "The pipeline ID",
+            "schema": {
+              "type": "integer"
+            },
+            "in": "path",
+            "example": 18
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects/{id}/pipelines/{pipeline_id}/jobs": {
+      "get": {
+        "operationId": "getApiV4ProjectsIdPipelinesPipelineIdJobs",
+        "summary": "List all jobs by pipeline",
+        "description": "Lists all jobs for a specified pipeline.",
+        "tags": [
+          "Pipelines"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The project ID or URL-encoded path",
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "example": "11"
+          },
+          {
+            "name": "pipeline_id",
+            "required": true,
+            "description": "The pipeline ID",
+            "schema": {
+              "type": "integer"
+            },
+            "in": "path",
+            "example": 18
+          },
+          {
+            "name": "include_retried",
+            "required": false,
+            "description": "Includes retried jobs",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "scope",
+            "required": false,
+            "description": "The scope of builds to show",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "created",
+                    "waiting_for_resource",
+                    "preparing",
+                    "waiting_for_callback",
+                    "pending",
+                    "running",
+                    "success",
+                    "failed",
+                    "canceling",
+                    "canceled",
+                    "skipped",
+                    "manual",
+                    "scheduled"
+                  ],
+                  "nullable": true
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "nullable": true
+                }
+              ]
+            },
+            "in": "query",
+            "example": [
+              "pending",
+              "running"
+            ]
+          },
+          {
+            "name": "page",
+            "required": false,
+            "description": "Current page number",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 1
+          },
+          {
+            "name": "per_page",
+            "required": false,
+            "description": "Number of items per page",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 20
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects/{id}/repository/branches": {
+      "get": {
+        "operationId": "getApiV4ProjectsIdRepositoryBranches",
+        "summary": "List all repository branches",
+        "description": "Lists all repository branches from a specified project, sorted alphabetically by name. Search by name, or use regular expressions to find specific branch patterns. Returns detailed information about the branch, including its protection status, merge status, and commit details.",
+        "tags": [
+          "Branches"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The ID or URL-encoded path of the project",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "in": "path"
+          },
+          {
+            "name": "page",
+            "required": false,
+            "description": "Current page number",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 1
+          },
+          {
+            "name": "per_page",
+            "required": false,
+            "description": "Number of items per page",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 20
+          },
+          {
+            "name": "search",
+            "required": false,
+            "description": "Return list of branches matching the search criteria",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "regex",
+            "required": false,
+            "description": "Return list of branches matching the regex",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "description": "Return list of branches sorted by the given field",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name_asc",
+                "updated_asc",
+                "updated_desc"
+              ],
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "page_token",
+            "required": false,
+            "description": "Name of branch to start the pagination from",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects/{id}/repository/branches/{branch}": {
+      "get": {
+        "operationId": "getApiV4ProjectsIdRepositoryBranchesBranch",
+        "summary": "Retrieve a repository branch",
+        "description": "Retrieves a specified project repository branch.",
+        "tags": [
+          "Branches"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The ID or URL-encoded path of the project",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "in": "path"
+          },
+          {
+            "name": "branch",
+            "required": true,
+            "description": "The name of the branch",
+            "schema": {
+              "type": "string"
+            },
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects/{id}/repository/tags": {
+      "get": {
+        "operationId": "getApiV4ProjectsIdRepositoryTags",
+        "summary": "List all project repository tags",
+        "description": "Lists all repository tags from a project, sorted by update date and time in descending order.",
+        "tags": [
+          "Tags"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The ID or URL-encoded path of the project",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "in": "path"
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "description": "Return tags sorted in updated by `asc` or `desc` order.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "order_by",
+            "required": false,
+            "description": "Return tags ordered by `name`, `updated`, `version` fields.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "updated",
+                "version"
+              ],
+              "default": "updated",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "search",
+            "required": false,
+            "description": "Return list of tags matching the search criteria",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "page_token",
+            "required": false,
+            "description": "Name of tag to start the pagination from",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "page",
+            "required": false,
+            "description": "Current page number",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 1
+          },
+          {
+            "name": "per_page",
+            "required": false,
+            "description": "Number of items per page",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 20
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects/{id}/repository/tags/{tag_name}": {
+      "get": {
+        "operationId": "getApiV4ProjectsIdRepositoryTagsTagName",
+        "summary": "Retrieve a single repository tag",
+        "description": "Retrieves a repository tag with a specified name. This endpoint can be accessed without authentication if the repository is publicly accessible.",
+        "tags": [
+          "Tags"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The ID or URL-encoded path of the project",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "in": "path"
+          },
+          {
+            "name": "tag_name",
+            "required": true,
+            "description": "The name of the tag",
+            "schema": {
+              "type": "string"
+            },
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects/{id}/repository/commits": {
+      "get": {
+        "operationId": "getApiV4ProjectsIdRepositoryCommits",
+        "summary": "List all repository commits",
+        "description": "Lists all commits for a specified project repository.",
+        "tags": [
+          "Commits"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The ID or URL-encoded path of the project",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "in": "path"
+          },
+          {
+            "name": "ref_name",
+            "required": false,
+            "description": "The name of a repository branch or tag, if not given the default branch is used",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "v1.1.0"
+          },
+          {
+            "name": "since",
+            "required": false,
+            "description": "Only commits after or on this date will be returned",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "2021-09-20T11:50:22.001Z"
+          },
+          {
+            "name": "until",
+            "required": false,
+            "description": "Only commits before or on this date will be returned",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "2021-09-20T11:50:22.001Z"
+          },
+          {
+            "name": "path",
+            "required": false,
+            "description": "The file path",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "README.md"
+          },
+          {
+            "name": "follow",
+            "required": false,
+            "description": "Follow file renames when filtering by path",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "author",
+            "required": false,
+            "description": "Search commits by commit author",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "John Smith"
+          },
+          {
+            "name": "all",
+            "required": false,
+            "description": "Every commit will be returned",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "with_stats",
+            "required": false,
+            "description": "Stats about each commit will be added to the response",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "first_parent",
+            "required": false,
+            "description": "Only include the first parent of merges",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "order",
+            "required": false,
+            "description": "List commits in order",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "default",
+                "topo"
+              ],
+              "default": "default",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "trailers",
+            "required": false,
+            "description": "Parse and include Git trailers for every commit",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "page",
+            "required": false,
+            "description": "Current page number",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 1
+          },
+          {
+            "name": "per_page",
+            "required": false,
+            "description": "Number of items per page",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 20
+          },
+          {
+            "name": "pagination",
+            "required": false,
+            "description": "Specify the pagination method",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "legacy",
+                "keyset"
+              ],
+              "default": "legacy",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "page_token",
+            "required": false,
+            "description": "Record from which to start the keyset pagination",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects/{id}/repository/commits/{sha}": {
+      "get": {
+        "operationId": "getApiV4ProjectsIdRepositoryCommitsSha",
+        "summary": "Retrieve a commit",
+        "description": "Retrieves a specified commit identified by the commit hash or name of a branch or tag.",
+        "tags": [
+          "Commits"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The ID or URL-encoded path of the project",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "in": "path"
+          },
+          {
+            "name": "sha",
+            "required": true,
+            "description": "A commit sha, or the name of a branch or tag",
+            "schema": {
+              "type": "string"
+            },
+            "in": "path"
+          },
+          {
+            "name": "stats",
+            "required": false,
+            "description": "Include commit stats",
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "nullable": true
+            },
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects/{id}/repository/commits/{sha}/statuses": {
+      "get": {
+        "operationId": "getApiV4ProjectsIdRepositoryCommitsShaStatuses",
+        "summary": "List all commit statuses",
+        "description": "Lists all commit statuses for a specified project.",
+        "tags": [
+          "Commit statuses"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "ID or URL-encoded path of the project.",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "in": "path"
+          },
+          {
+            "name": "sha",
+            "required": true,
+            "description": "Hash of the commit.",
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "example": "18f3e63d05582537db6d183d9d557be09e1f90c8"
+          },
+          {
+            "name": "ref",
+            "required": false,
+            "description": "Name of the branch or tag. Default is the default branch.",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "develop"
+          },
+          {
+            "name": "stage",
+            "required": false,
+            "description": "Filter statuses by build stage.",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "test"
+          },
+          {
+            "name": "name",
+            "required": false,
+            "description": "Filter statuses by job name.",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "bundler:audit"
+          },
+          {
+            "name": "pipeline_id",
+            "required": false,
+            "description": "Filter statuses by pipeline ID.",
+            "schema": {
+              "type": "integer",
+              "nullable": true
+            },
+            "in": "query",
+            "example": 1234
+          },
+          {
+            "name": "all",
+            "required": false,
+            "description": "Include all statuses instead of latest only. Default is `false`.",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "order_by",
+            "required": false,
+            "description": "Values for sorting statuses. Valid values are `id` and `pipeline_id`. Default is `id`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "id",
+                "pipeline_id"
+              ],
+              "default": "id",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "description": "Sort statuses in ascending or descending order. Valid values are `asc` and `desc`. Default is `asc`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "page",
+            "required": false,
+            "description": "Current page number",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 1
+          },
+          {
+            "name": "per_page",
+            "required": false,
+            "description": "Number of items per page",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 20
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects/{id}/repository/tree": {
+      "get": {
+        "operationId": "getApiV4ProjectsIdRepositoryTree",
+        "summary": "List all repository trees in a project",
+        "description": "Lists all repository files and directories in a specified project. This endpoint can be accessed without authentication if the repository is publicly accessible. This command provides essentially the same features as the `git ls-tree` command.",
+        "tags": [
+          "Repositories"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The ID or URL-encoded path of the project",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "in": "path",
+            "example": 1
+          },
+          {
+            "name": "ref",
+            "required": false,
+            "description": "The name of a repository branch or tag, if not given the default branch is used",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "main"
+          },
+          {
+            "name": "path",
+            "required": false,
+            "description": "The path of the tree",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "files/html"
+          },
+          {
+            "name": "recursive",
+            "required": false,
+            "description": "Used to get a recursive tree",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "page",
+            "required": false,
+            "description": "Current page number",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 1
+          },
+          {
+            "name": "per_page",
+            "required": false,
+            "description": "Number of items per page",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 20
+          },
+          {
+            "name": "pagination",
+            "required": false,
+            "description": "Specify the pagination method (\"none\" is only valid if \"recursive\" is true)",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "legacy",
+                "keyset",
+                "none"
+              ],
+              "default": "legacy",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "page_token",
+            "required": false,
+            "description": "Record from which to start the keyset pagination",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "a1e8f8d745cc87e3a9248358d9352bb7f9a0aeba"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects/{id}/repository/files/{file_path}": {
+      "get": {
+        "operationId": "getApiV4ProjectsIdRepositoryFilesFilePath",
+        "summary": "Retrieve a file from a repository",
+        "description": "Retrieves information about a specified file in a repository. This includes information like the name, size, and the file contents. File content is Base64 encoded.",
+        "tags": [
+          "Files"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The project ID",
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "example": "gitlab-org/gitlab"
+          },
+          {
+            "name": "file_path",
+            "required": true,
+            "description": "The URL-encoded path to the file.",
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "example": "lib%2Fclass%2Erb"
+          },
+          {
+            "name": "ref",
+            "required": true,
+            "description": "The name of branch, tag or commit",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query",
+            "example": "main"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects/{id}/milestones": {
+      "get": {
+        "operationId": "getApiV4ProjectsIdMilestones",
+        "summary": "List all project milestones",
+        "description": "Lists all milestones for a specified project.",
+        "tags": [
+          "Milestones"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The ID or URL-encoded path of the project",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "in": "path"
+          },
+          {
+            "name": "state",
+            "required": false,
+            "description": "Return \"active\", \"closed\", or \"all\" milestones",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "closed",
+                "all"
+              ],
+              "default": "all",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "iids",
+            "required": false,
+            "description": "The IIDs of the milestones",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "nullable": true
+            },
+            "in": "query",
+            "style": "form",
+            "explode": false
+          },
+          {
+            "name": "title",
+            "required": false,
+            "description": "The title of the milestones",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "search",
+            "required": false,
+            "description": "The search criteria for the title or description of the milestone",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "include_parent_milestones",
+            "required": false,
+            "description": "Deprecated: see `include_ancestors`",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "include_ancestors",
+            "required": false,
+            "description": "Include milestones from all parent groups",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "updated_before",
+            "required": false,
+            "description": "Return milestones updated before the specified datetime. Format: ISO 8601 YYYY-MM-DDTHH:MM:SSZ",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "updated_after",
+            "required": false,
+            "description": "Return milestones updated after the specified datetime. Format: ISO 8601 YYYY-MM-DDTHH:MM:SSZ",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "page",
+            "required": false,
+            "description": "Current page number",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 1
+          },
+          {
+            "name": "per_page",
+            "required": false,
+            "description": "Number of items per page",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 20
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/projects/{id}/milestones/{milestone_id}": {
+      "get": {
+        "operationId": "getApiV4ProjectsIdMilestonesMilestoneId",
+        "summary": "Retrieve a project milestone",
+        "description": "Retrieves a specified project milestone.",
+        "tags": [
+          "Milestones"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The ID or URL-encoded path of the project",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "in": "path"
+          },
+          {
+            "name": "milestone_id",
+            "required": true,
+            "description": "The ID of a project milestone",
+            "schema": {
+              "type": "integer"
+            },
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/groups": {
+      "get": {
+        "operationId": "getApiV4Groups",
+        "summary": "List all groups",
+        "description": "Lists all visible groups for the authenticated user. Unauthenticated requests return only public groups.",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "name": "statistics",
+            "required": false,
+            "description": "Include project statistics",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "archived",
+            "required": false,
+            "description": "Limit by archived status",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "skip_groups",
+            "required": false,
+            "description": "Array of group ids to exclude from list",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "nullable": true
+            },
+            "in": "query",
+            "style": "form",
+            "explode": false
+          },
+          {
+            "name": "all_available",
+            "required": false,
+            "description": "When `true`, returns all accessible groups. When `false`, returns only groups where the user is a member.",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "visibility",
+            "required": false,
+            "description": "Limit by visibility",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "private",
+                "internal",
+                "public"
+              ],
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "search",
+            "required": false,
+            "description": "Search for a specific group",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "owned",
+            "required": false,
+            "description": "Limit by owned by authenticated user",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "order_by",
+            "required": false,
+            "description": "Order by name, path, id or similarity if searching",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "path",
+                "id",
+                "similarity"
+              ],
+              "default": "name",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "description": "Sort by asc (ascending) or desc (descending)",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "asc",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "min_access_level",
+            "required": false,
+            "description": "Minimum access level of authenticated user",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                10,
+                15,
+                20,
+                25,
+                30,
+                40,
+                50
+              ],
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "top_level_only",
+            "required": false,
+            "description": "Only include top-level groups",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "marked_for_deletion_on",
+            "required": false,
+            "description": "Return groups that are marked for deletion on this date",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "active",
+            "required": false,
+            "description": "Limit by groups that are not archived and not marked for deletion",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "repository_storage",
+            "required": false,
+            "description": "Filter by repository storage used by the group",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "page",
+            "required": false,
+            "description": "Current page number",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 1
+          },
+          {
+            "name": "per_page",
+            "required": false,
+            "description": "Number of items per page",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 20
+          },
+          {
+            "name": "with_custom_attributes",
+            "required": false,
+            "description": "Include custom attributes in the response",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "custom_attributes",
+            "required": false,
+            "description": "Filter with custom attributes",
+            "schema": {
+              "type": "object",
+              "nullable": true
+            },
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/groups/{id}": {
+      "get": {
+        "operationId": "getApiV4GroupsId",
+        "summary": "Retrieve a group",
+        "description": "Retrieves a specified group by ID or path.",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The ID of a group",
+            "schema": {
+              "type": "string"
+            },
+            "in": "path"
+          },
+          {
+            "name": "with_custom_attributes",
+            "required": false,
+            "description": "Include custom attributes in the response",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "custom_attributes",
+            "required": false,
+            "description": "Filter with custom attributes",
+            "schema": {
+              "type": "object",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "with_projects",
+            "required": false,
+            "description": "Omit project details",
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "nullable": true
+            },
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/groups/{id}/projects": {
+      "get": {
+        "operationId": "getApiV4GroupsIdProjects",
+        "summary": "List all projects in a group",
+        "description": "Lists all projects in a specified group accessible to the authenticated user. Unauthenticated requests return only public projects with a limited subset of attributes.",
+        "tags": [
+          "Groups"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "description": "The ID of a group",
+            "schema": {
+              "type": "string"
+            },
+            "in": "path"
+          },
+          {
+            "name": "active",
+            "required": false,
+            "description": "Limit by projects that are not archived and not marked for deletion",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "archived",
+            "required": false,
+            "description": "Limit by archived status",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "visibility",
+            "required": false,
+            "description": "Limit by visibility",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "private",
+                "internal",
+                "public"
+              ],
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "search",
+            "required": false,
+            "description": "Return list of authorized projects matching the search criteria",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "order_by",
+            "required": false,
+            "description": "Return projects ordered by field",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "id",
+                "name",
+                "path",
+                "created_at",
+                "updated_at",
+                "last_activity_at",
+                "similarity",
+                "star_count"
+              ],
+              "default": "created_at",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "description": "Return projects sorted in ascending and descending order",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "simple",
+            "required": false,
+            "description": "Return only the ID, URL, name, and path of each project",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "owned",
+            "required": false,
+            "description": "Limit by owned by authenticated user",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "starred",
+            "required": false,
+            "description": "Limit by starred status",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "with_issues_enabled",
+            "required": false,
+            "description": "Limit by enabled issues feature",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "with_merge_requests_enabled",
+            "required": false,
+            "description": "Limit by enabled merge requests feature",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "with_shared",
+            "required": false,
+            "description": "Include projects shared to this group",
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "include_subgroups",
+            "required": false,
+            "description": "Includes projects in subgroups of this group",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "include_ancestor_groups",
+            "required": false,
+            "description": "Includes projects in ancestors of this group",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "min_access_level",
+            "required": false,
+            "description": "Limit by minimum access level of authenticated user on projects",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                10,
+                15,
+                20,
+                25,
+                30,
+                40,
+                50
+              ],
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "page",
+            "required": false,
+            "description": "Current page number",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 1
+          },
+          {
+            "name": "per_page",
+            "required": false,
+            "description": "Number of items per page",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "nullable": true
+            },
+            "in": "query",
+            "example": 20
+          },
+          {
+            "name": "with_custom_attributes",
+            "required": false,
+            "description": "Include custom attributes in the response",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "custom_attributes",
+            "required": false,
+            "description": "Filter with custom attributes",
+            "schema": {
+              "type": "object",
+              "nullable": true
+            },
+            "in": "query"
+          },
+          {
+            "name": "with_security_reports",
+            "required": false,
+            "description": "Return only projects having security report artifacts present",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,267 @@
+# Regenerate catalog.yaml operations from a vendored, pruned GitLab spec:
+#   pnpm --filter @kit/engine catalog:import gitlab   (from the runespacedev repo)
+#
+# `include` entries are the names listOperations() reports for this spec —
+# summary || operationId || "METHOD /path". Checked directly against the FULL
+# upstream document (all 742 GET operations across 1278 paths, not just the 26
+# below): none of GitLab's GET summaries collide anywhere in the spec, so every
+# entry below is the summary text verbatim (case-sensitive).
+#
+# --- Spec sourcing (SAP-2(b), vendored + pruned) ----------------------------
+# The task brief's URL (.../doc/api/openapi/openapi.yaml) 404s — GitLab renamed
+# the file. Confirmed via the GitLab API's own repository tree
+# (GET /projects/gitlab-org%2Fgitlab/repository/tree?path=doc/api/openapi) that
+# the current files are openapi_v2.yaml and openapi_v3.yaml. Source used:
+#   https://gitlab.com/gitlab-org/gitlab/-/raw/master/doc/api/openapi/openapi_v3.yaml
+# (OpenAPI 3.0.0, 3.4 MB, 1278 paths, 742 GET operations — well past the
+# vendoring threshold, and see "PARTIAL spec" below for why pruning it matters
+# beyond just size). Pruned to `gitlab/openapi.json`:
+#   1. Kept only the 26 paths this skill imports from, GET only (every other
+#      path, and every non-GET method on a kept path, dropped).
+#   2. Stripped each kept operation's `responses` object and replaced it with
+#      a minimal `{"200": {"description": "OK"}}` stub — buildManifestOperation
+#      (packages/engine/src/manifest.ts) never reads `responses`, only
+#      `summary`, `description`, `parameters`, and `requestBody`. Kept
+#      `parameters`, `summary`, `description`, `operationId`, and `tags`
+#      untouched on every kept operation.
+#   3. Path keys had the `/api/v4` prefix stripped (e.g. `/api/v4/user` →
+#      `/user`) to match `base_url` below, and `servers` replaced with the
+#      flat `https://gitlab.com/api/v4` — the upstream spec templates
+#      `https://{hostname}/api/v4` with `hostname` defaulting to `gitlab.com`;
+#      not used by the importer either way (it takes `base_url` from this
+#      file), kept only for a human skimming the vendored file.
+# Net: 3.4 MB / 1278 paths → 118 KB / 26 paths.
+#
+# --- PARTIAL spec: what's covered, what's hand-authored ---------------------
+# GitLab's OpenAPI description is generated from a subset of the Grape API
+# (grape-swagger), not the whole REST surface documented at
+# docs.gitlab.com/ee/api/rest/ — most resources this skill needs ARE present
+# (checked directly: 19 of the task brief's 21 named targets resolve to a real
+# GET path in the full spec), but issue notes and merge request notes do not
+# exist as paths anywhere in the document:
+#   - GET /projects/{id}/issues/{issue_iid}/notes        — MISSING from spec
+#   - GET /projects/{id}/merge_requests/{merge_request_iid}/notes — MISSING
+# Both are real, documented GitLab endpoints
+# (docs.gitlab.com/ee/api/notes/) — just absent from this OpenAPI description.
+# Hand-authored directly in catalog.yaml as `list issue notes` and
+# `list merge request notes`, protected below with `keep:` per SAP-2(c). 2 of
+# 28 ops (7%) are hand-authored — well under the "skip import entirely" half
+# threshold, so the hybrid route (import + hand-author) applies.
+#
+# --- Known engine gap (path-item-level `parameters`) ------------------------
+# The importer only reads a GET operation's own `parameters` array, not
+# `parameters` declared as a sibling of `get` on the path item (see Asana's
+# import.yaml for the mechanism and its cost there). Checked directly against
+# the FULL upstream spec (all 1278 paths) before pruning: zero paths declare
+# any path-item-level `parameters` anywhere in this spec — GitLab's grape-
+# swagger generator puts every parameter, including the required `id`/`iid`
+# path params every operation below depends on, directly on the operation
+# itself. No op below is missing a param from this cause, and no op needed
+# excluding as non-functional.
+#
+# --- Coverage target ---------------------------------------------------------
+# Current user; projects (list with `membership` as an optional query param,
+# not hardcoded, + get); project issues (list/get + notes); merge requests
+# (list/get + changes + commits + notes); pipelines (list/get + jobs);
+# repository branches and tags (list/get each); repository commits (list/get
+# + commit statuses); repository tree + file contents; milestones (list/get);
+# groups (list/get + a group's projects).
+#
+# `list merge request commits`, repository `tags` (list/get), `commit
+# statuses`, `file contents`, `get milestone`, and `get group` are not named
+# verbatim in the task brief's target list but round out list/get pairs and
+# CI-visibility reads every other resource in this skill already has —
+# consistent with the brief's named areas (merge requests, branches, commits,
+# milestones, groups) and needed to reach the 25-35 op target from the ~20-21
+# ops the brief's bullet list itself enumerates.
+#
+# Deliberate gaps:
+#   * All write endpoints (create/update/close/merge/approve/retry/cancel on
+#     issues, merge requests, pipelines, branches) are out of scope — the
+#     importer is GET-only and this skill ships no write operations.
+#   * `GET /projects/{id}/repository/files/{file_path}/raw` (raw bytes, not
+#     JSON) is skipped in favor of `get file contents`
+#     (`.../repository/files/{file_path}`), which wraps the same content
+#     (base64-encoded) in a JSON envelope with metadata — friendlier to a
+#     JSON-consuming chat agent and works for binary files the raw endpoint
+#     would return unparseable bytes for.
+#   * Every project- and group-scoped list op above 100 potential results
+#     paginates with `page`/`per_page` (max 100) — GitLab's REST API does not
+#     yet offer cursor pagination on these endpoints (keyset pagination exists
+#     only on a handful of commit/tag endpoints via `page_token`, imported
+#     as-is where the spec declares it).
+#   * `not` (issues, merge requests) and `custom_attributes` (projects,
+#     groups, group projects) are declared in the spec as `type: object`
+#     query parameters — a container placeholder GitLab's own docs never show
+#     set directly; the real filters are the sibling bracket-notation params
+#     already imported alongside them (`not[labels]`, `not[author_id]`, etc.).
+#     They import as harmless optional `json`-typed query params (no override
+#     mechanism removes a single param outright) — functionally inert, not
+#     broken; skip them when calling these operations.
+
+spec: ./openapi.json
+base_url: https://gitlab.com/api/v4
+parity_source: https://docs.gitlab.com/ee/api/rest/
+
+include:
+  # --- current user --------------------------------------------------------
+  - Retrieve current user details
+  # --- projects --------------------------------------------------------
+  - List all projects
+  - Retrieve a project
+  # --- issues ------------------------------------------------------------
+  - List all project issues
+  - Retrieve a project issue
+  # --- merge requests ------------------------------------------------------
+  - List all project merge requests
+  - Retrieve a merge request
+  - Retrieve merge request changes
+  - Retrieve merge request commits
+  # --- pipelines -----------------------------------------------------------
+  - List all project pipelines
+  - Retrieve a pipeline
+  - List all jobs by pipeline
+  # --- repository: branches and tags ----------------------------------------
+  - List all repository branches
+  - Retrieve a repository branch
+  - List all project repository tags
+  - Retrieve a single repository tag
+  # --- repository: commits ---------------------------------------------------
+  - List all repository commits
+  - Retrieve a commit
+  - List all commit statuses
+  # --- repository: tree and files ---------------------------------------------
+  - List all repository trees in a project
+  - Retrieve a file from a repository
+  # --- milestones ------------------------------------------------------------
+  - List all project milestones
+  - Retrieve a project milestone
+  # --- groups ------------------------------------------------------------
+  - List all groups
+  - Retrieve a group
+  - List all projects in a group
+
+rename:
+  Retrieve current user details: get current user
+
+  List all projects: list projects
+  Retrieve a project: get project
+
+  List all project issues: list project issues
+  Retrieve a project issue: get project issue
+
+  List all project merge requests: list merge requests
+  Retrieve a merge request: get merge request
+  Retrieve merge request changes: get merge request changes
+  Retrieve merge request commits: list merge request commits
+
+  List all project pipelines: list pipelines
+  Retrieve a pipeline: get pipeline
+  List all jobs by pipeline: list pipeline jobs
+
+  List all repository branches: list branches
+  Retrieve a repository branch: get branch
+  List all project repository tags: list tags
+  Retrieve a single repository tag: get tag
+
+  List all repository commits: list commits
+  Retrieve a commit: get commit
+  List all commit statuses: list commit statuses
+
+  List all repository trees in a project: get repository tree
+  Retrieve a file from a repository: get file contents
+
+  List all project milestones: list milestones
+  Retrieve a project milestone: get milestone
+
+  List all groups: list groups
+  Retrieve a group: get group
+  List all projects in a group: list group projects
+
+# Curated corrections layered over the spec after import, keyed by the catalog
+# name (i.e. post-`rename`). They live here rather than in catalog.yaml
+# because a re-import rewrites every field but `description` and reserialises
+# the YAML, which would drop both the edit and any comment explaining it.
+overrides:
+  # hand-authored: the importer truncates every param description to 200
+  # chars (a universal limit, not GitLab-specific — see manifest.ts). GitLab's
+  # own `id` param description already says "The ID or URL-encoded path of
+  # the project" on every project-scoped operation except this one, which
+  # only says "The project ID" — restored for consistency with the other 19
+  # project-scoped ops below (brief requirement: path params like `{id}` must
+  # document that both a numeric ID and a URL-encoded namespace/path work).
+  get file contents:
+    params:
+      id:
+        description: The ID or URL-encoded path of the project.
+  # hand-authored: GitLab's `id` param on group-scoped operations says only
+  # "The ID of a group" — unlike every project-scoped `id` above, it never
+  # mentions the URL-encoded full path form, even though GitLab accepts a
+  # group's namespace path (e.g. `my-org/my-team`) here exactly as it does
+  # for projects. Restored for both group-scoped ops (op-scoped, not `*`:
+  # `id` means "project" everywhere else in this skill).
+  get group:
+    params:
+      id:
+        description: The ID or URL-encoded full path of the group.
+  list group projects:
+    params:
+      id:
+        description: The ID or URL-encoded full path of the group.
+  # hand-authored: `order_by`'s 200-char truncation lands mid-word ("...the
+  # user has a[ccess to.]"). Restored in full — it is short enough to fit.
+  list projects:
+    params:
+      order_by:
+        description: Field to order projects by. storage_size, repository_size,
+          wiki_size, and packages_size are admin-only. similarity is available
+          only when searching and is limited to projects the user can access.
+  # hand-authored: `due_date`'s 200-char truncation cuts its enum-style
+  # "Accepts: ..." list off mid-token. The real allowed values still ship on
+  # this param's own `enum:` (GitLab declares a JSON schema enum here, unlike
+  # the free-text `reviewer_*`/`labels` params below) — this override is a
+  # prose polish, not a functional fix.
+  list project issues:
+    params:
+      due_date:
+        description: Filter by due date. One of 0 (no due date), any, today,
+          tomorrow, overdue, week, month, next_month_and_previous_two_weeks.
+  # hand-authored: these six `list merge requests` params are GitLab's own
+  # free text (no JSON `enum`, unlike `due_date` above), so their 200-char
+  # truncation is a real information loss, not just cosmetic — each one cuts
+  # off exactly the "mutually exclusive with X" / "GitLab N.M+" caveat that
+  # tells an agent not to combine `reviewer_username` and `reviewer_id` (or
+  # their `not[...]` negations) on the same call.
+  list merge requests:
+    params:
+      reviewer_username:
+        description: Returns MRs where the given username is a reviewer. Use
+          None for no reviewers, Any for any reviewer. Mutually exclusive
+          with reviewer_id. (GitLab 13.8+)
+      reviewer_id:
+        description: Returns MRs where the given user ID is a reviewer. Use
+          None for no reviewers, Any for any reviewer. Mutually exclusive
+          with reviewer_username.
+      labels:
+        description: Returns MRs matching a comma-separated list of labels.
+          Use None for no labels, Any for at least one label. Label names
+          are case-insensitive.
+      not[reviewer_username]:
+        description: Negated — excludes MRs where the given username is a
+          reviewer. None/Any supported. Mutually exclusive with
+          not[reviewer_id]. (GitLab 13.8+)
+      not[reviewer_id]:
+        description: Negated — excludes MRs where the given user ID is a
+          reviewer. None/Any supported. Mutually exclusive with
+          not[reviewer_username].
+      not[labels]:
+        description: Negated — excludes MRs matching a comma-separated list
+          of labels. None/Any supported. Label names are case-insensitive.
+
+# Operations carried over from catalog.yaml verbatim — GitLab's vendored spec
+# has no `/notes` paths (see the header comment above); without `keep` a
+# re-import would delete these two the first time it runs. catalog.yaml is
+# the source of truth for them; see the HAND-AUTHORED comment there.
+keep:
+  - list issue notes
+  - list merge request notes

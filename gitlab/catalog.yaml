@@ -1,0 +1,2047 @@
+slug: gitlab
+version: 1.0.0
+name: GitLab
+category: dev-code
+one_liner: Browse projects, merge requests, issues, and pipelines on gitlab.com.
+api_domain: gitlab.com
+status: live
+credentials:
+  - env_var: GITLAB_PAT
+    label: GitLab personal access token (read_api scope)
+    help_url: https://gitlab.com/-/user_settings/personal_access_tokens
+auth:
+  scheme: api_key
+  header: PRIVATE-TOKEN
+  env_vars:
+    - GITLAB_PAT
+  value_template: ${GITLAB_PAT}
+operations:
+  - name: get current user
+    description: Retrieve current user details
+    method: GET
+    url: https://gitlab.com/api/v4/user
+    read_only: true
+    params: []
+  - name: list projects
+    description: List all projects
+    method: GET
+    url: https://gitlab.com/api/v4/projects
+    read_only: true
+    params:
+      - name: order_by
+        type: string
+        enum:
+          - id
+          - name
+          - path
+          - created_at
+          - updated_at
+          - last_activity_at
+          - similarity
+          - star_count
+          - storage_size
+          - repository_size
+          - wiki_size
+          - packages_size
+        required: false
+        location: query
+        description: Field to order projects by. storage_size, repository_size, wiki_size, and packages_size
+          are admin-only. similarity is available only when searching and is limited to projects the
+          user can access.
+      - name: sort
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: Return projects sorted in ascending and descending order
+      - name: archived
+        type: boolean
+        required: false
+        location: query
+        description: Limit by archived status
+      - name: visibility
+        type: string
+        enum:
+          - private
+          - internal
+          - public
+        required: false
+        location: query
+        description: Limit by visibility
+      - name: search
+        type: string
+        required: false
+        location: query
+        description: Return list of projects matching the search criteria
+      - name: search_namespaces
+        type: boolean
+        required: false
+        location: query
+        description: Include ancestor namespaces when matching search criteria
+      - name: owned
+        type: boolean
+        required: false
+        location: query
+        description: Limit by owned by authenticated user
+      - name: starred
+        type: boolean
+        required: false
+        location: query
+        description: Limit by starred status
+      - name: imported
+        type: boolean
+        required: false
+        location: query
+        description: Limit by imported by authenticated user
+      - name: membership
+        type: boolean
+        required: false
+        location: query
+        description: Limit by projects that the current user is a member of
+      - name: with_issues_enabled
+        type: boolean
+        required: false
+        location: query
+        description: Limit by enabled issues feature
+      - name: with_merge_requests_enabled
+        type: boolean
+        required: false
+        location: query
+        description: Limit by enabled merge requests feature
+      - name: with_programming_language
+        type: string
+        required: false
+        location: query
+        description: Limit to repositories which use the given programming language
+      - name: min_access_level
+        type: integer
+        enum:
+          - "10"
+          - "15"
+          - "20"
+          - "25"
+          - "30"
+          - "40"
+          - "50"
+        required: false
+        location: query
+        description: Limit by minimum access level of authenticated user
+      - name: id_after
+        type: integer
+        required: false
+        location: query
+        description: Limit results to projects with IDs greater than the specified ID
+      - name: id_before
+        type: integer
+        required: false
+        location: query
+        description: Limit results to projects with IDs less than the specified ID
+      - name: last_activity_after
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: "Limit results to projects with last_activity after specified time. Format: ISO 8601
+          YYYY-MM-DDTHH:MM:SSZ"
+      - name: last_activity_before
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: "Limit results to projects with last_activity before specified time. Format: ISO 8601
+          YYYY-MM-DDTHH:MM:SSZ"
+      - name: repository_storage
+        type: string
+        required: false
+        location: query
+        description: Which storage shard the repository is on. Available only to admins
+      - name: topic
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Comma-separated list of topics. Limit results to projects having all topics
+      - name: topic_id
+        type: integer
+        required: false
+        location: query
+        description: Limit results to projects with the assigned topic given by the topic ID
+      - name: updated_before
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: "Return projects updated before the specified datetime. Format: ISO 8601
+          YYYY-MM-DDTHH:MM:SSZ"
+      - name: updated_after
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: "Return projects updated after the specified datetime. Format: ISO 8601
+          YYYY-MM-DDTHH:MM:SSZ"
+      - name: include_pending_delete
+        type: boolean
+        required: false
+        location: query
+        description: Include projects in pending delete state. Can only be set by admins
+      - name: marked_for_deletion_on
+        type: string
+        format: date
+        required: false
+        location: query
+        description: Date when the project was marked for deletion
+      - name: active
+        type: boolean
+        required: false
+        location: query
+        description: Limit by projects that are not archived and not marked for deletion
+      - name: wiki_checksum_failed
+        type: boolean
+        required: false
+        location: query
+        description: Limit by projects where wiki checksum is failed
+      - name: repository_checksum_failed
+        type: boolean
+        required: false
+        location: query
+        description: Limit by projects where repository checksum is failed
+      - name: include_hidden
+        type: boolean
+        required: false
+        location: query
+        description: Include hidden projects. Can only be set by admins
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Current page number
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Number of items per page
+      - name: simple
+        type: boolean
+        required: false
+        location: query
+        description: Return only the ID, URL, name, and path of each project
+      - name: statistics
+        type: boolean
+        required: false
+        location: query
+        description: Include project statistics
+      - name: with_custom_attributes
+        type: boolean
+        required: false
+        location: query
+        description: Include custom attributes in the response
+      - name: custom_attributes
+        type: json
+        required: false
+        location: query
+        description: Filter with custom attributes
+  - name: get project
+    description: Retrieve a project
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID or URL-encoded path of the project
+      - name: statistics
+        type: boolean
+        required: false
+        location: query
+        description: Include project statistics
+      - name: with_custom_attributes
+        type: boolean
+        required: false
+        location: query
+        description: Include custom attributes in the response
+      - name: custom_attributes
+        type: json
+        required: false
+        location: query
+        description: Filter with custom attributes
+      - name: license
+        type: boolean
+        required: false
+        location: query
+        description: Include project license data
+  - name: list project issues
+    description: List all project issues
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/issues
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID or URL-encoded path of the project
+      - name: with_labels_details
+        type: boolean
+        required: false
+        location: query
+        description: Return titles of labels and other details
+      - name: state
+        type: string
+        enum:
+          - opened
+          - closed
+          - all
+        required: false
+        location: query
+        description: Return opened, closed, or all issues
+      - name: closed_by_id
+        type: integer
+        required: false
+        location: query
+        description: Return issues which were closed by the user with the given ID.
+      - name: order_by
+        type: string
+        enum:
+          - created_at
+          - due_date
+          - label_priority
+          - milestone_due
+          - popularity
+          - priority
+          - relative_position
+          - title
+          - updated_at
+          - weight
+        required: false
+        location: query
+        description: Return issues ordered by `created_at`, `due_date`, `label_priority`, `milestone_due`,
+          `popularity`, `priority`, `relative_position`, `title`, or `updated_at` fields.
+      - name: sort
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: Return issues sorted in `asc` or `desc` order.
+      - name: due_date
+        type: string
+        enum:
+          - "0"
+          - any
+          - today
+          - tomorrow
+          - overdue
+          - week
+          - month
+          - next_month_and_previous_two_weeks
+          - ""
+        required: false
+        location: query
+        description: Filter by due date. One of 0 (no due date), any, today, tomorrow, overdue, week, month,
+          next_month_and_previous_two_weeks.
+      - name: issue_type
+        type: string
+        enum:
+          - issue
+          - incident
+          - test_case
+          - requirement
+          - task
+          - ticket
+        required: false
+        location: query
+        description: "The type of the issue. Accepts: issue, incident, test_case, requirement, task, ticket"
+      - name: labels
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Comma-separated list of label names
+      - name: milestone
+        type: string
+        required: false
+        location: query
+        description: Milestone title
+      - name: milestone_id
+        type: string
+        enum:
+          - Any
+          - None
+          - Upcoming
+          - Started
+        required: false
+        location: query
+        description: Return issues assigned to milestones with the specified timebox value ("Any", "None",
+          "Upcoming" or "Started")
+      - name: iids
+        type: array
+        items_type: integer
+        required: false
+        location: query
+        description: The IID array of issues
+      - name: search
+        type: string
+        required: false
+        location: query
+        description: Search issues for text present in the title, description, or any combination of these
+      - name: in
+        type: string
+        required: false
+        location: query
+        description: "`title`, `description`, or a string joining them with comma"
+      - name: author_id
+        type: integer
+        required: false
+        location: query
+        description: Return issues which are authored by the user with the given ID
+      - name: author_username
+        type: string
+        required: false
+        location: query
+        description: Return issues which are authored by the user with the given username
+      - name: assignee_id
+        type: string
+        required: false
+        location: query
+        description: Return issues which are assigned to the user with the given ID
+      - name: assignee_username
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Return issues which are assigned to the user with the given username
+      - name: created_after
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: Return issues created after the specified time
+      - name: created_before
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: Return issues created before the specified time
+      - name: updated_after
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: Return issues updated after the specified time
+      - name: updated_before
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: Return issues updated before the specified time
+      - name: not
+        type: json
+        required: false
+        location: query
+        description: Filters by the specified parameters
+      - name: not[labels]
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Comma-separated list of label names
+      - name: not[milestone]
+        type: string
+        required: false
+        location: query
+        description: Milestone title
+      - name: not[milestone_id]
+        type: string
+        enum:
+          - Any
+          - None
+          - Upcoming
+          - Started
+        required: false
+        location: query
+        description: Return issues assigned to milestones without the specified timebox value ("Any",
+          "None", "Upcoming" or "Started")
+      - name: not[iids]
+        type: array
+        items_type: integer
+        required: false
+        location: query
+        description: The IID array of issues
+      - name: not[author_id]
+        type: integer
+        required: false
+        location: query
+        description: Return issues which are not authored by the user with the given ID
+      - name: not[author_username]
+        type: string
+        required: false
+        location: query
+        description: Return issues which are not authored by the user with the given username
+      - name: not[assignee_id]
+        type: integer
+        required: false
+        location: query
+        description: Return issues which are not assigned to the user with the given ID
+      - name: not[assignee_username]
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Return issues which are not assigned to the user with the given username
+      - name: not[weight]
+        type: integer
+        required: false
+        location: query
+        description: Return issues without the specified weight
+      - name: not[iteration_id]
+        type: string
+        required: false
+        location: query
+        description: Return issues which are not assigned to the iteration with the given ID
+      - name: not[iteration_title]
+        type: string
+        required: false
+        location: query
+        description: Return issues which are not assigned to the iteration with the given title
+      - name: scope
+        type: string
+        enum:
+          - created-by-me
+          - assigned-to-me
+          - created_by_me
+          - assigned_to_me
+          - all
+        required: false
+        location: query
+        description: "Return issues for the given scope: `created_by_me`, `assigned_to_me` or `all`"
+      - name: my_reaction_emoji
+        type: string
+        required: false
+        location: query
+        description: Return issues reacted by the authenticated user by the given emoji
+      - name: confidential
+        type: boolean
+        required: false
+        location: query
+        description: Filter confidential or public issues
+      - name: weight
+        type: string
+        required: false
+        location: query
+        description: The weight of the issue
+      - name: epic_id
+        type: string
+        required: false
+        location: query
+        description: The ID of an epic associated with the issues
+      - name: health_status
+        type: string
+        enum:
+          - on_track
+          - needs_attention
+          - at_risk
+          - none
+          - any
+        required: false
+        location: query
+        description: "The health status of the issue. Must be one of: on_track, needs_attention, at_risk,
+          none, any"
+      - name: iteration_id
+        type: string
+        required: false
+        location: query
+        description: Return issues which are assigned to the iteration with the given ID
+      - name: iteration_title
+        type: string
+        required: false
+        location: query
+        description: Return issues which are assigned to the iteration with the given title
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Current page number
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Number of items per page
+      - name: cursor
+        type: string
+        required: false
+        location: query
+        description: Cursor for obtaining the next set of records
+  - name: get project issue
+    description: Retrieve a project issue
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/issues/{issue_iid}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID or URL-encoded path of the project
+      - name: issue_iid
+        type: integer
+        required: true
+        location: path
+        description: The internal ID of a project issue
+  - name: list merge requests
+    description: List all project merge requests
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/merge_requests
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID or URL-encoded path of the project.
+      - name: author_id
+        type: integer
+        required: false
+        location: query
+        description: Returns merge requests created by the given user `id`. Mutually exclusive with
+          `author_username`. Combine with `scope=all` or `scope=assigned_to_me`.
+      - name: author_username
+        type: string
+        required: false
+        location: query
+        description: Returns merge requests created by the given `username`. Mutually exclusive with
+          `author_id`.
+      - name: assignee_id
+        type: string
+        required: false
+        location: query
+        description: Returns merge requests assigned to the given user `id`. `None` returns unassigned merge
+          requests. `Any` returns merge requests with an assignee.
+      - name: assignee_username
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Returns merge requests created by the given `username`. Mutually exclusive with
+          `author_id`.
+      - name: reviewer_username
+        type: string
+        required: false
+        location: query
+        description: Returns MRs where the given username is a reviewer. Use None for no reviewers, Any for
+          any reviewer. Mutually exclusive with reviewer_id. (GitLab 13.8+)
+      - name: labels
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Returns MRs matching a comma-separated list of labels. Use None for no labels, Any for
+          at least one label. Label names are case-insensitive.
+      - name: milestone
+        type: string
+        required: false
+        location: query
+        description: Returns merge requests for a specific milestone. `None` returns merge requests with no
+          milestone. `Any` returns merge requests that have an assigned milestone.
+      - name: my_reaction_emoji
+        type: string
+        required: false
+        location: query
+        description: Returns merge requests reacted by the authenticated user by the given `emoji`. `None`
+          returns issues not given a reaction. `Any` returns issues given at least one reaction.
+      - name: reviewer_id
+        type: string
+        required: false
+        location: query
+        description: Returns MRs where the given user ID is a reviewer. Use None for no reviewers, Any for
+          any reviewer. Mutually exclusive with reviewer_username.
+      - name: state
+        type: string
+        enum:
+          - opened
+          - closed
+          - locked
+          - merged
+          - all
+        required: false
+        location: query
+        description: Returns `all` merge requests or just those that are `opened`, `closed`, `locked`, or
+          `merged`.
+      - name: order_by
+        type: string
+        enum:
+          - created_at
+          - label_priority
+          - milestone_due
+          - popularity
+          - priority
+          - title
+          - updated_at
+          - merged_at
+        required: false
+        location: query
+        description: Returns merge requests ordered by `created_at`, `label_priority`, `milestone_due`,
+          `popularity`, `priority`, `title`, `updated_at` or `merged_at` fields. Introduced in
+          GitLab 14.8.
+      - name: sort
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: Returns merge requests sorted in `asc` or `desc` order.
+      - name: with_labels_details
+        type: boolean
+        required: false
+        location: query
+        description: "If `true`, response returns more details for each label in labels field:
+          `:name`,`:color`, `:description`, `:description_html`, `:text_color`"
+      - name: with_merge_status_recheck
+        type: boolean
+        required: false
+        location: query
+        description: If `true`, this projection requests (but does not guarantee) that the `merge_status`
+          field be recalculated asynchronously. Introduced in GitLab 13.0.
+      - name: created_after
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: Returns merge requests created on or after the given time. Expected in ISO 8601 format.
+      - name: created_before
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: Returns merge requests created on or before the given time. Expected in ISO 8601 format.
+      - name: updated_after
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: Returns merge requests updated on or after the given time. Expected in ISO 8601 format.
+      - name: updated_before
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: Returns merge requests updated on or before the given time. Expected in ISO 8601 format.
+      - name: merged_after
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: Returns merge requests merged on or after the given time. Expected in ISO 8601 format.
+      - name: merged_before
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: Returns merge requests merged on or before the given time. Expected in ISO 8601 format.
+      - name: view
+        type: string
+        enum:
+          - simple
+        required: false
+        location: query
+        description: If simple, returns the `iid`, URL, title, description, and basic state of merge request
+      - name: scope
+        type: string
+        enum:
+          - created-by-me
+          - assigned-to-me
+          - created_by_me
+          - assigned_to_me
+          - reviews_for_me
+          - all
+        required: false
+        location: query
+        description: "Returns merge requests for the given scope: `created_by_me`, `assigned_to_me`,
+          `reviews_for_me` or `all`"
+      - name: source_branch
+        type: string
+        required: false
+        location: query
+        description: Returns merge requests with the given source branch
+      - name: source_project_id
+        type: integer
+        required: false
+        location: query
+        description: Returns merge requests with the given source project id
+      - name: target_branch
+        type: string
+        required: false
+        location: query
+        description: Returns merge requests with the given target branch
+      - name: search
+        type: string
+        required: false
+        location: query
+        description: Search merge requests against their `title` and `description`.
+      - name: in
+        type: string
+        required: false
+        location: query
+        description: Modify the scope of the search attribute. `title`, `description`, or a string joining
+          them with comma.
+      - name: wip
+        type: string
+        enum:
+          - yes
+          - no
+        required: false
+        location: query
+        description: Deprecated. Use `draft` instead. Filter merge requests against their `wip` status.
+          `yes` to return only draft merge requests, `no` to return non-draft merge requests.
+      - name: draft
+        type: boolean
+        required: false
+        location: query
+        description: Filter merge requests against their `draft` status. `true` to return only draft merge
+          requests, `false` to return non-draft merge requests.
+      - name: not
+        type: json
+        required: false
+        location: query
+        description: Returns merge requests that do not match the parameters supplied
+      - name: not[author_id]
+        type: integer
+        required: false
+        location: query
+        description: "`<Negated>` Returns merge requests created by the given user `id`. Mutually exclusive
+          with `author_username`. Combine with `scope=all` or `scope=assigned_to_me`."
+      - name: not[author_username]
+        type: string
+        required: false
+        location: query
+        description: "`<Negated>` Returns merge requests created by the given `username`. Mutually exclusive
+          with `author_id`."
+      - name: not[assignee_id]
+        type: string
+        required: false
+        location: query
+        description: "`<Negated>` Returns merge requests assigned to the given user `id`. `None` returns
+          unassigned merge requests. `Any` returns merge requests with an assignee."
+      - name: not[assignee_username]
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: "`<Negated>` Returns merge requests created by the given `username`. Mutually exclusive
+          with `author_id`."
+      - name: not[reviewer_username]
+        type: string
+        required: false
+        location: query
+        description: Negated — excludes MRs where the given username is a reviewer. None/Any supported.
+          Mutually exclusive with not[reviewer_id]. (GitLab 13.8+)
+      - name: not[labels]
+        type: array
+        items_type: string
+        required: false
+        location: query
+        description: Negated — excludes MRs matching a comma-separated list of labels. None/Any supported.
+          Label names are case-insensitive.
+      - name: not[milestone]
+        type: string
+        required: false
+        location: query
+        description: "`<Negated>` Returns merge requests for a specific milestone. `None` returns merge
+          requests with no milestone. `Any` returns merge requests that have an assigned milestone."
+      - name: not[my_reaction_emoji]
+        type: string
+        required: false
+        location: query
+        description: "`<Negated>` Returns merge requests reacted by the authenticated user by the given
+          `emoji`. `None` returns issues not given a reaction. `Any` returns issues given at least
+          one reaction."
+      - name: not[reviewer_id]
+        type: integer
+        required: false
+        location: query
+        description: Negated — excludes MRs where the given user ID is a reviewer. None/Any supported.
+          Mutually exclusive with not[reviewer_username].
+      - name: deployed_before
+        type: string
+        required: false
+        location: query
+        description: Returns merge requests deployed before the given date/time. Expected in ISO 8601 format.
+      - name: deployed_after
+        type: string
+        required: false
+        location: query
+        description: Returns merge requests deployed after the given date/time. Expected in ISO 8601 format
+      - name: environment
+        type: string
+        required: false
+        location: query
+        description: Returns merge requests deployed to the given environment
+      - name: merge_user_id
+        type: integer
+        required: false
+        location: query
+        description: Returns merge requests which have been merged by the user with the given user `id`.
+          Mutually exclusive with `merge_user_username`.
+      - name: merge_user_username
+        type: string
+        required: false
+        location: query
+        description: Returns merge requests which have been merged by the user with the given `username`.
+          Mutually exclusive with `merge_user_id`.
+      - name: approver_ids
+        type: string
+        required: false
+        location: query
+        description: Return merge requests which have specified the users with the given IDs as an
+          individual approver
+      - name: approved_by_ids
+        type: string
+        required: false
+        location: query
+        description: Return merge requests which have been approved by the specified users with the given IDs
+      - name: approved_by_usernames
+        type: string
+        required: false
+        location: query
+        description: |-
+          Return merge requests which have been approved by the specified users with the given
+                      usernames
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Current page number
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Number of items per page
+      - name: iids
+        type: array
+        items_type: integer
+        required: false
+        location: query
+        description: Returns the request having the given `iid`.
+  - name: get merge request
+    description: Retrieve a merge request
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/merge_requests/{merge_request_iid}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID or URL-encoded path of the project.
+      - name: merge_request_iid
+        type: integer
+        required: true
+        location: path
+        description: The internal ID of the merge request.
+      - name: render_html
+        type: boolean
+        required: false
+        location: query
+        description: If `true`, response includes rendered HTML for title and description.
+      - name: include_diverged_commits_count
+        type: boolean
+        required: false
+        location: query
+        description: If `true`, response includes the commits behind the target branch.
+      - name: include_rebase_in_progress
+        type: boolean
+        required: false
+        location: query
+        description: If `true`, response includes whether a rebase operation is in progress.
+  - name: get merge request changes
+    description: Retrieve merge request changes
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/merge_requests/{merge_request_iid}/changes
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID or URL-encoded path of the project.
+      - name: unidiff
+        type: boolean
+        required: false
+        location: query
+        description: A diff in a Unified diff format
+      - name: merge_request_iid
+        type: integer
+        required: true
+        location: path
+        description: The IID of a merge request
+  - name: list merge request commits
+    description: Retrieve merge request commits
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/merge_requests/{merge_request_iid}/commits
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID or URL-encoded path of the project.
+      - name: merge_request_iid
+        type: integer
+        required: true
+        location: path
+        description: The internal ID of the merge request.
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Current page number
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Number of items per page
+  - name: list pipelines
+    description: List all project pipelines
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/pipelines
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The project ID or URL-encoded path
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Current page number
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Number of items per page
+      - name: scope
+        type: string
+        enum:
+          - running
+          - pending
+          - finished
+          - branches
+          - tags
+        required: false
+        location: query
+        description: The scope of pipelines
+      - name: status
+        type: string
+        enum:
+          - created
+          - waiting_for_resource
+          - preparing
+          - waiting_for_callback
+          - pending
+          - running
+          - success
+          - failed
+          - canceling
+          - canceled
+          - skipped
+          - manual
+          - scheduled
+        required: false
+        location: query
+        description: The status of pipelines
+      - name: ref
+        type: string
+        required: false
+        location: query
+        description: The ref of pipelines
+      - name: sha
+        type: string
+        required: false
+        location: query
+        description: The sha of pipelines
+      - name: yaml_errors
+        type: boolean
+        required: false
+        location: query
+        description: Returns pipelines with invalid configurations
+      - name: username
+        type: string
+        required: false
+        location: query
+        description: The username of the user who triggered pipelines
+      - name: updated_before
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: "Return pipelines updated before the specified datetime. Format: ISO 8601
+          YYYY-MM-DDTHH:MM:SSZ"
+      - name: updated_after
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: "Return pipelines updated after the specified datetime. Format: ISO 8601
+          YYYY-MM-DDTHH:MM:SSZ"
+      - name: created_before
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: "Return pipelines created before the specified datetime. Format: ISO 8601
+          YYYY-MM-DDTHH:MM:SSZ"
+      - name: created_after
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: "Return pipelines created after the specified datetime. Format: ISO 8601
+          YYYY-MM-DDTHH:MM:SSZ"
+      - name: order_by
+        type: string
+        enum:
+          - id
+          - status
+          - ref
+          - updated_at
+          - user_id
+        required: false
+        location: query
+        description: Order pipelines
+      - name: sort
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: Sort pipelines
+      - name: source
+        type: string
+        enum:
+          - unknown
+          - push
+          - web
+          - trigger
+          - schedule
+          - api
+          - external
+          - pipeline
+          - chat
+          - webide
+          - merge_request_event
+          - external_pull_request_event
+          - parent_pipeline
+          - ondemand_dast_scan
+          - ondemand_dast_validation
+          - security_orchestration_policy
+          - container_registry_push
+          - duo_workflow
+          - pipeline_execution_policy_schedule
+          - dependency_management_security_update
+        required: false
+        location: query
+        description: The source of pipelines
+      - name: name
+        type: string
+        required: false
+        location: query
+        description: Filter pipelines by name
+  - name: get pipeline
+    description: Retrieve a pipeline
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/pipelines/{pipeline_id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The project ID or URL-encoded path
+      - name: pipeline_id
+        type: integer
+        required: true
+        location: path
+        description: The pipeline ID
+  - name: list pipeline jobs
+    description: List all jobs by pipeline
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/pipelines/{pipeline_id}/jobs
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The project ID or URL-encoded path
+      - name: pipeline_id
+        type: integer
+        required: true
+        location: path
+        description: The pipeline ID
+      - name: include_retried
+        type: boolean
+        required: false
+        location: query
+        description: Includes retried jobs
+      - name: scope
+        type: string
+        required: false
+        location: query
+        description: The scope of builds to show
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Current page number
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Number of items per page
+  - name: list branches
+    description: List all repository branches
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/repository/branches
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID or URL-encoded path of the project
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Current page number
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Number of items per page
+      - name: search
+        type: string
+        required: false
+        location: query
+        description: Return list of branches matching the search criteria
+      - name: regex
+        type: string
+        required: false
+        location: query
+        description: Return list of branches matching the regex
+      - name: sort
+        type: string
+        enum:
+          - name_asc
+          - updated_asc
+          - updated_desc
+        required: false
+        location: query
+        description: Return list of branches sorted by the given field
+      - name: page_token
+        type: string
+        required: false
+        location: query
+        description: Name of branch to start the pagination from
+  - name: get branch
+    description: Retrieve a repository branch
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/repository/branches/{branch}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID or URL-encoded path of the project
+      - name: branch
+        type: string
+        required: true
+        location: path
+        description: The name of the branch
+  - name: list tags
+    description: List all project repository tags
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/repository/tags
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID or URL-encoded path of the project
+      - name: sort
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: Return tags sorted in updated by `asc` or `desc` order.
+      - name: order_by
+        type: string
+        enum:
+          - name
+          - updated
+          - version
+        required: false
+        location: query
+        description: Return tags ordered by `name`, `updated`, `version` fields.
+      - name: search
+        type: string
+        required: false
+        location: query
+        description: Return list of tags matching the search criteria
+      - name: page_token
+        type: string
+        required: false
+        location: query
+        description: Name of tag to start the pagination from
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Current page number
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Number of items per page
+  - name: get tag
+    description: Retrieve a single repository tag
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/repository/tags/{tag_name}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID or URL-encoded path of the project
+      - name: tag_name
+        type: string
+        required: true
+        location: path
+        description: The name of the tag
+  - name: list commits
+    description: List all repository commits
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/repository/commits
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID or URL-encoded path of the project
+      - name: ref_name
+        type: string
+        required: false
+        location: query
+        description: The name of a repository branch or tag, if not given the default branch is used
+      - name: since
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: Only commits after or on this date will be returned
+      - name: until
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: Only commits before or on this date will be returned
+      - name: path
+        type: string
+        required: false
+        location: query
+        description: The file path
+      - name: follow
+        type: boolean
+        required: false
+        location: query
+        description: Follow file renames when filtering by path
+      - name: author
+        type: string
+        required: false
+        location: query
+        description: Search commits by commit author
+      - name: all
+        type: boolean
+        required: false
+        location: query
+        description: Every commit will be returned
+      - name: with_stats
+        type: boolean
+        required: false
+        location: query
+        description: Stats about each commit will be added to the response
+      - name: first_parent
+        type: boolean
+        required: false
+        location: query
+        description: Only include the first parent of merges
+      - name: order
+        type: string
+        enum:
+          - default
+          - topo
+        required: false
+        location: query
+        description: List commits in order
+      - name: trailers
+        type: boolean
+        required: false
+        location: query
+        description: Parse and include Git trailers for every commit
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Current page number
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Number of items per page
+      - name: pagination
+        type: string
+        enum:
+          - legacy
+          - keyset
+        required: false
+        location: query
+        description: Specify the pagination method
+      - name: page_token
+        type: string
+        required: false
+        location: query
+        description: Record from which to start the keyset pagination
+  - name: get commit
+    description: Retrieve a commit
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/repository/commits/{sha}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID or URL-encoded path of the project
+      - name: sha
+        type: string
+        required: true
+        location: path
+        description: A commit sha, or the name of a branch or tag
+      - name: stats
+        type: boolean
+        required: false
+        location: query
+        description: Include commit stats
+  - name: list commit statuses
+    description: List all commit statuses
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/repository/commits/{sha}/statuses
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: ID or URL-encoded path of the project.
+      - name: sha
+        type: string
+        required: true
+        location: path
+        description: Hash of the commit.
+      - name: ref
+        type: string
+        required: false
+        location: query
+        description: Name of the branch or tag. Default is the default branch.
+      - name: stage
+        type: string
+        required: false
+        location: query
+        description: Filter statuses by build stage.
+      - name: name
+        type: string
+        required: false
+        location: query
+        description: Filter statuses by job name.
+      - name: pipeline_id
+        type: integer
+        required: false
+        location: query
+        description: Filter statuses by pipeline ID.
+      - name: all
+        type: boolean
+        required: false
+        location: query
+        description: Include all statuses instead of latest only. Default is `false`.
+      - name: order_by
+        type: string
+        enum:
+          - id
+          - pipeline_id
+        required: false
+        location: query
+        description: Values for sorting statuses. Valid values are `id` and `pipeline_id`. Default is `id`.
+      - name: sort
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: Sort statuses in ascending or descending order. Valid values are `asc` and `desc`.
+          Default is `asc`.
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Current page number
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Number of items per page
+  - name: get repository tree
+    description: List all repository trees in a project
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/repository/tree
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID or URL-encoded path of the project
+      - name: ref
+        type: string
+        required: false
+        location: query
+        description: The name of a repository branch or tag, if not given the default branch is used
+      - name: path
+        type: string
+        required: false
+        location: query
+        description: The path of the tree
+      - name: recursive
+        type: boolean
+        required: false
+        location: query
+        description: Used to get a recursive tree
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Current page number
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Number of items per page
+      - name: pagination
+        type: string
+        enum:
+          - legacy
+          - keyset
+          - none
+        required: false
+        location: query
+        description: Specify the pagination method ("none" is only valid if "recursive" is true)
+      - name: page_token
+        type: string
+        required: false
+        location: query
+        description: Record from which to start the keyset pagination
+  - name: get file contents
+    description: Retrieve a file from a repository
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/repository/files/{file_path}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID or URL-encoded path of the project.
+      - name: file_path
+        type: string
+        required: true
+        location: path
+        description: The URL-encoded path to the file.
+      - name: ref
+        type: string
+        required: true
+        location: query
+        description: The name of branch, tag or commit
+  - name: list milestones
+    description: List all project milestones
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/milestones
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID or URL-encoded path of the project
+      - name: state
+        type: string
+        enum:
+          - active
+          - closed
+          - all
+        required: false
+        location: query
+        description: Return "active", "closed", or "all" milestones
+      - name: iids
+        type: array
+        items_type: integer
+        required: false
+        location: query
+        description: The IIDs of the milestones
+      - name: title
+        type: string
+        required: false
+        location: query
+        description: The title of the milestones
+      - name: search
+        type: string
+        required: false
+        location: query
+        description: The search criteria for the title or description of the milestone
+      - name: include_parent_milestones
+        type: boolean
+        required: false
+        location: query
+        description: "Deprecated: see `include_ancestors`"
+      - name: include_ancestors
+        type: boolean
+        required: false
+        location: query
+        description: Include milestones from all parent groups
+      - name: updated_before
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: "Return milestones updated before the specified datetime. Format: ISO 8601
+          YYYY-MM-DDTHH:MM:SSZ"
+      - name: updated_after
+        type: string
+        format: date-time
+        required: false
+        location: query
+        description: "Return milestones updated after the specified datetime. Format: ISO 8601
+          YYYY-MM-DDTHH:MM:SSZ"
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Current page number
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Number of items per page
+  - name: get milestone
+    description: Retrieve a project milestone
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/milestones/{milestone_id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID or URL-encoded path of the project
+      - name: milestone_id
+        type: integer
+        required: true
+        location: path
+        description: The ID of a project milestone
+  - name: list groups
+    description: List all groups
+    method: GET
+    url: https://gitlab.com/api/v4/groups
+    read_only: true
+    params:
+      - name: statistics
+        type: boolean
+        required: false
+        location: query
+        description: Include project statistics
+      - name: archived
+        type: boolean
+        required: false
+        location: query
+        description: Limit by archived status
+      - name: skip_groups
+        type: array
+        items_type: integer
+        required: false
+        location: query
+        description: Array of group ids to exclude from list
+      - name: all_available
+        type: boolean
+        required: false
+        location: query
+        description: When `true`, returns all accessible groups. When `false`, returns only groups where the
+          user is a member.
+      - name: visibility
+        type: string
+        enum:
+          - private
+          - internal
+          - public
+        required: false
+        location: query
+        description: Limit by visibility
+      - name: search
+        type: string
+        required: false
+        location: query
+        description: Search for a specific group
+      - name: owned
+        type: boolean
+        required: false
+        location: query
+        description: Limit by owned by authenticated user
+      - name: order_by
+        type: string
+        enum:
+          - name
+          - path
+          - id
+          - similarity
+        required: false
+        location: query
+        description: Order by name, path, id or similarity if searching
+      - name: sort
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: Sort by asc (ascending) or desc (descending)
+      - name: min_access_level
+        type: integer
+        enum:
+          - "10"
+          - "15"
+          - "20"
+          - "25"
+          - "30"
+          - "40"
+          - "50"
+        required: false
+        location: query
+        description: Minimum access level of authenticated user
+      - name: top_level_only
+        type: boolean
+        required: false
+        location: query
+        description: Only include top-level groups
+      - name: marked_for_deletion_on
+        type: string
+        format: date
+        required: false
+        location: query
+        description: Return groups that are marked for deletion on this date
+      - name: active
+        type: boolean
+        required: false
+        location: query
+        description: Limit by groups that are not archived and not marked for deletion
+      - name: repository_storage
+        type: string
+        required: false
+        location: query
+        description: Filter by repository storage used by the group
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Current page number
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Number of items per page
+      - name: with_custom_attributes
+        type: boolean
+        required: false
+        location: query
+        description: Include custom attributes in the response
+      - name: custom_attributes
+        type: json
+        required: false
+        location: query
+        description: Filter with custom attributes
+  - name: get group
+    description: Retrieve a group
+    method: GET
+    url: https://gitlab.com/api/v4/groups/{id}
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID or URL-encoded full path of the group.
+      - name: with_custom_attributes
+        type: boolean
+        required: false
+        location: query
+        description: Include custom attributes in the response
+      - name: custom_attributes
+        type: json
+        required: false
+        location: query
+        description: Filter with custom attributes
+      - name: with_projects
+        type: boolean
+        required: false
+        location: query
+        description: Omit project details
+  - name: list group projects
+    description: List all projects in a group
+    method: GET
+    url: https://gitlab.com/api/v4/groups/{id}/projects
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID or URL-encoded full path of the group.
+      - name: active
+        type: boolean
+        required: false
+        location: query
+        description: Limit by projects that are not archived and not marked for deletion
+      - name: archived
+        type: boolean
+        required: false
+        location: query
+        description: Limit by archived status
+      - name: visibility
+        type: string
+        enum:
+          - private
+          - internal
+          - public
+        required: false
+        location: query
+        description: Limit by visibility
+      - name: search
+        type: string
+        required: false
+        location: query
+        description: Return list of authorized projects matching the search criteria
+      - name: order_by
+        type: string
+        enum:
+          - id
+          - name
+          - path
+          - created_at
+          - updated_at
+          - last_activity_at
+          - similarity
+          - star_count
+        required: false
+        location: query
+        description: Return projects ordered by field
+      - name: sort
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: Return projects sorted in ascending and descending order
+      - name: simple
+        type: boolean
+        required: false
+        location: query
+        description: Return only the ID, URL, name, and path of each project
+      - name: owned
+        type: boolean
+        required: false
+        location: query
+        description: Limit by owned by authenticated user
+      - name: starred
+        type: boolean
+        required: false
+        location: query
+        description: Limit by starred status
+      - name: with_issues_enabled
+        type: boolean
+        required: false
+        location: query
+        description: Limit by enabled issues feature
+      - name: with_merge_requests_enabled
+        type: boolean
+        required: false
+        location: query
+        description: Limit by enabled merge requests feature
+      - name: with_shared
+        type: boolean
+        required: false
+        location: query
+        description: Include projects shared to this group
+      - name: include_subgroups
+        type: boolean
+        required: false
+        location: query
+        description: Includes projects in subgroups of this group
+      - name: include_ancestor_groups
+        type: boolean
+        required: false
+        location: query
+        description: Includes projects in ancestors of this group
+      - name: min_access_level
+        type: integer
+        enum:
+          - "10"
+          - "15"
+          - "20"
+          - "25"
+          - "30"
+          - "40"
+          - "50"
+        required: false
+        location: query
+        description: Limit by minimum access level of authenticated user on projects
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Current page number
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Number of items per page
+      - name: with_custom_attributes
+        type: boolean
+        required: false
+        location: query
+        description: Include custom attributes in the response
+      - name: custom_attributes
+        type: json
+        required: false
+        location: query
+        description: Filter with custom attributes
+      - name: with_security_reports
+        type: boolean
+        required: false
+        location: query
+        description: Return only projects having security report artifacts present
+  - name: list issue notes
+    description: List all notes (comments) on a project issue.
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/issues/{issue_iid}/notes
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID or URL-encoded path of the project.
+      - name: issue_iid
+        type: integer
+        required: true
+        location: path
+        description: The IID of the issue.
+      - name: activity_filter
+        type: string
+        enum:
+          - all_notes
+          - only_comments
+          - only_activity
+        required: false
+        location: query
+        description: Filter notes by activity type. Default is all_notes.
+      - name: sort
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: Return issue notes sorted in asc or desc order. Default is desc.
+      - name: order_by
+        type: string
+        enum:
+          - created_at
+          - updated_at
+        required: false
+        location: query
+        description: Return issue notes ordered by created_at or updated_at. Default is created_at.
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Current page number.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Number of items per page (max 100).
+  - name: list merge request notes
+    description: List all notes (comments) on a merge request.
+    method: GET
+    url: https://gitlab.com/api/v4/projects/{id}/merge_requests/{merge_request_iid}/notes
+    read_only: true
+    params:
+      - name: id
+        type: string
+        required: true
+        location: path
+        description: The ID or URL-encoded path of the project.
+      - name: merge_request_iid
+        type: integer
+        required: true
+        location: path
+        description: The IID of the merge request.
+      - name: sort
+        type: string
+        enum:
+          - asc
+          - desc
+        required: false
+        location: query
+        description: Return merge request notes sorted in asc or desc order. Default is desc.
+      - name: order_by
+        type: string
+        enum:
+          - created_at
+          - updated_at
+        required: false
+        location: query
+        description: Return merge request notes ordered by created_at or updated_at. Default is created_at.
+      - name: page
+        type: integer
+        required: false
+        location: query
+        description: Current page number.
+      - name: per_page
+        type: integer
+        required: false
+        location: query
+        description: Number of items per page (max 100).
