@@ -42,7 +42,7 @@ def test_skill(slug):
         if unfillable:
             print(f"{slug:10} ----  {op['name']} (needs params: {', '.join(unfillable)}, untested)")
             continue
-        req = urllib.request.Request(url, headers={header: render(m["auth"]["value_template"], env), **extra_headers})
+        req = urllib.request.Request(url, headers={header: render(m["auth"]["value_template"], env), "User-Agent": "skillet-test/1.0", **extra_headers})
         try:
             with urllib.request.urlopen(req, timeout=15) as r:
                 code, body = r.status, r.read()

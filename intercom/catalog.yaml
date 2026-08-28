@@ -4,7 +4,7 @@ name: Intercom
 category: business-support
 one_liner: Read contacts, companies, conversations, and admins from Intercom.
 api_domain: api.intercom.io
-status: live
+status: coming_soon
 credentials:
   - env_var: INTERCOM_ACCESS_TOKEN
     label: Intercom access token (from a workspace app)
