@@ -4,7 +4,7 @@ name: Intercom
 category: business-support
 one_liner: Read contacts, companies, conversations, and admins from Intercom.
 api_domain: api.intercom.io
-status: coming_soon
+status: live
 credentials:
   - env_var: INTERCOM_ACCESS_TOKEN
     label: Intercom access token (from a workspace app)
@@ -22,6 +22,12 @@ operations:
     url: https://api.intercom.io/me
     read_only: true
     params:
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -57,6 +63,12 @@ operations:
     url: https://api.intercom.io/admins
     read_only: true
     params:
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -98,6 +110,12 @@ operations:
     url: https://api.intercom.io/admins/{admin_id}
     read_only: true
     params:
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -138,6 +156,12 @@ operations:
     url: https://api.intercom.io/contacts
     read_only: true
     params:
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -179,6 +203,12 @@ operations:
     url: https://api.intercom.io/contacts/{contact_id}
     read_only: true
     params:
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -230,6 +260,12 @@ operations:
         required: true
         location: path
         description: The unique identifier for the contact which is given by Intercom
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -270,6 +306,12 @@ operations:
         required: true
         location: path
         description: The unique identifier for the contact which is given by Intercom
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -305,6 +347,12 @@ operations:
     url: https://api.intercom.io/contacts/{contact_id}/tags
     read_only: true
     params:
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -345,6 +393,12 @@ operations:
     url: https://api.intercom.io/companies
     read_only: true
     params:
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -410,6 +464,12 @@ operations:
     url: https://api.intercom.io/companies/{company_id}
     read_only: true
     params:
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -450,6 +510,12 @@ operations:
     url: https://api.intercom.io/conversations
     read_only: true
     params:
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -495,6 +561,12 @@ operations:
     url: https://api.intercom.io/conversations/{conversation_id}
     read_only: true
     params:
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -548,6 +620,12 @@ operations:
     url: https://api.intercom.io/teams
     read_only: true
     params:
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -583,6 +661,12 @@ operations:
     url: https://api.intercom.io/teams/{team_id}
     read_only: true
     params:
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -623,6 +707,12 @@ operations:
     url: https://api.intercom.io/segments
     read_only: true
     params:
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -663,6 +753,12 @@ operations:
     url: https://api.intercom.io/segments/{segment_id}
     read_only: true
     params:
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -703,6 +799,12 @@ operations:
     url: https://api.intercom.io/tags
     read_only: true
     params:
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -738,6 +840,12 @@ operations:
     url: https://api.intercom.io/tags/{tag_id}
     read_only: true
     params:
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -778,6 +886,12 @@ operations:
     url: https://api.intercom.io/data_attributes
     read_only: true
     params:
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -833,6 +947,12 @@ operations:
         required: true
         location: path
         description: The unique identifier of a contact.
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -868,6 +988,12 @@ operations:
     url: https://api.intercom.io/ticket_types
     read_only: true
     params:
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -903,6 +1029,12 @@ operations:
     url: https://api.intercom.io/ticket_types/{ticket_type_id}
     read_only: true
     params:
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
@@ -943,6 +1075,12 @@ operations:
     url: https://api.intercom.io/tickets/{ticket_id}
     read_only: true
     params:
+      - name: Accept
+        type: string
+        required: true
+        location: header
+        example: application/json
+        description: Must be application/json — Intercom rejects with 406 otherwise.
       - name: Intercom-Version
         type: string
         enum:
