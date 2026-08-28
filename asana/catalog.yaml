@@ -984,11 +984,21 @@ operations:
         location: path
         description: The globally unique identifier for the section.
   - name: list tasks
-    description: Get multiple tasks
+    description: Get multiple tasks. The API requires a filter — pass assignee "me" plus a workspace gid (from list workspaces) to list your own tasks.
     method: GET
     url: https://app.asana.com/api/1.0/tasks
     read_only: true
     params:
+      - name: assignee
+        type: string
+        required: true
+        location: query
+        description: User gid or "me". Must be combined with workspace.
+      - name: workspace
+        type: string
+        required: true
+        location: query
+        description: Workspace gid. Get it from list workspaces.
       - name: limit
         type: integer
         required: false
